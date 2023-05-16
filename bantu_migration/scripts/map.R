@@ -1,0 +1,104 @@
+# Load Libraries and Data ----
+rm(list=ls(all=TRUE))
+
+library(maptools)
+library(sf)
+library(stringr)
+library(dplyr)
+library(here)
+library(ggplot2)
+library(ggthemes)
+library(rnaturalearth)
+library(rnaturalearthdata)
+library(parallel)
+library(RColorBrewer)
+library(cowplot)
+
+
+source("scripts/prepare_data.R")
+
+
+#-------------------------------------------------------------------------------
+## Data preparation ----
+
+#Create a summary dataset for map
+bantu_sites_sum <- bantu_sites_df %>% 
+  select(site, lat, long, dataorigin)
+
+#Convert to sf objects
+bantu_sites_sf <- sf::st_as_sf(bantu_sites_sum, 
+                               coords = c("long", "lat"), 
+                               remove = F, 
+                               crs = 4326, 
+                               na.fail = F)
+
+#-------------------------------------------------------------------------------
+## Plot Data  ----
+
+
+world <- rnaturalearth::ne_countries(scale = "medium", returnclass = "sf")
+
+minimap <- ggplot(data = world) +
+  geom_sf(color = NA, fill = "grey") + 
+  geom_rect(xmin = 7, xmax = 50, 
+            ymin = -35, ymax = 6.5, 
+            fill = NA, color = "black") + 
+  coord_sf(xlim = c(-15, 50), 
+           ylim = c(-35, 35)) + 
+  theme_void() + 
+  theme(panel.border = element_rect(colour = "darkgrey", 
+                                    fill = NA, size = .5))
+
+#Basemap taken from HumActCA project, White's vegetation descriptions. Assuming vegetation areas need to be extended to rest of sub-Saharan Africa...
+basemap <- function(){
+  white <- sf::st_read("input/Whites vegetation.shp") %>%
+    st_set_crs(4326) %>%
+    dplyr::filter(DESCRIPTIO %in% c("Anthropic landscapes",
+                                    "Dry forest and thicket",
+                                    "Swamp forest and mangrove",
+                                    "Tropical lowland rainforest"))  
+  
+  # Vector layers ----
+  rivers10 <- ne_download(scale = 10, type = "rivers_lake_centerlines", category = "physical", returnclass="sf")
+  lakes10 <- ne_download(scale = 10, type = "lakes", category = "physical", returnclass="sf")
+  coast10 <- ne_download(scale = 10, type = "coastline", category = "physical", returnclass="sf")
+  land10 <- ne_download(scale = 10, type = "land", category = "physical", returnclass="sf")
+  boundary_lines_land10 <- ne_download(scale = 10, type = "boundary_lines_land", category = "cultural", returnclass="sf")
+  
+  # Base map plot ----
+  plt <- ggplot() + 
+    geom_sf(data = white, fill = "grey", color = NA) + 
+    geom_sf(data = coast10, size = .5, color = '#808080') + 
+    geom_sf(data = rivers10, size = .5, color = '#808080') + 
+    geom_sf(data = lakes10, fill = '#808080', color = NA) + 
+    geom_sf(data = boundary_lines_land10, size = .1, color = 'black') 
+  
+  return(plt)
+}
+
+#Ploting sites with basemap ----
+plt.main <- basemap() +
+  geom_sf(data = bantu_sites_sf,
+          aes(colour=dataorigin),
+          size = 2,
+          alpha=0.5) +
+  coord_sf(xlim = c(7, 50),
+           ylim = c(-35, 6.5)) +
+  scale_x_continuous(breaks = seq(8, 50, 2)) +
+  labs(colour="Original dataset") +
+  theme_few() +
+  theme(axis.title = element_blank(),
+        plot.background = element_rect(color = NA,
+                                       fill = NA))
+
+plt <- cowplot::ggdraw() +
+  draw_plot(plt.main) +
+  draw_plot(minimap, 
+            x = .05, y = .275, width = .15, height = .15)
+
+windows() ; plt
+
+
+
+
+
