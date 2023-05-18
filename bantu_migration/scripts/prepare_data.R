@@ -2,8 +2,6 @@
 #remotes::install_github("people3k/p3k14c@2022.06")
 
 # Load Libraries and Data ----
-rm(list=ls(all=TRUE))
-
 library(rcarbon)
 library(nimbleCarbon)
 library(maptools)

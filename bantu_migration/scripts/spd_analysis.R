@@ -26,7 +26,7 @@ source("scripts/prepare_data.R")
 
 min_14Cage <- 0
 n_bins <- 100 #time window for binning dates (in years) within the same site
-n_simulations <- 100 #num of simulations
+n_sims <- 10 #num of simulations
 timeRange <- c(4000, 0) #set the timerange of analysis in calBP, older date first
 breaks <- seq(4000, 0, -200) #200 year blocks
 
@@ -43,12 +43,12 @@ calCurve <- 'intcal20'
 bantu_caldates <- rcarbon::calibrate(x = bantu_sites_df$c14date, 			
                                      errors = bantu_sites_df$c14std,
                                      calCurves = calCurve, 
-                                     normalised = cal_norm,
+                                     normalised = cal_norm, ##QQ: setting normalised == TRUE yields error "One or more dates are outside the calibration range", but where was the calibration range specified? By specifying the calibration curve?
                                      ncores = ncores)
 
 #Basic plot
 plot(bantu_caldates)
-#summary(bantu_sites_df.caldates) #QQ: Why doesn't this work, but calling summary on cal_dates_restricted (below) works?
+#summary(bantu_caldates) #QQ: Why doesn't this work, but calling summary on cal_dates_restricted (below) works?
 
 #ExA: Extract specific dates (all dates with a CDF of 0.5 or over between 2000 and 500 cal BP)
 which.CalDates(bantu_caldates, BP<=2000 & BP>=500, p=0.5)
@@ -58,12 +58,17 @@ summary(cal_dates_restricted)
 
 ## Binning ----
 #The archaeological record in West Africa seems particularly biased with several sites having a potentially outsized number of dates -- most likely along the river networks
+# bantu_site_tally <- bantu_sites_df %>% 
+#   mutate(site = as.factor(site)) %>% 
+#   count(site) %>% 
+#   plot()
 bins <- binPrep(sites = bantu_sites_df$site,
                 ages = bantu_sites_df$c14date,
                 h = n_bins)
 
 #QQ: Should I rather use the median calibrated dates to bin?
 #bins_cal <- binPrep(sites = bantu_sites_df$site, ages = bantu_caldates, h = n_bins) ##QQ: Why does this line of code not work?
+
 
 
 
@@ -86,6 +91,16 @@ binsense(x=bantu_caldates, y=bantu_sites_df$site, h=seq(0,500,100), timeRange = 
 binsmed = binMed(x = bantu_caldates, bins=bins)
 plot(bantu_spd,runm=200)
 barCodes(binsmed, yrng = c(0,0.01))
+
+
+
+#-------------------------------------------------------------------------------
+## Hypothesis testing ----
+
+#Fit SPD to logistic model (following HumActCA code)
+lognull <- modelTest(bantu_caldates, errors=bantu_sites_df$c14std, bins=bins, nsim=n_sim, timeRange=timeRange, model="logistic", runm=100)
+##QQ: the above yields an error.. Is this the same issue that is raised when running 'summary(bantu_caldates)'?
+
 
 
 
