@@ -10,6 +10,7 @@ library(maptools)
 library(sf)
 library(stringr)
 library(dplyr)
+library(tidyr)
 library(here)
 library(ggplot2)
 library(ggthemes)
@@ -96,37 +97,32 @@ p3k14c_dat <- p3k14c::p3k14c_data #TODO: replace with the raw data -- this will 
 
 SARD_sum_df <- SARD_dat %>%
   filter(Archaeological.Period=="Iron Age") %>% #TODO: refine the determination of whether the site is Bantu at a later stage...
-  select(X.Site, DecdegE, DecdegS) %>%
-  rename(site=X.Site, lat=DecdegS, long=DecdegE) %>%
-  mutate(dataorigin="SARD") %>% 
-  distinct()
+  select(X.Site, DecdegE, DecdegS, Date, Uncertainty) %>%
+  rename(site=X.Site, lat=DecdegS, long=DecdegE, c14date=Date, c14std=Uncertainty) %>%
+  mutate(c14date = as.numeric(c14date), c14std=as.numeric(c14std), dataorigin="SARD") 
 
-HumActCA_sum_df <- HumActCA_dat %>% #No filtering necessary -- I think all the sites in this database are associated with Bantu pottery finds
-  select(SITE, LAT, LONG) %>%
-  rename(site=SITE, lat=LAT, long=LONG) %>%
-  mutate(dataorigin="HumActCA") %>% 
-  distinct()
+HumActCA_sum_df <- HumActCA_dat %>% #TODO: filter for unreliable classes of dates, eg. III (and maybe II dates) #I think all the sites in this database are associated with Bantu pottery finds
+  select(SITE, LAT, LONG, C14AGE, C14STD) %>%
+  rename(site=SITE, lat=LAT, long=LONG, c14date=C14AGE, c14std=C14STD) %>%
+  mutate(c14date = as.numeric(c14date), c14std=as.numeric(c14std), dataorigin="HumActCA")
 
 EA_sum_df <- EA_dat %>%  #TODO: filter for Bantu dates
-  select(Site.Identifier, Latitude, Longitude) %>%
-  rename(site=Site.Identifier, lat=Latitude, long=Longitude) %>%
-  mutate(dataorigin="EastAfrican") %>% 
-  distinct()
+  select(Site.Identifier, Latitude, Longitude, Normalized.Age, NA.Sigma) %>%
+  rename(site=Site.Identifier, lat=Latitude, long=Longitude, c14date=Normalized.Age, c14std=NA.Sigma) %>%
+  mutate(c14date = as.numeric(c14date), c14std=as.numeric(c14std), dataorigin="EastAfrican") 
 
 # KayWA_sum_df <- KayWA_dat %>%  #TODO: filter for Bantu dates
 #   select(Site.Name, X, Y) %>%
 #   rename(site=Site.Name, lat=X, long=Y) %>%
-#   mutate(dataorigin="KayWestAfrican") %>% 
-#   distinct()
+#   mutate(c14date = as.numeric(c14date), c14std=as.numeric(c14std), dataorigin="KayWestAfrican") 
 
 
 p3k14c_sum_df <- p3k14c_dat %>%
   filter(Continent=="Africa" & 
            (Country %in% c(subSahara_countries, "CAR", "Equat.Guinea", "DRC"))) %>% #TODO: refine the determination of whether the site is Bantu at a later stage -- specifically filter for the correct period (waiting for raw data)
-  select(SiteName, Lat, Long) %>%
-  rename(site=SiteName, lat=Lat, long=Long) %>%
-  mutate(dataorigin="p3k14c") %>% 
-  distinct() %>%
+  select(SiteName, Lat, Long, Age, Error) %>%
+  rename(site=SiteName, lat=Lat, long=Long, c14date=Age, c14std=Error) %>%
+  mutate(c14date = as.numeric(c14date), c14std=as.numeric(c14std), dataorigin="p3k14c") %>%
   filter(!is.na(lat) | !is.na(long))
 
 
@@ -134,6 +130,7 @@ p3k14c_sum_df <- p3k14c_dat %>%
 bantu_sites_df <- rbind(HumActCA_sum_df, 
                         SARD_sum_df, 
                         EA_sum_df) %>%  #TODO: Not all these sites are Bantu -- need more careful filtering... #TODO: Add p3k14c_sum_df once it's been replaced with a filtered Bantu version
-  mutate(dataorigin=as.factor(dataorigin))
+  mutate(dataorigin=as.factor(dataorigin)) %>% 
+  drop_na()
 
 

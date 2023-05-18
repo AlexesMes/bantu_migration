@@ -1,5 +1,4 @@
 # Load Libraries and Data ----
-rm(list=ls(all=TRUE))
 
 library(maptools)
 library(sf)
@@ -23,7 +22,8 @@ source("scripts/prepare_data.R")
 
 #Create a summary dataset for map
 bantu_sites_sum <- bantu_sites_df %>% 
-  select(site, lat, long, dataorigin)
+  select(site, lat, long, dataorigin) %>% 
+  distinct()
 
 #Convert to sf objects
 bantu_sites_sf <- sf::st_as_sf(bantu_sites_sum, 
