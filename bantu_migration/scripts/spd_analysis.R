@@ -7,6 +7,7 @@ library(sf)
 library(stringr)
 library(dplyr)
 library(parallel)
+library(geosphere)
 
 
 ncores = (detectCores() - 1)
@@ -31,8 +32,13 @@ timeRange <- c(4000, 0) #set the timerange of analysis in calBP, older date firs
 breaks <- seq(4000, 0, -200) #200 year blocks
 
 cal_norm <- FALSE #TODO: Explore how results differ when normalised vs unnormalised dates are used
-calCurve <- 'intcal20'
+#calCurve <- 'intcal20'
 
+#-------------------------------------------------------------------------------
+## Determining which calibration curve should be used
+
+bantu_sites_df$calCurve <- ifelse((bantu_sites_df$lat>=0),'intcal20', 'shcal20') #Assign the calibration curve to use based on the site's position relative to the equator #TODO: refine this -- weird to have a hard step-change between calibration curves at the equator -- maybe use a gradient change function? Mixed Curve? Or is there perhaps better regional calibration curves to use?
+#table(bantu_sites_df$calCurve)
 
 
 #-------------------------------------------------------------------------------
@@ -42,26 +48,26 @@ calCurve <- 'intcal20'
 ## Calibrate ----
 bantu_caldates <- rcarbon::calibrate(x = bantu_sites_df$c14date, 			
                                      errors = bantu_sites_df$c14std,
-                                     calCurves = calCurve, 
-                                     normalised = cal_norm, ##QQ: setting normalised == TRUE yields error "One or more dates are outside the calibration range", but where was the calibration range specified? By specifying the calibration curve?
+                                     calCurves = bantu_sites_df$calCurve,
+                                     normalised = cal_norm,
                                      ncores = ncores)
 
 #Basic plot
 plot(bantu_caldates)
-#summary(bantu_caldates) #QQ: Why doesn't this work, but calling summary on cal_dates_restricted (below) works?
+summary(bantu_caldates)
 
 #ExA: Extract specific dates (all dates with a CDF of 0.5 or over between 2000 and 500 cal BP)
 which.CalDates(bantu_caldates, BP<=2000 & BP>=500, p=0.5)
 cal_dates_restricted <- subset(bantu_caldates, BP<=2000 & BP>=500, p=0.5)
 summary(cal_dates_restricted)
 
-
-## Binning ----
 #The archaeological record in West Africa seems particularly biased with several sites having a potentially outsized number of dates -- most likely along the river networks
 # bantu_site_tally <- bantu_sites_df %>% 
 #   mutate(site = as.factor(site)) %>% 
 #   count(site) %>% 
 #   plot()
+
+## Binning ----
 bins <- binPrep(sites = bantu_sites_df$site,
                 ages = bantu_sites_df$c14date,
                 h = n_bins)
