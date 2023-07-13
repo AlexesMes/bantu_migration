@@ -13,20 +13,15 @@ library(parallel)
 library(RColorBrewer)
 library(cowplot)
 
-
-source("scripts/prepare_data.R")
+# Load and prepare data ----
+load(here('data','c14.RData'))
 
 
 #-------------------------------------------------------------------------------
 ## Data preparation ----
 
-#Create a summary dataset for map
-bantu_sites_sum <- bantu_sites_df %>% 
-  select(site, lat, long, dataorigin) %>% 
-  distinct()
-
 #Convert to sf objects
-bantu_sites_sf <- sf::st_as_sf(bantu_sites_sum, 
+bantu_sites_sf <- sf::st_as_sf(siteInfo, 
                                coords = c("long", "lat"), 
                                remove = F, 
                                crs = 4326, 
@@ -82,6 +77,8 @@ plt.main <- basemap() +
           aes(colour=dataorigin),
           size = 2,
           alpha=0.5) +
+  geom_point() +
+  geom_point(aes(x=origin_point[1], y=origin_point[2]), colour="purple", size=3) +
   coord_sf(xlim = c(7, 50),
            ylim = c(-35, 6.5)) +
   scale_x_continuous(breaks = seq(8, 50, 2)) +
@@ -91,14 +88,13 @@ plt.main <- basemap() +
         plot.background = element_rect(color = NA,
                                        fill = NA))
 
-plt <- cowplot::ggdraw() +
+
+pdf(file=here('output','figures','map_figure.pdf'), width=8.5, height=7)
+cowplot::ggdraw() +
   draw_plot(plt.main) +
   draw_plot(minimap, 
             x = .05, y = .275, width = .15, height = .15)
-
-windows() ; plt
-
-
+dev.off()
 
 
 
