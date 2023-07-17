@@ -12,7 +12,7 @@ library(coda)
 # Load Simulated Data
 load(here('data','tactical_sim_gpqr.RData'))
 
-# Constants
+# Constants ---
 data(intcal20)
 data(shcal20)
 constants  <- list()
@@ -20,22 +20,25 @@ constants$N <- true_param$n
 constants$dist_mat  <- spDists(as_Spatial(sim_sites), longlat = TRUE)
 constants$dist_org  <- spDistsN1(as_Spatial(sim_sites), true_param$origin_point, longlat = TRUE)
 
-constants$calBP  <- intcal20$CalBP #Northern hemisphere calibration curve
-constants$C14BP  <- intcal20$C14Age
-constants$C14err  <- intcal20$C14Age.sigma
-constants$sh_calBP  <- shcal20$CalBP #Southern hemisphere calibration curve
-constants$sh_C14BP  <- shcal20$C14Age
-constants$sh_C14err  <- shcal20$C14Age.sigma
-
+#Calibration curves
+constants$calBP <- intcal20$CalBP #Same for intcal20 and shcal20 
+constants$C14BP  <- cbind(intcal20$C14Age, shcal20$C14Age) #Northern and southern hemisphere calibration curves
+constants$C14err  <- cbind(intcal20$C14Age.sigma, shcal20$C14Age.sigma)
+constants$cc <- as.numeric(as.factor(sim_sites$calCurve)) #intcal20==1 and shcal20==2
+# Dummy extension of the calibration curves -- 'bookend' values to ensure the regression algorithm never falls out of bounds
+constants$calBP <- c(1000000, constants$calBP, -1000000)
+constants$C14BP <- rbind(c(1000000,1000000), constants$C14BP, c(-1000000,-1000000))
+constants$C14err <- rbind(c(1000,1000), constants$C14err, c(1000,1000))
 constants$tau  <- 0.90
 
-# Data
+# Data ---
 dat  <- list()
 dat$cra  <- sim_sites$cra
 dat$cra_error  <- sim_sites$cra.error
 
-# Theta Init
+# Theta Init ---
 theta_init  <-  sim_sites$med.date
+
 
 #-------------------------------------------------------------------------------
 # MCMC Function ----
@@ -73,8 +76,8 @@ runFun  <- function(seed, dat, theta_init, constants, niter, nburnin, thin)
       lim[i] ~ dconstraint(rate[i]>0)
       mu[i] <- beta0 + (s[i]-beta1)*dist_org[i]
       theta[i] ~ dAsymLaplace(mu=mu[i], sigma=sigma, tau=tau)
-      mu.date[i] <- interpLin(z=theta[i], x=calBP[], y=C14BP[]);
-      sigmaCurve[i] <- interpLin(z=theta[i], x=calBP[], y=C14err[]);
+      mu.date[i] <- interpLin(z=theta[i], x=calBP[], y=C14BP[, cc[i]]); #Index cc selects the correct calibration curve
+      sigmaCurve[i] <- interpLin(z=theta[i], x=calBP[], y=C14err[, cc[i]]);
       sd[i] <- (cra_error[i]^2+sigmaCurve[i]^2)^(1/2);
       cra[i] ~ dnorm(mean=mu.date[i], sd=sd[i]);
     }
@@ -130,8 +133,8 @@ cl <- makeCluster(ncores)
 # Run the model in parallel:
 seeds <- c(12,45,67,89)
 niter = 5
-nburnin = 1
-thin = 3
+nburnin = 2
+thin = 1
 chain_output <- parLapply(cl = cl, X = seeds, fun = runFun, dat = dat, constants = constants, theta = theta_init, niter = niter, nburnin = nburnin,thin = thin)
 stopCluster(cl)
 

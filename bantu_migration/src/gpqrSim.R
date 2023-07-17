@@ -57,11 +57,17 @@ gpqrSim  <- function(win, n=1500, seed=123, beta0=3000, beta1=0.7, sigma=100, et
   simModel$simulate('mu')
   simModel$simulate('theta')
   
+  #Assign calibration curve
+  cc <- ifelse((sites@coords[,2]>=0), 'intcal20', 'shcal20')
+  
   #Combine Results
-  out.df  <- data.frame(ID=1:n, theta=simModel$theta)
-  out.df$cra  <- round(uncalibrate(round(out.df$theta))$ccCRA)
+  out.df  <- data.frame(ID=1:n, theta=simModel$theta, calCurve=cc)
+  out.df$cra  <- round(uncalibrate(round(out.df$theta))$ccCRA) #Can only specify one curve currently for all dates (therefore can't specify calCurves=out.df$calCurve). Default intcal20. TODO: Check if this is problem?
   out.df$cra.error  <- 20
-  out.df$med.date  <- medCal(calibrate(out.df$cra, out.df$cra.error, verbose=F))
+  out.df$med.date  <- medCal(calibrate(out.df$cra, 
+                                       out.df$cra.error, 
+                                       calCurve=out.df$calCurve,
+                                       verbose=F))
   out.df$s  <- simModel$s
   out.df$rate  <- -1/(out.df$s - beta1)
   out.df$mu  <- beta0 + (out.df$s - beta1)*dist_org
