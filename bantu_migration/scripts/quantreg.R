@@ -33,8 +33,7 @@ subset_dateInfo  <- subset(dateInfo, earliestAtSite == TRUE)
 subset_dateInfo  <- subset_dateInfo[order(subset_dateInfo$siteID, decreasing = F),] #Arrange in ascending site ID order
 # Generate list of observed data
 dat  <- list(cra = subset_dateInfo$cra, 
-             cra_error = subset_dateInfo$cra_error, 
-             calCurve = as.numeric(as.factor(subset_dateInfo$calCurve))) #intcal20==1 and shcal20==2
+             cra_error = subset_dateInfo$cra_error)
 
 # Constants
 # Remove constants defined in prepare_data.R that we aren't going to need right now
@@ -46,15 +45,13 @@ constants$n_dates  <- nrow(subset_dateInfo)
 # Define Quantile
 constants$tau <- 0.99
 
+#Calibration curve
+constants$cc <- as.numeric(as.factor(subset_dateInfo$calCurve)) #intcal20==1 and shcal20==2
+
 # Dummy extension of the calibration curves -- 'bookend' values to ensure the regression algorithm never falls out of bounds
 constants$calBP <- c(1000000, constants$calBP, -1000000)
 constants$C14BP <- rbind(c(1000000,1000000), constants$C14BP, c(-1000000,-1000000))
 constants$C14err <- rbind(c(1000,1000), constants$C14err, c(1000,1000))
-
-# constants$iC14BP <- c(1000000,constants$C14BP[,1],-1000000)
-# constants$sC14BP <- c(1000000,constants$C14BP[,2],-1000000)
-# constants$iC14err <- c(1000000,constants$C14err[,1],-1000000)
-# constants$sC14err <- c(1000000,constants$C14err[,2],-1000000)
 
 # Constraint for ignoring inference outside calibration range. Creates a list in the dat called 'constraint' which is filled with 1's used later as an indicator that data is within calibration curve
 dat$cra_constraint = rep(1, constants$n_dates) 
@@ -70,19 +67,12 @@ runFun <- function(seed, dat, theta_init, constants, nburnin, thin, niter)
   library(nimbleCarbon)
   model <- nimbleCode({
     for (i in 1:n_dates){
-      cc <- dat$calCurve[i] #index selecting correct calibration curve for the site
-      # C14BP_cc <- C14BP[ ,cc] #select calibration curve at beginning, instead of using cc index directly on constants$C14BP, because dynamic indexing on constants not working so well with nimble
-      # C14err_cc <- C14err[ ,cc]
-      #Way less elegant version (without dynamic indexing) which also isn't working...
-      # C14BP_cc <- if(cc==1){C14BP_cc <- iC14BP} else {C14BP_cc <- sC14BP}
-      # C14err_cc <- if(cc==1){C14err_cc <- iC14BP} else {C14err_cc <- sC14err}
-      
       # Model
       mu[i] <- alpha - beta*dist_org[i]
       theta[i] ~ dAsymLaplace(mu=mu[i], sigma=sigma, tau=tau) 
-      c14age[i] <- interpLin(z=theta[i], x=calBP[], y=C14BP[ ,cc]); #Index cc selects the correct calibration curve
+      c14age[i] <- interpLin(z=theta[i], x=calBP[], y=C14BP[ ,cc[i]]); #Index cc selects the correct calibration curve
       cra_constraint[i] ~ dconstraint(c14age[i] < 50193 & c14age[i] > 95) #C14 age must be within the calibration range
-      sigmaCurve[i] <- interpLin(z=theta[i], x=calBP[], y=C14err[ ,cc]);
+      sigmaCurve[i] <- interpLin(z=theta[i], x=calBP[], y=C14err[ ,cc[i]]);
       sigmaDate[i] <- (cra_error[i]^2+sigmaCurve[i]^2)^(1/2);
       cra[i] ~ dnorm(mean=c14age[i],sd=sigmaDate[i]);
     }

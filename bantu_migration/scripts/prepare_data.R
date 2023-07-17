@@ -285,8 +285,8 @@ constants$dist_org  <- dist_org
 constants$origin_point <- origin_point
 #Calibration curves
 constants$calBP <- intcal20$CalBP #Same for intcal20 and shcal20 
-constants$C14BP  <- data.frame(intcal20$C14Age, shcal20$C14Age) #Northern and southern hemisphere calibration curves
-constants$C14err  <- data.frame(intcal20$C14Age.sigma, shcal20$C14Age.sigma)
+constants$C14BP  <- cbind(intcal20$C14Age, shcal20$C14Age) #Northern and southern hemisphere calibration curves
+constants$C14err  <- cbind(intcal20$C14Age.sigma, shcal20$C14Age.sigma)
 
 #-------------------------------------------------------------------------------
 ## Save everything on a R image file ----
