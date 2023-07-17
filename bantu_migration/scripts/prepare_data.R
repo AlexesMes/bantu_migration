@@ -208,7 +208,8 @@ siteInfo <- siteInfo %>%
                            long,
                            siteID,
                            siteName,
-                           dataorigin))) %>% 
+                           dataorigin,
+                           calCurve))) %>% 
   distinct(siteID, .keep_all = TRUE)  #Some site duplicates introduced by slight differences in co-ordinate decimal places
 
 #TODO: add area info...
@@ -222,7 +223,8 @@ dateInfo <- unique(select(bantu_sites_df,
                           siteID,
                           cra=c14date,
                           cra_error=c14std,
-                          median_dates=median_dates)) %>% arrange(ID) 
+                          median_dates=median_dates,
+                          calCurve=calCurve)) %>% arrange(ID) 
 dateInfo$earliestAtSite  <- FALSE #initialize 
 
 for (i in unique(siteInfo$siteID))
@@ -281,13 +283,10 @@ constants$id_sites <- dateInfo$siteID
 constants$dist_mat  <- dist_mat
 constants$dist_org  <- dist_org
 constants$origin_point <- origin_point
-constants$calBP <- intcal20$CalBP #Northern hemisphere calibration curve
-constants$C14BP  <- intcal20$C14Age
-constants$C14err  <- intcal20$C14Age.sigma
-constants$sh_calBP <- shcal20$CalBP #Southern hemisphere calibration curve
-constants$sh_C14BP  <- shcal20$C14Age
-constants$sh_C14err  <- shcal20$C14Age.sigma
-
+#Calibration curves
+constants$calBP <- intcal20$CalBP #Same for intcal20 and shcal20 
+constants$C14BP  <- data.frame(intcal20$C14Age, shcal20$C14Age) #Northern and southern hemisphere calibration curves
+constants$C14err  <- data.frame(intcal20$C14Age.sigma, shcal20$C14Age.sigma)
 
 #-------------------------------------------------------------------------------
 ## Save everything on a R image file ----
