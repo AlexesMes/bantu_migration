@@ -300,7 +300,7 @@ s8a  <- ggplot() +
 
 s8b  <- ggplot() +
   geom_sf(data = win.sf, aes(), fill='grey66', show.legend=FALSE, lwd=0) +
-  geom_sf(data = sim_sites, mapping = aes(fill=pred.rate), pch=21, col='darkgrey',size=3) + 
+  geom_sf(data = sim_sites, mapping = aes(fill=pred.rate), pch=21, col='darkgrey', size=3) + 
   xlim(-15,50) + #Center the frame on sub-Saharan Africa
   ylim(-35,30) +
   labs(fill='Dispersal Rate \n (km/yr)') + 
@@ -316,7 +316,7 @@ dev.off()
 #-------------------------------------------------------------------------------
 # Posterior vs True values of s for Tactical Simulation ---- FIGURE 9
 
-load(here('results','gpqr_tactsim.RData'))
+load(here('output','gpqr_tactsim.RData'))
 gpqr_tactsim_post  <- do.call(rbind,gpqr_tactsim)
 tactsim_post_s  <- gpqr_tactsim_post[,paste0('s[',1:nrow(sim_sites),']')]
 tactsim_post_s_med  <- apply(tactsim_post_s, 2, median)
@@ -344,7 +344,7 @@ tactsim_post_rho  <- gpqr_tactsim_post[,'rho']
 true_beta0_with_tau09  <- qnorm(0.9, true_param$beta0, true_param$sigma) 
 
 
-pdf(here('output','figures','figure10.pdf'), height=8, width=8)
+pdf(here('output', 'figures', 'figure10.pdf'), height=8, width=8)
 par(mfrow=c(2,2))
 postHPDplot(tactsim_post_beta0, xlab='Cal BP', ylab='Posterior Probability', main=TeX('$\\beta_0$'), prob = 0.95)
 abline(v=true_beta0_with_tau09, lty=2)
