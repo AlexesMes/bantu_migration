@@ -73,7 +73,7 @@ runFun <- function(seed, dat, theta_init, constants, nburnin, thin, niter)
       c14age[i] <- interpLin(z=theta[i], x=calBP[], y=C14BP[ ,cc[i]]); #Index cc selects the correct calibration curve
       cra_constraint[i] ~ dconstraint(c14age[i] < 50193 & c14age[i] > 95) #C14 age must be within the calibration range
       sigmaCurve[i] <- interpLin(z=theta[i], x=calBP[], y=C14err[ ,cc[i]]);
-      sigmaDate[i] <- (cra_error[i]^2+sigmaCurve[i]^2)^(1/2);
+      sigmaDate[i] <- (cra_error[i]^2 + sigmaCurve[i]^2)^(1/2);
       cra[i] ~ dnorm(mean=c14age[i],sd=sigmaDate[i]);
     }
     #priors #TODO: adjust priors... 

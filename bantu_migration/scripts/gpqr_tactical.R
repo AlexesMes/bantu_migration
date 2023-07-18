@@ -76,8 +76,8 @@ runFun  <- function(seed, dat, theta_init, constants, niter, nburnin, thin)
       lim[i] ~ dconstraint(rate[i]>0)
       mu[i] <- beta0 + (s[i]-beta1)*dist_org[i]
       theta[i] ~ dAsymLaplace(mu=mu[i], sigma=sigma, tau=tau)
-      mu.date[i] <- interpLin(z=theta[i], x=calBP[], y=C14BP[, cc[i]]); #Index cc selects the correct calibration curve
-      sigmaCurve[i] <- interpLin(z=theta[i], x=calBP[], y=C14err[, cc[i]]);
+      mu.date[i] <- interpLin(z=theta[i], x=calBP[], y=C14BP[ , cc[i]]); #Index cc selects the correct calibration curve
+      sigmaCurve[i] <- interpLin(z=theta[i], x=calBP[], y=C14err[ , cc[i]]);
       sd[i] <- (cra_error[i]^2+sigmaCurve[i]^2)^(1/2);
       cra[i] ~ dnorm(mean=mu.date[i], sd=sd[i]);
     }
