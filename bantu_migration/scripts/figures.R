@@ -88,7 +88,7 @@ postHPDplot(1/post.beta.quantreg, xlab='km/year', ylab='Probability Density', pr
 dev.off()
 
 
-
+#===============================================================================
 #===============================================================================
 ##Gaussian Process Quantile Regression
 
@@ -138,7 +138,7 @@ dev.off()
 #-------------------------------------------------------------------------------
 # Impact of rho and etasq on variability in dispersal rate ---- FIGURE 4
 
-#TODO: Come back to this figure once the tactical simulations using gpqrSim.R is working ....
+#TODO: Come back to this figure to explore different parameters (higher values of etasq and rho)
 # Generate Spatial Window for Analyses: Sub-Saharan Africa ----
 sf_subsah_africa <- ne_countries(continent = "Africa", returnclass = "sf") %>%
   filter_all(., any_vars(str_detect(., "Sub-Saharan"))) %>% 
@@ -168,8 +168,7 @@ cov_param = expand.grid(etasq=etasq, rho=rho)
 tmp  <- vector('list',length=nrow(cov_param))
 out  <- vector('list',length=nrow(cov_param))
 
-
-
+# Simulate sites and plot
 for (i in 1:nrow(cov_param))
 {
   tmp[[i]]  <- gpqrSim(win = win,
@@ -189,7 +188,7 @@ for (i in 1:nrow(cov_param))
     ylim(-35,30) +
     labs(title=TeX(sprintf("$\\eta^2 = %g \\, \\rho = %g$", cov_param$etasq[i], cov_param$rho[i])), fill='Dispersal Rate \n (km/yr)') + 
     scale_fill_viridis(option = 'turbo', limits = c(0.7, 4), oob = scales::squish) +
-    theme(plot.title = element_text(hjust = 0.5,size=11), panel.background = element_rect(fill='lightblue'), panel.grid.major = element_line(size = 0.1), legend.position=c(0.2,0.2), legend.text = element_text(size=7), legend.key.width= unit(0.1, 'in'), legend.key.size = unit(0.08, "in"), legend.background=element_rect(fill = alpha("white", 0.5)), legend.title=element_text(size=7), axis.text=element_blank(), axis.ticks=element_blank(), plot.margin = unit(c(0,0,0,0), "in"))
+    theme(plot.title = element_text(hjust = 0.5, size=11), panel.background = element_rect(fill='lightblue'), panel.grid.major = element_line(size = 0.1), legend.position=c(0.2, 0.2), legend.text = element_text(size=7), legend.key.width= unit(0.1, 'in'), legend.key.size = unit(0.08, "in"), legend.background=element_rect(fill = alpha("white", 0.5)), legend.title=element_text(size=7), axis.text=element_blank(), axis.ticks=element_blank(), plot.margin = unit(c(0,0,0,0), "in"))
   
 }
 
@@ -268,8 +267,98 @@ polygon(c(0:1000, 1000:0), c(apply(cov.mat, 2, quantile, 0.5), rev(apply(cov.mat
 legend('topright', legend=c('50% percentile range','95% percentile range'), fill=c(rgb(0.67,0.84,0.9,0.5), rgb(0.25,0.41,0.88,0.5)))
 dev.off()
 
+#===============================================================================
+## gpqr_tactical.R Figures
 
 #--------------
+# Tactical Simulation ---- FIGURE 8
+
+load(here('data', 'tactical_sim_gpqr.RData'))
+load(here('output', 'gpqr_tactsim.RData')) ##TODO: rerun this once tactical data has been generated
+
+gpqr_tactsim_post  <- do.call(rbind, gpqr_tactsim)
+tactsim_post_s  <- gpqr_tactsim_post[ ,paste0('s[',1:nrow(sim_sites),']')]
+tactsim_post_beta1  <- gpqr_tactsim_post[ ,'beta1']
+tactsim_post_rate  <-  -1/(tactsim_post_s-tactsim_post_beta1)
+sim_sites$pred.rate  <- apply(tactsim_post_rate,2,median)
+
+
+s8a  <- ggplot() +
+  geom_sf(data = win.sf, aes(), fill='grey66', show.legend=FALSE, lwd=0) +
+  geom_sf(data = sim_sites, mapping = aes(fill=rate), pch=21, col='darkgrey', size=3) + 
+  xlim(-15,50) + #Center the frame on sub-Saharan Africa
+  ylim(-35,30) +
+  labs(fill='Dispersal Rate \n (km/yr)') + 
+  scale_fill_viridis(option="turbo", limits=c(1,4), oob = scales::squish) +
+  annotate("text", x = 45, y = 28, label = TeX('$\\beta_0 = 3000$')) +
+  annotate("text", x = 45, y = 25, label = TeX('$\\beta_1 = 0.15$')) +
+  annotate("text", x = 45, y = 22, label = TeX('$\\eta^2 = 0.02$')) +
+  annotate("text", x = 45, y = 19, label = TeX('$\\rho = 150$')) +
+  ggtitle('Simulated Dispersal Rates') +
+  theme(legend.position = c(0.2, 0.3), legend.background=element_rect(fill = alpha("white",0.5)), axis.title.x=element_blank(), axis.title.y=element_blank())
+
+
+s8b  <- ggplot() +
+  geom_sf(data = win.sf, aes(), fill='grey66', show.legend=FALSE, lwd=0) +
+  geom_sf(data = sim_sites, mapping = aes(fill=pred.rate), pch=21, col='darkgrey',size=3) + 
+  xlim(-15,50) + #Center the frame on sub-Saharan Africa
+  ylim(-35,30) +
+  labs(fill='Dispersal Rate \n (km/yr)') + 
+  scale_fill_viridis(option="turbo", limits=c(1,4), oob = scales::squish) +
+  ggtitle('Predicted Dispersal Rates') +
+  theme(legend.position = c(0.2, 0.3), legend.background=element_rect(fill = alpha("white",0.5)), axis.title.x=element_blank(), axis.title.y=element_blank())
+
+
+pdf(here('output', 'figures','figure8.pdf'), width=10, height=7)
+grid.arrange(s8a, s8b, ncol=2)
+dev.off()
+
+#-------------------------------------------------------------------------------
+# Posterior vs True values of s for Tactical Simulation ---- FIGURE 9
+
+load(here('results','gpqr_tactsim.RData'))
+gpqr_tactsim_post  <- do.call(rbind,gpqr_tactsim)
+tactsim_post_s  <- gpqr_tactsim_post[,paste0('s[',1:nrow(sim_sites),']')]
+tactsim_post_s_med  <- apply(tactsim_post_s, 2, median)
+tactsim_post_s_lo  <- apply(tactsim_post_s, 2, quantile, 0.025)
+tactsim_post_s_hi  <- apply(tactsim_post_s, 2, quantile, 0.975)
+rr = c(min(c(tactsim_post_s_lo, sim_sites$s)), max(c(tactsim_post_s_hi, sim_sites$s)))
+
+pdf(here('output', 'figures', 'figure9.pdf'), height=6, width=6)
+plot(NULL, xlim=rr, ylim=rr, xlab='Simulated s', ylab='Predicted s')
+points(sim_sites$s, tactsim_post_s_med, pch=20)
+for (i in 1:nrow(sim_sites))
+{
+  lines(x=c(sim_sites$s[i], sim_sites$s[i]), y=c(tactsim_post_s_lo[i], tactsim_post_s_hi[i]))
+}
+abline(a=0, b=1, lty=2, col='red')
+dev.off()
+
+#-------------------------------------------------------------------------------
+# Posterior vs True values of beta0,beta1,rho,etasq for Tactical Simulation ---- FIGURE 10
+
+tactsim_post_beta0  <- gpqr_tactsim_post[,'beta0']
+tactsim_post_beta1 <- gpqr_tactsim_post[,'beta1']
+tactsim_post_etasq  <- gpqr_tactsim_post[,'etasq']
+tactsim_post_rho  <- gpqr_tactsim_post[,'rho']
+true_beta0_with_tau09  <- qnorm(0.9, true_param$beta0, true_param$sigma) 
+
+
+pdf(here('output','figures','figure10.pdf'), height=8, width=8)
+par(mfrow=c(2,2))
+postHPDplot(tactsim_post_beta0, xlab='Cal BP', ylab='Posterior Probability', main=TeX('$\\beta_0$'), prob = 0.95)
+abline(v=true_beta0_with_tau09, lty=2)
+postHPDplot(tactsim_post_beta1, xlab='', ylab='Posterior Probability', main=TeX('$\\beta_1$'), prob=0.95)
+abline(v=true_param$beta1, lty=2)
+postHPDplot(tactsim_post_etasq, xlab='', ylab='Posterior Probability', main=TeX('$\\eta^2$'), prob=0.95)
+abline(v=true_param$etasq, lty=2)
+postHPDplot(tactsim_post_rho, xlab='km', ylab='Posterior Probability', main=TeX('$\\rho$'), prob=0.95)
+abline(v=true_param$rho, lty=2)
+dev.off()
+
+
+
+#===============================================================================
 ## qpqr_tau90.R Figures ----
 
 
@@ -280,6 +369,7 @@ dev.off()
 
 
 
-
-
+#===============================================================================
+#===============================================================================
+##Bayesian Hierarchical Phase Models with Constraints
 
