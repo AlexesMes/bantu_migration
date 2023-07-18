@@ -17,7 +17,7 @@ source(here('src','gpqrSim.R'))
 # Generate Spatial Window for Analyses: Sub-Saharan Africa ----
 sf_subsah_africa <- ne_countries(continent = "Africa", returnclass = "sf") %>%
   filter_all(., any_vars(str_detect(., "Sub-Saharan"))) %>% 
-  filter_all(name_en != "Madagascar") #We focus on mainland sub-Saharan Africa
+  filter(name_en != "Madagascar") #We focus on mainland sub-Saharan Africa
 
 sp_ss_africa <- sf_subsah_africa %>% as("Spatial") #convert sf to sp object
 
@@ -34,7 +34,7 @@ true_param$origin_point <- c(11.50, 3.82) #dispersal origin point -- approximate
 true_param$beta0 <- 3070 #mean date at origin point
 true_param$beta1 <- 0.15 #reciprocal of dispersal rate ##TODO: This should be increase to around 0.3, but other parameters need changing such that theta (out.df$theta in gpqrSim()) remains positive
 true_param$sigma <- 100 
-true_param$etasq <- 0.06 #variability of dispersal rate
+true_param$etasq <- 0.02 #variability of dispersal rate
 true_param$rho <- 150 #range of spatial autocorrelation
 true_param$seed <- 1233 #random seed
 
