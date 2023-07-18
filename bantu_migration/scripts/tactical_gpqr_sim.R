@@ -29,13 +29,13 @@ sampling_win  <- sampling_win[order(raster::area(sampling_win), decreasing=TRUE)
 
 # Target Parameters ----
 true_param  <- list()
-true_param$n  <- 1600 #number of sites & dates
+true_param$n  <- 600 #number of sites & dates
 true_param$origin_point <- c(11.50, 3.82) #dispersal origin point -- approximately at Obobogo
 true_param$beta0 <- 3070 #mean date at origin point
-true_param$beta1 <- 0.15 #reciprocal of dispersal rate ##TODO: This should be increase to around 0.3, but other parameters need changing such that theta (out.df$theta in gpqrSim()) remains positive
+true_param$beta1 <- 0.3 #reciprocal of dispersal rate ##TODO: This should be increase to around 0.3, but other parameters need changing such that theta (out.df$theta in gpqrSim()) remains positive
 true_param$sigma <- 100 
-true_param$etasq <- 0.02 #variability of dispersal rate
-true_param$rho <- 150 #range of spatial autocorrelation
+true_param$etasq <- 0.05 #variability of dispersal rate
+true_param$rho <- 250 #range of spatial autocorrelation
 true_param$seed <- 1233 #random seed
 
 # Simulate Data ----

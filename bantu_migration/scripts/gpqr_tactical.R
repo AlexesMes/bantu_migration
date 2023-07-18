@@ -115,9 +115,9 @@ runFun  <- function(seed, dat, theta_init, constants, niter, nburnin, thin)
   conf.gpqr$addMonitors('s')
   conf.gpqr$addMonitors('rho')
   conf.gpqr$addMonitors('etasq')
-  conf.gpqr$removeSamplers('s[1:1600]')
+  conf.gpqr$removeSamplers('s[1:600]')
   conf.gpqr$removeSamplers('beta1')
-  conf.gpqr$addSampler(c('beta1','s[1:1600]'), type='AF_slice') 
+  conf.gpqr$addSampler(c('beta1','s[1:600]'), type='AF_slice') 
   MCMC.gpqr <- buildMCMC(conf.gpqr)
   cMCMC.gpqr <- compileNimble(MCMC.gpqr)
   
@@ -132,9 +132,9 @@ ncores <- 4
 cl <- makeCluster(ncores)
 # Run the model in parallel:
 seeds <- c(12,45,67,89)
-niter = 5
-nburnin = 2
-thin = 1
+niter = 500
+nburnin = 100
+thin = 10
 chain_output <- parLapply(cl = cl, X = seeds, fun = runFun, dat = dat, constants = constants, theta = theta_init, niter = niter, nburnin = nburnin,thin = thin)
 stopCluster(cl)
 

@@ -290,10 +290,10 @@ s8a  <- ggplot() +
   ylim(-35,30) +
   labs(fill='Dispersal Rate \n (km/yr)') + 
   scale_fill_viridis(option="turbo", limits=c(1,4), oob = scales::squish) +
-  annotate("text", x = 45, y = 28, label = TeX('$\\beta_0 = 3000$')) +
-  annotate("text", x = 45, y = 25, label = TeX('$\\beta_1 = 0.15$')) +
-  annotate("text", x = 45, y = 22, label = TeX('$\\eta^2 = 0.02$')) +
-  annotate("text", x = 45, y = 19, label = TeX('$\\rho = 150$')) +
+  annotate("text", x = 45, y = 28, label = TeX('$\\beta_0 = 3070$')) +
+  annotate("text", x = 45, y = 25, label = TeX('$\\beta_1 = 0.3$')) +
+  annotate("text", x = 45, y = 22, label = TeX('$\\eta^2 = 0.05$')) +
+  annotate("text", x = 45, y = 19, label = TeX('$\\rho = 250$')) +
   ggtitle('Simulated Dispersal Rates') +
   theme(legend.position = c(0.2, 0.3), legend.background=element_rect(fill = alpha("white",0.5)), axis.title.x=element_blank(), axis.title.y=element_blank())
 
