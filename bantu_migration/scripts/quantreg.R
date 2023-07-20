@@ -110,9 +110,9 @@ runFun <- function(seed, dat, theta_init, constants, nburnin, thin, niter)
 ncores  <-  4
 cl <- makeCluster(ncores)
 seeds  <-  c(12, 34, 56, 78)
-niter  <- 20000 #Number of iterations #Working 1000000 and 500000
-nburnin  <- 10000 #Burn-in iterations (after this assuming chain has reached a good approximation of stationary)
-thin  <- 100 #Parameters sampled every 300 steps
+niter  <- 6000000 #Number of iterations #Working 1000000 and 500000
+nburnin  <- 3000000 #Burn-in iterations (after this assuming chain has reached a good approximation of stationary)
+thin  <- 300 #Parameters sampled every 300 steps
 
 #Run the model in parallel
 chain_output = parLapply(cl = cl, X = seeds, fun = runFun, d = dat, constants = constants, theta = theta_init, niter = niter, nburnin = nburnin, thin = thin)

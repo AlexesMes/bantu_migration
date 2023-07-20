@@ -132,9 +132,9 @@ ncores <- 4
 cl <- makeCluster(ncores)
 # Run the model in parallel:
 seeds <- c(12,45,67,89)
-niter = 500
-nburnin = 100
-thin = 10
+niter = 1000000
+nburnin = 500000
+thin = 50
 chain_output <- parLapply(cl = cl, X = seeds, fun = runFun, dat = dat, constants = constants, theta = theta_init, niter = niter, nburnin = nburnin,thin = thin)
 stopCluster(cl)
 
