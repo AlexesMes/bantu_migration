@@ -14,7 +14,7 @@ load(here('data', 'tactical_sim_phase.RData'))
 model1 <- nimbleCode({
   for (i in 1:Ndates)
   {
-    theta[i] ~ dunif(b, a); #where a and b are the start and end dates of the focus area 
+    theta[i] ~ dunif(b, a); #where a and b are the start and end dates of the focus area (switched around because BP dates go in the positive direction for nimbleCarbon)
     # Calibration
     mu[i] <- interpLin(z=theta[i], x=calBP[], y=C14BP[]); #C14 age on the relevant calibration curve
     sigmaCurve[i] <- interpLin(z=theta[i], x=calBP[], y=C14err[]); #error on the calibration curve
@@ -48,10 +48,10 @@ inits1 <- list(a=5000,
 mcmc.samples1<- nimbleMCMC(code = model1,
                            constants = constants1,
                            data = d1,
-                           niter = 2000000, 
+                           niter = 200000, 
                            nchains = 3, 
                            thin=100, 
-                           nburnin = 1000000,
+                           nburnin = 100000,
                            monitors=c('a','b','theta'), 
                            inits=inits1, 
                            samplesAsCodaMCMC=TRUE)
@@ -73,7 +73,7 @@ model2 <- nimbleCode({
   }
   
   for (i in 1:Ndates){
-    theta[i] ~ dunif(alpha[id.sites[i]] - delta[id.sites[i]]+1, alpha[id.sites[i]]);
+    theta[i] ~ dunif(alpha[id.sites[i]] - (delta[id.sites[i]]+1), alpha[id.sites[i]]);
     #Calibration
     mu[i] <- interpLin(z=theta[i], x=calBP[], y=C14BP[]);
     sigmaCurve[i] <- interpLin(z=theta[i], x=calBP[], y=C14err[]);
@@ -100,12 +100,13 @@ constants2 <- list(Ndates=sim.constants$Ndates,
 
 #Initialise parameters ----
 d2 <- list(cra=d.sim$cra, cra_error=d.sim$cra_error, unif.const=1)
-theta.init  <-  medCal(calibrate(d1$cra,d1$cra_error,
+theta.init  <-  medCal(calibrate(d1$cra,
+                                 d1$cra_error,
                                  verbose = FALSE))
 dd  <-  data.frame(theta=theta.init, id=constants2$id.sites)
 buffer  <- 100
-earliest  <- aggregate(theta~id, max, data=dd)
-latest  <- aggregate(theta~id, min, data=dd)
+earliest  <- aggregate(theta~id, max, data=dd) #Earliest date at each site
+latest  <- aggregate(theta~id, min, data=dd) #Latest date at each site
 diff.age  <- earliest$theta - latest$theta
 delta.init  <- diff.age + buffer
 alpha.init  <- earliest$theta + buffer/2
@@ -123,10 +124,10 @@ inits2 <- list(a = 5000,
 mcmc.samples2<- nimbleMCMC(code = model2, 
                            constants = constants2, 
                            data = d2, 
-                           niter = 2000000, 
+                           niter = 200000, 
                            nchains = 3, 
                            thin=100, 
-                           nburnin = 1000000, 
+                           nburnin = 100000, 
                            monitors=c('a','b','theta','delta','alpha','gamma1','gamma2'), 
                            inits=inits2, 
                            samplesAsCodaMCMC=TRUE)

@@ -566,8 +566,8 @@ polygon(c(dens.a.nu$x,rev(dens.a.nu$x)), c(rep(0,length(dens.a.nu$x)), rev(dens.
 polygon(c(dens.a.upsilon$x,rev(dens.a.upsilon$x)), c(rep(0,length(dens.a.upsilon$x)), rev(dens.a.upsilon$y)), border=NA, col=rgb(0,0.4,0,0.5))
 polygon(c(dens.b.nu$x,rev(dens.b.nu$x)), c(rep(0,length(dens.b.nu$x)), rev(dens.b.nu$y)), border=NA, col=rgb(1,0.55,0,0.5))
 polygon(c(dens.b.upsilon$x,rev(dens.b.upsilon$x)), c(rep(0,length(dens.b.upsilon$x)), rev(dens.b.upsilon$y)), border=NA, col=rgb(1,0.55,0,0.5))
-abline(v=c(3200, 2800),lty=2)
-axis(3,at=c(3200,2800),labels=c(TeX('$\\nu$'),TeX('$\\upsilon$')))
+abline(v=c(3500, 3000),lty=2)
+axis(3,at=c(3500, 3000),labels=c(TeX('$\\nu$'),TeX('$\\upsilon$')))
 legend('topright',legend=c('Non hierarchichal','Hierarchichal'),fill=c('darkgreen','darkorange'))
 
 dev.off()

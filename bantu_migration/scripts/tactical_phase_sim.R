@@ -17,7 +17,7 @@ sim.model <- nimbleCode({
   {
     delta[k] ~ dgamma(5,(5-1)/200); #Site duration parameter.
     alpha[k] ~ dunif(max=a,min=b);
-    beta[k] <- alpha[k] - delta[k] + 1; #The minus sign here is just convention -- NimbleCarbon was written so that the BP dates go in the positive direction. The minus sign here accounts for that.
+    beta[k] <- alpha[k] - (delta[k] + 1); #The minus sign here is just convention -- NimbleCarbon was written so that the BP dates go in the positive direction. The minus sign here accounts for that. The +1 ensures a minimum where there are two dates at a site with 1 year between them.
   }
   
   for (i in 1:Ndates){
@@ -30,12 +30,12 @@ sim.constants <- list()
 sim.constants$Nsites <- Nsites
 sim.constants$Ndates  <- Ndates
 sim.constants$id.sites  <- id.sites
-sim.constants$a <- 3200
-sim.constants$b <- 2800
+sim.constants$a <- 3500
+sim.constants$b <- 3000
 
 #Simulate ----
 set.seed(123)
-simModel <- nimbleModel(code = sim.model,constants = sim.constants)
+simModel <- nimbleModel(code = sim.model, constants = sim.constants)
 simModel$simulate('delta')
 simModel$simulate('alpha')
 simModel$simulate('beta')
