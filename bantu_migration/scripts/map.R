@@ -78,11 +78,12 @@ plt.main <- basemap() +
           size = 2,
           alpha=0.5) +
   geom_point() +
-  geom_point(aes(x=origin_point[1], y=origin_point[2]), colour="purple", size=3) +
+  geom_point(aes(x=constants$origin_point[1], y=constants$origin_point[2]), colour="purple", size=3) +
   coord_sf(xlim = c(7, 50),
            ylim = c(-35, 6.5)) +
   scale_x_continuous(breaks = seq(8, 50, 2)) +
   labs(colour="Original dataset") +
+  scale_colour_discrete(labels = c("aDRAC", "RussellEIA", "SARD")) +
   theme_few() +
   theme(axis.title = element_blank(),
         plot.background = element_rect(color = NA,
