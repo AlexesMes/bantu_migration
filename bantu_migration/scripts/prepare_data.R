@@ -61,12 +61,10 @@ subSahara_countries <- c("South Africa",
 #Downloaded from: https://github.com/emmaloftus/Southern-African-Radiocarbon-Database
 #See Loftus et al., 2019, "An archaeological radiocarbon database for southern Africa" Antiquity. (https://doi.org/10.15184/aqy.2019.75).
 
-
 ##aDRAC
 #HumActCA_dat contains data from the Human Activity in Central Africa (Archive des datations radiocarbones d’Afrique centrale) Database 
 #Downloaded from: https://zenodo.org/record/4394894 or https://github.com/dirkseidensticker/aDRAC [Latter appears to be more up to date]
 #See Seidensticker et al., 2021, "Population collapse in Congo rainforest from 400 CE urges reassessment of the Bantu Expansion" (https://www.science.org/doi/full/10.1126/sciadv.abd8352)
-
 
 ##East African data
 #Note: There is potential to use these dates, but most seem to be geological (and not archaeological) in origin. Also seems unclear where this database has been used in research subsequent to its creation
@@ -119,7 +117,8 @@ Russell_sum_df <- Russell_EIA_dat %>%
   rename(siteName=Site, lat=Latitude, long=Longitude, c14date=Uncal.BP, c14std=St.Dev) %>%
   mutate(c14date = as.numeric(c14date), c14std=as.numeric(c14std), dataorigin="RussellEIA")  %>%
   filter(!is.na(lat) & !is.na(long) & !is.na(c14std) & !is.na(c14date)) %>% 
-  filter(siteName %!in% c("Bambata Cave Series", "Nakapapula", "Kwelikwiji", "Kumadzulo", "Ndonde", "Shongweni Waterworks Park")) #Designated pre-bantu (references given in Isern and Fort 2019, Suplementary Material S1, https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0215573)
+  filter(siteName %!in% c("Bambata Cave Series", "Nakapapula", "Kwelikwiji", "Kumadzulo", "Ndonde", "Shongweni Waterworks Park")) %>% #Designated pre-bantu (references given in Isern and Fort 2019, Suplementary Material S1, https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0215573)
+  filter(siteName %!in% c('Bisoli', 'Bokele', 'Boma', 'Broadhurst', 'Broederstroom, 24/73 K', 'Campo', 'Chibuene', 'Ditouba', 'Djambala', 'Enkwazini', 'Hola hola', 'Imbonga', 'Kinsale Farm', 'Klein Afrika', 'Langubhela', 'Mabveni', 'Makokou', 'Malemba-Nkulu', 'Maluba', 'Massingir', 'Matola IV', 'Mbilap_ 4', 'Mpassa farm', 'Munda', 'Ntadi ntadi Cave', 'Ntsitsana, Pit 1', 'Oyem 2', 'Pikunda', 'Silver Leaves', 'Taukome (lower levels)', 'Toteng I', 'Tchissanga Ouest')) #Duplicate site entries already present in aDRAC and SARD databases. We prefer the entries in those databases, since they have labcodes attached and are unagregated
 Russell_sum_df[,"labCode"] <- NA #No Lab Code present in this site level dataset. Perhaps in the unagregated df?
 
 HumActCA_sum_df <- HumActCA_dat %>% #I think all the sites in this database are associated with Bantu pottery finds
@@ -166,8 +165,10 @@ bantu_sites_df <- bind_rows(SARD_sum_df, HumActCA_sum_df, Russell_sum_df) %>% #T
   #bind_rows(p3k14c_fil_df, SARD_sum_df, HumActCA_sum_df, Russell_sum_df) %>%
   mutate(dataorigin=as.factor(dataorigin)) %>% 
   filter((c14date != 0) & (c14std != 0)) %>% #Apparently some of these datasets had modern dates (indicated with c14 date and error of 0), we remove these
-  filter((c14date <=3165) & (c14date >=298)) #We assume an approximate origin at Obobogo, date 3070 +- 95BP (see later in this script). Dates earlier than this are assumed to not be of Bantu origin #TODO: build some flexibility into this... #Further, we assume the Dutch arrival in the Cape (1652) as the cut-off. Dates after this point of colonial contact are not considered.
+  filter((c14date <=3357) & (c14date >=246)) #We assume an approximate origin at Ngoume, date 3357 +- 95BP (see later in this script). Dates earlier than this are assumed to not be of Bantu origin #TODO: build some flexibility into this... #Further, we assume the Dutch arrival in the Cape (1652) as the cut-off. Dates after this point of colonial contact are not considered.
+  #filter((c14date <=3070) & (c14date >=298)) #We assume an approximate origin at Obobogo, date 3070 +- 95BP (see later in this script). Dates earlier than this are assumed to not be of Bantu origin #TODO: build some flexibility into this... #Further, we assume the Dutch arrival in the Cape (1652) as the cut-off. Dates after this point of colonial contact are not considered.
 
+  
 # Assign ID ----
 bantu_sites_df <- bantu_sites_df %>% mutate(ID = row_number())
 
@@ -244,9 +245,9 @@ possible_origin_dat <- HumActCA_dat %>%
   arrange(desc(C14AGE))
 
 #Note: oldest class I date is Shum Laka -- but see recent genetic analysis discussing why this is a hunter-gather site ('Ancient West African foragers in the context of African population history', Lipson, 2020, https://www.nature.com/articles/s41586-020-1929-1). Also, see Piere de Maret's thoughts on the site. #TODO: Decide whether to designate pre-Bantu and exclude Shum Laka from analyses entirely...
-#Therefore, as an approximate origin we select the next oldest class I date in the region: Obobogo
+#Therefore, as an approximate origin we select the next oldest class I date in the region: Ngoume
 possible_origin_dat <- possible_origin_dat %>%
-  filter(SITE=='Obobogo' & (CLASS %in% c('Ia', 'Ib', 'Ic'))) %>%
+  filter(SITE=='Ngoume' & (CLASS %in% c('Ia', 'Ib', 'Ic'))) %>% #Alternatively select Obobogo
   slice(1L)
 #Additional note: Recent linguistic origin used ('Exploring the relationships between genetic, linguistic and geographic distances in Bantu-speaking populations', Gonzalez-Santos, 2022) was that of the Lemande population: (lat, long) = (4.50, 11.08)
 
@@ -260,7 +261,7 @@ sites <- siteInfo
 coordinates(sites) <- c('long','lat')
 proj4string(sites)  <- "+proj=longlat +datum=WGS84 +no_defs +ellps=WGS84 +towgs84=0,0,0" 
 dist_mat  <- spDists(sites,longlat=TRUE) #inter-site distance matrix: each site's distance from every other site (i.e. with n sites, this matrix is n^2)
-origin_point  <- c(possible_origin_dat$LONG, possible_origin_dat$LAT) #Obobogo, HumActCA Origin
+origin_point  <- c(possible_origin_dat$LONG, possible_origin_dat$LAT) #Ngoume, HumActCA Origin
 #origin_point  <- c(possible_origin_dat$long, possible_origin_dat$lat) #SARD Origin
 dist_org  <-  spDistsN1(sites, origin_point, longlat=TRUE) #distance from origin site
 

@@ -7,6 +7,7 @@ library(dplyr)
 library(here)
 library(ggplot2)
 library(ggthemes)
+library(ggsn) #for scale bar and north arrow
 library(rnaturalearth)
 library(rnaturalearthdata)
 library(parallel)
@@ -79,6 +80,18 @@ plt.main <- basemap() +
           alpha=0.5) +
   geom_point() +
   geom_point(aes(x=constants$origin_point[1], y=constants$origin_point[2]), colour="purple", size=3) +
+  ggsn::north(data = bantu_sites_sf, location="bottomright", anchor = c(x = 43, y = -31)) + 
+  ggsn::scalebar(bantu_sites_sf,
+                 location  = "bottomright",
+                 anchor = c(x = 46, y = -33),
+                 dist = 500, 
+                 dist_unit = "km",
+                 transform = TRUE, 
+                 model = "WGS84",
+                 height = .01, 
+                 st.dist = .025,
+                 border.size = .1, 
+                 st.size = 3) +
   coord_sf(xlim = c(7, 50),
            ylim = c(-35, 6.5)) +
   scale_x_continuous(breaks = seq(8, 50, 2)) +

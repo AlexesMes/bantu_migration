@@ -40,7 +40,7 @@ load(here('output','quantreg_res.RData'))
 ## Compute Fitted Model Confidence Intervals
 
 # rq and median calibrated date
-rq.ci <- predict.rq(fit_rq, newdata=data.frame(dist_org=0:4400), interval='confidence') #Furthest site from proposed origin, Obobogo, is 4400km
+rq.ci <- predict.rq(fit_rq, newdata=data.frame(dist_org=0:4600), interval='confidence') #Furthest site from proposed origin, Ngoume, is 4561km
 
 # Bayesian model 
 qr.ch1 <- do.call(rbind,quantreg_sample)
@@ -49,7 +49,7 @@ post.beta.quantreg <- qr.ch1[,'beta']
 post.alpha.beta.quantreg  <- data.frame(alpha=post.alpha.quantreg, beta=post.beta.quantreg)
 post.theta.quantreg  <- qr.ch1[,grep('theta', colnames(qr.ch1))]
 post.theta.med <- apply(post.theta.quantreg, 2, median)
-post.quantreg <- apply(post.alpha.beta.quantreg, 1, function(x){x[1]-x[2]*0:4400})
+post.quantreg <- apply(post.alpha.beta.quantreg, 1, function(x){x[1]-x[2]*0:4600})
 post.ci <- t(apply(post.quantreg, 1, quantile, c(0.025,0.5,0.975)))
 
 ## Plot and compare
@@ -57,24 +57,24 @@ post.ci <- t(apply(post.quantreg, 1, quantile, c(0.025,0.5,0.975)))
 col.alpha <- function(x,a=1){xx=col2rgb(x)/255;return(rgb(xx[1],xx[2],xx[2],a))}
 
 pdf(file=here('output','figures','figure1.pdf'), width=8.5, height=7)
-plot(NULL, xlim=c(0,4400), ylim=c(3600,100), axes=F, xlab='Distance from Obobogo Site (in km)', ylab='Cal BP') 
+plot(NULL, xlim=c(0,4600), ylim=c(3600,100), axes=F, xlab='Distance from Ngoume Site (in km)', ylab='Cal BP') 
 rect(xleft=-200, xright=4600, ybottom=2720, ytop=2350, col=col.alpha('grey',0.2), border=NA) #Demarcating Calibration Plateau Region
 abline(h=2720,lty=4)
 abline(h=2350,lty=4)
-axis(1, at=c(0,500, 1000, 1500, 2000, 2500, 3000, 3500, 4000, 4500)) #X-axis
+axis(1, at=c(0,500, 1000, 1500, 2000, 2500, 3000, 3500, 4000, 4500, 4600, 4700)) #X-axis
 axis(2) #Y-axis left
 axis(4, at=BCADtoBP(c(-1400, -1000, -600, -200, 200, 600, 1000, 1400, 1800)), labels=c('1400BC', '1000BC', '600BC', '200BC', '200AD', '600AD', '1000AD', '1400BC','1800BC'), cex.axis=0.7) #Y-axis right
-points(constants$dist_org, siteInfo$earliest) #Median Calibrated Date
+points(constants$dist_org, siteInfo$earliest) #Median Calibrated Date #Option: col=siteInfo$dataorigin
 points(constants$dist_org, post.theta.med, pch=20) #Median Posterior theta
 for (i in 1:nrow(siteInfo))
 {
-  lines(rep(constants$dist_org[i],2),c(siteInfo$earliest[i],post.theta.med[i]),lty=2)
+  lines(rep(constants$dist_org[i],2), c(siteInfo$earliest[i],post.theta.med[i]),lty=2)
 }
-lines(0:4400, rq.ci[,1], lty=1, lwd=2, col='blue') #Quantile Regression on Median Dates
-polygon(x=c(0:4400,4400:0),c(rq.ci[,2],rev(rq.ci[,3])), col=col.alpha('lightblue', 0.4), border=NA)
+lines(0:4600, rq.ci[,1], lty=1, lwd=2, col='blue') #Quantile Regression on Median Dates
+polygon(x=c(0:4600, 4600:0), c(rq.ci[,2], rev(rq.ci[,3])), col=col.alpha('lightblue', 0.4), border=NA)
 
-lines(0:4400, post.ci[,2], lty=1, lwd=2, col='indianred') #Bayesian Quantile Regression with Measurement Error
-polygon(x=c(0:4400,4400:0), c(post.ci[,1], rev(post.ci[,3])), col=col.alpha('indianred', 0.2), border=NA)
+lines(0:4600, post.ci[,2], lty=1, lwd=2, col='indianred') #Bayesian Quantile Regression with Measurement Error
+polygon(x=c(0:4600, 4600:0), c(post.ci[,1], rev(post.ci[,3])), col=col.alpha('indianred', 0.2), border=NA)
 
 text(x=4000, y=2450, labels='Calibration Plateau')
 legend('bottomright', legend=c('Median Calibrated Date', TeX('Median Posterior $\\theta$'), 'Quantile Regression on Median Dates', 'Bayesian Quantile Regression with Measurement Error'), pch=c(1,20,NA,NA), lwd=c(NA,NA,2,2), col=c(1,1,'blue','indianred'), cex=0.8)
@@ -218,7 +218,7 @@ slope  <- s.prior - beta1.prior
 beta0.prior  <- beta0.prior[which((-1/slope)>0)] #Ensuring beta0 is positive
 slope  <- slope[which((-1/slope)>0)] #Ensuring dispersal rate is always positive
 nsim2  <- length(slope)
-dists  <- -100:4400
+dists  <- -100:4600
 slope.mat = matrix(NA, nrow=nsim2, ncol=length(dists))
 for (i in 1:nsim2)
 {
@@ -226,8 +226,8 @@ for (i in 1:nsim2)
 }
 
 pdf(file=here('output','figures','figure6.pdf'), width=6, height=6)
-plot(NULL, xlim=c(0,4400), ylim=c(3400,1300), type='n', xlab='Distance (km)', ylab='Cal BP', axes=F)
-axis(1, at=c(0,500, 1000, 1500, 2000, 2500, 3000, 3500, 4000, 4500), cex.axis=0.9) #X-axis
+plot(NULL, xlim=c(0,4600), ylim=c(3400,1300), type='n', xlab='Distance (km)', ylab='Cal BP', axes=F)
+axis(1, at=c(0,500, 1000, 1500, 2000, 2500, 3000, 3500, 4000, 4500, 4600, 4700), cex.axis=0.9) #X-axis
 axis(2, at=seq(3400, 1400, -400))
 axis(4, at=BCADtoBP(c(-1400, -1000, -600, -200, 200, 600)), labels=c('1400BC','1000BC','600BC','200BC','200AD','600AD'), cex.axis=0.9)
 box()
@@ -253,7 +253,7 @@ dev.off()
 # Prior Predictive Check etasq and rho ---- FIGURE 7
 nsim  <- 1000
 etasq.prior  <- rexp(nsim,20)
-rho.prior  <- rtgamma(nsim,10,(10-1)/150, 1, 4400)
+rho.prior  <- rtgamma(nsim,10,(10-1)/150, 1, 4600)
 cov.mat = matrix(NA, nrow=nsim, ncol=length(0:1000))
 for (i in 1:nsim)
 {
