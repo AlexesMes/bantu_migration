@@ -24,43 +24,11 @@ library(rgdal)
 load(here('data','c14.RData'))
 
 #-------------------------------------------------------------------------------
-## List of countries in sub-Saharan Africa ----
-subSahara_countries <- c("South Africa", 
-                         "Lesotho", 
-                         "eSwatini", 
-                         "Botswana",
-                         "Zimbabwe",
-                         "Namibia",
-                         "Angola",
-                         "Zambia",
-                         "Mozambique",
-                         "Malawi",
-                         "Madagascar",
-                         "Tanzania",
-                         "Rwanda",
-                         "Burundi",
-                         "Kenya",
-                         "Uganda",
-                         "Somalia",
-                         "Ethiopia",
-                         "Central African Republic",
-                         "Cameroon",
-                         "Democratic Republic of the Congo",
-                         "Republic of the Congo",
-                         "Gabon",
-                         "Cameroon",
-                         "Nigeria",
-                         "Equatorial Guinea",
-                         "Sudan",
-                         "South Sudan",
-                         "Chad")
-
-#-------------------------------------------------------------------------------
 # Generate Spatial Window for Analyses: Sub-Saharan Africa ----
 
 sf_subsah_africa <- ne_countries(continent = "Africa", returnclass = "sf") %>%
   filter_all(., any_vars(str_detect(., "Sub-Saharan"))) %>% 
-  filter(name_en %in% subSahara_countries) %>% 
+  filter(name_en %in% constants$countries) %>% 
   filter(name_en != "Madagascar") #We focus on mainland sub-Saharan Africa
 
 sp_ss_africa <- sf_subsah_africa %>% as("Spatial") #convert sf to sp object

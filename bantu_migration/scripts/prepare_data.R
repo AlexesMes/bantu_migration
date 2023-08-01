@@ -25,7 +25,7 @@ ncores = (detectCores() - 1)
 ## List of countries in sub-Saharan Africa ----
 subSahara_countries <- c("South Africa", 
                          "Lesotho", 
-                         "Eswatini", 
+                         "eSwatini", 
                          "Botswana",
                          "Zimbabwe",
                          "Namibia",
@@ -44,14 +44,15 @@ subSahara_countries <- c("South Africa",
                          "Central African Republic",
                          "Cameroon",
                          "Democratic Republic of the Congo",
-                         "Congo",
+                         "Republic of the Congo",
                          "Gabon",
                          "Cameroon",
                          "Nigeria",
                          "Equatorial Guinea",
                          "Sudan",
+                         "South Sudan",
                          "Chad")
-  
+
   
 #-------------------------------------------------------------------------------
 ## Data sources ----
@@ -276,6 +277,7 @@ bantu_dat <- list(cra=dateInfo$cra,
 data(intcal20)
 data(shcal20)
 constants <- list()
+constants$countries <- subSahara_countries #Useful list for later
 constants$n_sites <- nrow(siteInfo)
 constants$n_dates  <- nrow(dateInfo)
 #constants$n_.areas  <- length(unique(siteInfo$area)) #TODO: add area info ... 
