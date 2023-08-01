@@ -14,9 +14,43 @@ library(rcarbon)
 
 source(here('src','gpqrSim.R'))
 
+#-------------------------------------------------------------------------------
+## List of countries in sub-Saharan Africa ----
+subSahara_countries <- c("South Africa", 
+                         "Lesotho", 
+                         "eSwatini", 
+                         "Botswana",
+                         "Zimbabwe",
+                         "Namibia",
+                         "Angola",
+                         "Zambia",
+                         "Mozambique",
+                         "Malawi",
+                         "Madagascar",
+                         "Tanzania",
+                         "Rwanda",
+                         "Burundi",
+                         "Kenya",
+                         "Uganda",
+                         "Somalia",
+                         "Ethiopia",
+                         "Central African Republic",
+                         "Cameroon",
+                         "Democratic Republic of the Congo",
+                         "Republic of the Congo",
+                         "Gabon",
+                         "Cameroon",
+                         "Nigeria",
+                         "Equatorial Guinea",
+                         "Sudan",
+                         "South Sudan",
+                         "Chad")
+#-------------------------------------------------------------------------------
+
 # Generate Spatial Window for Analyses: Sub-Saharan Africa ----
 sf_subsah_africa <- ne_countries(continent = "Africa", returnclass = "sf") %>%
   filter_all(., any_vars(str_detect(., "Sub-Saharan"))) %>% 
+  filter(name_en %in% subSahara_countries) %>%
   filter(name_en != "Madagascar") #We focus on mainland sub-Saharan Africa
 
 sp_ss_africa <- sf_subsah_africa %>% as("Spatial") #convert sf to sp object
@@ -30,12 +64,12 @@ sampling_win  <- sampling_win[order(raster::area(sampling_win), decreasing=TRUE)
 # Target Parameters ----
 true_param  <- list()
 true_param$n  <- 600 #number of sites & dates
-true_param$origin_point <- c(11.50, 3.82) #dispersal origin point -- approximately at Obobogo
-true_param$beta0 <- 3070 #mean date at origin point
-true_param$beta1 <- 0.3 #reciprocal of dispersal rate ##TODO: This should be increase to around 0.3, but other parameters need changing such that theta (out.df$theta in gpqrSim()) remains positive
+true_param$origin_point <- c(11.40, 5.48) #dispersal origin point -- approximately at Ngoume
+true_param$beta0 <- 3300 #approximate mean date at origin point
+true_param$beta1 <- 0.4 #reciprocal of dispersal rate 
 true_param$sigma <- 100 
-true_param$etasq <- 0.05 #variability of dispersal rate
-true_param$rho <- 250 #range of spatial autocorrelation
+true_param$etasq <- 0.02 #variability of dispersal rate
+true_param$rho <- 350 #range of spatial autocorrelation
 true_param$seed <- 1233 #random seed
 
 # Simulate Data ----

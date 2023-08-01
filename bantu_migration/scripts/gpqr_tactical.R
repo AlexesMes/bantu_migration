@@ -82,11 +82,11 @@ runFun  <- function(seed, dat, theta_init, constants, niter, nburnin, thin)
       cra[i] ~ dnorm(mean=mu.date[i], sd=sd[i]);
     }
     #priors
-    beta0 ~ dnorm(3000, sd=200);
+    beta0 ~ dnorm(3300, sd=200);
     beta1 ~ dexp(1)
     sigma ~ dexp(0.01)
     etasq ~ dexp(20);
-    rho ~ T(dgamma(10, (10-1)/150), 1, 4400); 
+    rho ~ T(dgamma(10, (10-1)/150), 1, 4600); 
     mu_s[1:N] <- 0;
     cov_s[1:N, 1:N] <- cov_ExpQ(dist_mat[1:N, 1:N], rho, etasq, 0.000001)
     s[1:N] ~ dmnorm(mu_s[1:N], cov = cov_s[1:N, 1:N])
@@ -96,10 +96,10 @@ runFun  <- function(seed, dat, theta_init, constants, niter, nburnin, thin)
   set.seed(seed)
   inits  <-  list()
   inits$theta  <- theta_init
-  inits$beta0 <- rnorm(1, 3000, 200)
-  inits$beta1 <- rexp(1, 0.3)
-  inits$sigma  <- rexp(1,0.01)
-  inits$rho  <- rtgamma(1, shape=10, scale=(10-1)/200, min=1, max=4400)
+  inits$beta0 <- rnorm(1, 3300, 200)
+  inits$beta1 <- rexp(1, rate=2)
+  inits$sigma  <- rexp(1, 0.01)
+  inits$rho  <- rtgamma(1, shape=10, scale=(10-1)/200, min=1, max=4600)
   inits$etasq  <- rexp(1,20)
   inits$s  <- rep(0, constants$N)
   inits$cov_s <- Ccov_ExpQ(constants$dist_mat, inits$rho, inits$etasq, 0.000001)
@@ -132,8 +132,8 @@ ncores <- 4
 cl <- makeCluster(ncores)
 # Run the model in parallel:
 seeds <- c(12,45,67,89)
-niter = 20000
-nburnin = 10000
+niter = 200000
+nburnin = 100000
 thin = 50
 chain_output <- parLapply(cl = cl, X = seeds, fun = runFun, dat = dat, constants = constants, theta = theta_init, niter = niter, nburnin = nburnin,thin = thin)
 stopCluster(cl)

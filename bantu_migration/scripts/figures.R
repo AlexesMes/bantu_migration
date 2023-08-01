@@ -212,8 +212,8 @@ dev.off()
 
 #Prior Predictive Check beta0, beta1, s ---- FIGURE 6
 nsim <- 5000
-beta0.prior <- rnorm(nsim, mean=3000, sd=200)
-beta1.prior  <- rexp(nsim, rate=1)
+beta0.prior <- rnorm(nsim, mean=3300, sd=200)
+beta1.prior  <- rexp(nsim, rate=2)
 s.prior  <- rnorm(nsim, mean=0, sd=sqrt(rexp(nsim, rate=20)))
 slope  <- s.prior - beta1.prior
 beta0.prior  <- beta0.prior[which((-1/slope)>0)] #Ensuring beta0 is positive
@@ -227,25 +227,25 @@ for (i in 1:nsim2)
 }
 
 pdf(file=here('output','figures','figure6.pdf'), width=6, height=6)
-plot(NULL, xlim=c(0,4600), ylim=c(3400,1300), type='n', xlab='Distance (km)', ylab='Cal BP', axes=F)
-axis(1, at=c(0,500, 1000, 1500, 2000, 2500, 3000, 3500, 4000, 4500, 4600, 4700), cex.axis=0.9) #X-axis
+plot(NULL, xlim=c(0,4500), ylim=c(3400,1300), type='n', xlab='Distance (km)', ylab='Cal BP', axes=F)
+axis(1, at=c(0,500, 1000, 1500, 2000, 2500, 3000, 3500, 4000, 4500), cex.axis=0.9) #X-axis
 axis(2, at=seq(3400, 1400, -400))
 axis(4, at=BCADtoBP(c(-1400, -1000, -600, -200, 200, 600)), labels=c('1400BC','1000BC','600BC','200BC','200AD','600AD'), cex.axis=0.9)
 box()
 polygon(x=c(dists, rev(dists)), y=c(apply(slope.mat, 2, quantile,prob=0.025), rev(apply(slope.mat, 2, quantile, prob=0.975))), border=NA, col=rgb(0.67,0.84,0.9,0.5))
 polygon(x=c(dists, rev(dists)), y=c(apply(slope.mat, 2, quantile,prob=0.25), rev(apply(slope.mat, 2, quantile, prob=0.75))), border=NA, col=rgb(0.25,0.41,0.88,0.5))
 
-abline(a=3000, b=-1/0.5, lty=2)
-text(x=1050, y=1600, label='0.5km/yr')
+abline(a=3300, b=-1/0.5, lty=2)
+text(x=500, y=1600, label='0.5km/yr')
 
-abline(a=3000, b=-1, lty=2)
-text(x=1400, y=1900, label='1km/yr')
+abline(a=3300, b=-1, lty=2)
+text(x=1700, y=1900, label='1km/yr')
 
-abline(a=3000, b=-1/3, lty=2)
+abline(a=3300, b=-1/3, lty=2)
 text(x=3500, y=2000, label='3km/yr')
 
-abline(a=3000, b=-1/5, lty=2)
-text(x=1350, y=2850, label='5km/yr')
+abline(a=3300, b=-1/5, lty=2)
+text(x=2250, y=2950, label='5km/yr')
 
 legend('bottomright', legend=c('50% percentile range', '95% percentile range'), fill=c(rgb(0.67,0.84,0.9,0.5), rgb(0.25,0.41,0.88,0.5)))
 dev.off()
@@ -253,8 +253,8 @@ dev.off()
 #-------------------------------------------------------------------------------
 # Prior Predictive Check etasq and rho ---- FIGURE 7
 nsim  <- 1000
-etasq.prior  <- rexp(nsim,20)
-rho.prior  <- rtgamma(nsim,10,(10-1)/150, 1, 4600)
+etasq.prior  <- rexp(nsim, 20)
+rho.prior  <- rtgamma(nsim,10,(10-1)/200, 1, 4600)
 cov.mat = matrix(NA, nrow=nsim, ncol=length(0:1000))
 for (i in 1:nsim)
 {
@@ -293,10 +293,10 @@ s8a  <- ggplot() +
   ylim(-35,30) +
   labs(fill='Dispersal Rate \n (km/yr)') + 
   scale_fill_viridis(option="turbo", limits=c(1,4), oob = scales::squish) +
-  annotate("text", x = 45, y = 28, label = TeX('$\\beta_0 = 3070$')) +
-  annotate("text", x = 45, y = 25, label = TeX('$\\beta_1 = 0.3$')) +
-  annotate("text", x = 45, y = 22, label = TeX('$\\eta^2 = 0.05$')) +
-  annotate("text", x = 45, y = 19, label = TeX('$\\rho = 250$')) +
+  annotate("text", x = 45, y = 28, label = TeX('$\\beta_0 = 3300$')) +
+  annotate("text", x = 45, y = 25, label = TeX('$\\beta_1 = 0.4$')) +
+  annotate("text", x = 45, y = 22, label = TeX('$\\eta^2 = 0.02$')) +
+  annotate("text", x = 45, y = 19, label = TeX('$\\rho = 350$')) +
   ggtitle('Simulated Dispersal Rates') +
   theme(legend.position = c(0.2, 0.3), legend.background=element_rect(fill = alpha("white",0.5)), axis.title.x=element_blank(), axis.title.y=element_blank())
 
