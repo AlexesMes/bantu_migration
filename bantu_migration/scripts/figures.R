@@ -139,10 +139,10 @@ dev.off()
 #-------------------------------------------------------------------------------
 # Impact of rho and etasq on variability in dispersal rate ---- FIGURE 4
 
-#TODO: Come back to this figure to explore different parameters (higher values of etasq and rho)
 # Generate Spatial Window for Analyses: Sub-Saharan Africa ----
 sf_subsah_africa <- ne_countries(continent = "Africa", returnclass = "sf") %>%
   filter_all(., any_vars(str_detect(., "Sub-Saharan"))) %>% 
+  filter(name_en %in% constants$countries) %>% 
   filter(name_en != "Madagascar") #We focus on mainland sub-Saharan Africa
 
 sp_ss_africa <- sf_subsah_africa %>% as("Spatial") #convert sf to sp object
@@ -156,18 +156,19 @@ win = sampling_win
 
 # fixed params
 n = 300
-origin.point = c(11.50, 3.82)
+origin.point = c(11.40, 5.48)
 beta0 = 3000
-beta1 = 0.1
+beta1 = 0.5
 sigma = 100
 seed = 144231
 
 # Sweep parameters
-etasq = c(0.005, 0.01, 0.02)
-rho = c(10, 150, 500)
+etasq = c(0.01, 0.05, 0.15)
+rho = c(10, 200, 600)
 cov_param = expand.grid(etasq=etasq, rho=rho)
 tmp  <- vector('list',length=nrow(cov_param))
 out  <- vector('list',length=nrow(cov_param))
+
 
 # Simulate sites and plot
 for (i in 1:nrow(cov_param))
@@ -184,13 +185,13 @@ for (i in 1:nrow(cov_param))
   
   out[[i]] <- ggplot() +
     geom_sf(data=win.sf,aes(), fill='grey66', show.legend=FALSE, lwd=0) +
-    geom_sf(data=tmp[[i]], mapping = aes(fill=rate), pch=21, col='darkgrey', size=1.5) + 
+    geom_sf(data=tmp[[i]], mapping = aes(fill=rate), pch=21, col='darkgrey', size=1.5) +
     xlim(-15,50) + #Center the frame on sub-Saharan Africa
     ylim(-35,30) +
-    labs(title=TeX(sprintf("$\\eta^2 = %g \\, \\rho = %g$", cov_param$etasq[i], cov_param$rho[i])), fill='Dispersal Rate \n (km/yr)') + 
+    labs(title=TeX(sprintf("$\\eta^2 = %g \\, \\rho = %g$", cov_param$etasq[i], cov_param$rho[i])), fill='Dispersal Rate \n (km/yr)') +
     scale_fill_viridis(option = 'turbo', limits = c(0.7, 4), oob = scales::squish) +
     theme(plot.title = element_text(hjust = 0.5, size=11), panel.background = element_rect(fill='lightblue'), panel.grid.major = element_line(size = 0.1), legend.position=c(0.2, 0.2), legend.text = element_text(size=7), legend.key.width= unit(0.1, 'in'), legend.key.size = unit(0.08, "in"), legend.background=element_rect(fill = alpha("white", 0.5)), legend.title=element_text(size=7), axis.text=element_blank(), axis.ticks=element_blank(), plot.margin = unit(c(0,0,0,0), "in"))
-  
+
 }
 
 pdf(file=here('output','figures','figure4.pdf'), width=8, height=8)

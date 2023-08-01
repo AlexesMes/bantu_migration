@@ -44,14 +44,14 @@ beta1 = 1
 sigma = 100
 seed = 144231
 
-etasq = 0.15
-rho = 200
+etasq = 0.55
+rho = 500
 
 
 #-------------
 
 # Data ---
-dat  <- list()
+#dat  <- list()
 
 
 gpqrSim2 <- function(win, n=600, seed=123, beta0=3000, beta1=0.7, sigma=100, etasq=0.05, rho=100, origin.point=c(11.50,3.82))
@@ -63,80 +63,94 @@ gpqrSim2 <- function(win, n=600, seed=123, beta0=3000, beta1=0.7, sigma=100, eta
   require(maptools)
   set.seed(seed)
   
-  sites <- spsample(win, n = n, type = 'random') 
-  dist_mat  <- spDists(sites, longlat=TRUE)
-  dist_org  <-  spDistsN1(sites, origin.point, longlat=TRUE)
   
-  #Covariance matrix 
-  cov_ExpQ <- nimbleFunction(run = function(dists = double(2), rho = double(0), etasq = double(0), sigmasq = double(0)) 
-  {
-    returnType(double(2))
-    n <- dim(dists)[1]
-    result <- matrix(nrow = n, ncol = n, init = FALSE)
-    deltaij <- matrix(nrow = n, ncol = n, init = TRUE)
-    diag(deltaij) <- 1
-    for(i in 1:n)
-      for(j in 1:n)
-        result[i, j] <- etasq*exp(-0.5*(dists[i,j]/rho)^2) + sigmasq*deltaij[i,j]
-    return(result)
-  })
-  Ccov_ExpQ <- compileNimble(cov_ExpQ)
-  assign('cov_ExpQ', cov_ExpQ, envir=.GlobalEnv)
   
-  # Handle constraints on dipsersal rate
-  dat$lim  <- rep(1, n)
-  dat$lim2  <- rep(1, n)
+  out_fin_df <- data.frame()
+  tot_sites <- spsample(win, n = 1, type = 'random') 
   
-  dispersalmodel <- nimbleCode({
-    for (i in 1:N){
-      # Model
-      rate[i] <- -1/(s[i]-beta1)
-      lim[i] ~ dconstraint(rate[i] > 0)
-      
-      # slope[i] <- (s[i]-beta1)
-      # lim2[i] ~ dconstraint( slope[i] < (beta0/dist_org[i]) )
-      
-      mu[i] <- beta0 + (s[i]-beta1)*dist_org[i]
-      theta[i] ~ dnorm(mean=mu[i], sd=sigma)
-    }
-    mu_s[1:N] <- 0
-    cov_s[1:N, 1:N] <- cov_ExpQ(dist_mat[1:N, 1:N], rho, etasq, 0.000001)
-    s[1:N] ~ dmnorm(mu_s[1:N], cov = cov_s[1:N, 1:N])
-  })
+  while (nrow(out_fin_df) < n) { #where n is the number of sites
+    
+    sites <- spsample(win, n = n, type = 'random') 
+    dist_mat  <- spDists(sites, longlat=TRUE)
+    dist_org  <-  spDistsN1(sites, origin.point, longlat=TRUE)
+    #Assign calibration curve
+    cc <- ifelse((sites@coords[,2]>=0), 'intcal20', 'shcal20')
+    
+    
+    #Covariance matrix 
+    cov_ExpQ <- nimbleFunction(run = function(dists = double(2), rho = double(0), etasq = double(0), sigmasq = double(0)) 
+    {
+      returnType(double(2))
+      n <- dim(dists)[1]
+      result <- matrix(nrow = n, ncol = n, init = FALSE)
+      deltaij <- matrix(nrow = n, ncol = n, init = TRUE)
+      diag(deltaij) <- 1
+      for(i in 1:n)
+        for(j in 1:n)
+          result[i, j] <- etasq*exp(-0.5*(dists[i,j]/rho)^2) + sigmasq*deltaij[i,j]
+      return(result)
+    })
+    Ccov_ExpQ <- compileNimble(cov_ExpQ)
+    assign('cov_ExpQ', cov_ExpQ, envir=.GlobalEnv)
+    
+    
+    dispersalmodel <- nimbleCode({
+      for (i in 1:N){
+        # Model
+        rate[i] <- -1/(s[i]-beta1)
+        mu[i] <- beta0 + (s[i]-beta1)*dist_org[i]
+        theta[i] ~ T(dnorm(mean=mu[i], sd=sigma), 0, 55000)
+      }
+      mu_s[1:N] <- 0
+      cov_s[1:N, 1:N] <- cov_ExpQ(dist_mat[1:N, 1:N], rho, etasq, 0.000001)
+      s[1:N] ~ dmnorm(mu_s[1:N], cov = cov_s[1:N, 1:N])
+    })
+    
+    #Define Parameters
+    constants  <- list()
+    constants$N <- n
+    constants$dist_org <- dist_org
+    constants$dist_mat <- dist_mat
+    constants$beta0  <- beta0
+    constants$beta1  <- beta1
+    constants$sigma  <- sigma
+    constants$etasq  <- etasq
+    constants$rho  <- rho
+    
+    
+    #Simulate
+    set.seed(seed)
+    
+    simModel  <- nimbleModel(code=dispersalmodel, constants=constants) 
+    simModel$simulate('s')
+    simModel$simulate('mu')
+    simModel$simulate('theta')
+    
+    #Combine Results
+    out_df <- data.frame(ID=1:n, theta=simModel$theta, calCurve=cc)
+
+    out_df$s  <- simModel$s
+    out_df$rate  <- -1/(out_df$s - beta1)
+    out_df$mu  <- beta0 + (out_df$s - beta1)*dist_org
+    out_df <- out_df %>% filter((out_df$rate > 0) & (out_df$theta != Inf) & (out_df$theta >= 0))  #Constrain the simulated data -- don't allow for negative velocity (rate) or for dates (theta) to be in the future
+    
+    out_fin_df  <- rbind(out_fin_df, out_df)
+    tot_sites <- rbind(tot_sites, sites)
+    
+  }
+
   
-  #Define Parameters
-  constants  <- list()
-  constants$N <- n
-  constants$dist_org <- dist_org
-  constants$dist_mat <- dist_mat
-  constants$beta0  <- beta0
-  constants$beta1  <- beta1
-  constants$sigma  <- sigma
-  constants$etasq  <- etasq
-  constants$rho  <- rho
+  out.df <- head(out_fin_df, n=n)
+  tot_sites <- tot_sites[2:(n+1)]
   
-  #Simulate
-  set.seed(seed)
-  simModel  <- nimbleModel(code=dispersalmodel, data=dat, constants=constants)
-  simModel$simulate('s')
-  simModel$simulate('mu')
-  simModel$simulate('theta')
   
-  #Assign calibration curve
-  cc <- ifelse((sites@coords[,2]>=0), 'intcal20', 'shcal20')
-  
-  #Combine Results
-  out.df  <- data.frame(ID=1:n, theta=simModel$theta, calCurve=cc)
-  #out.df$cra  <- round(uncalibrate(round(out.df$theta))$ccCRA) #Can only specify one curve currently for all dates (therefore can't specify calCurves=out.df$calCurve). Default intcal20. TODO: Check if this is problem?
+  out.df$cra  <- round(uncalibrate(round(out.df$theta))$ccCRA) #Can only specify one curve currently for all dates (therefore can't specify calCurves=out.df$calCurve). Default intcal20. TODO: Check if this is problem?
   out.df$cra.error  <- 20
-  # out.df$med.date  <- medCal(calibrate(out.df$cra,
-  #                                      out.df$cra.error,
-  #                                      calCurve=out.df$calCurve,
-  #                                      verbose=F))
-  out.df$s  <- simModel$s
-  out.df$rate  <- -1/(out.df$s - beta1)
-  out.df$mu  <- beta0 + (out.df$s - beta1)*dist_org
-  out  <- as(sites, 'SpatialPointsDataFrame')
+  out.df$med.date  <- medCal(calibrate(out.df$cra,
+                                       out.df$cra.error,
+                                       calCurve=out.df$calCurve,
+                                       verbose=F))
+  out  <- as(tot_sites, 'SpatialPointsDataFrame')
   out@data  <- out.df
   out.sf  <- as(out, 'sf')
   
@@ -145,7 +159,7 @@ gpqrSim2 <- function(win, n=600, seed=123, beta0=3000, beta1=0.7, sigma=100, eta
 }
 
 
-tm3  <- gpqrSim2(win = win,
+tm5  <- gpqrSim2(win = win,
                  n = n,
                  beta0 = beta0,
                  beta1 = beta1,
@@ -154,3 +168,7 @@ tm3  <- gpqrSim2(win = win,
                  etasq = etasq,
                  rho = rho,
                  seed = seed)
+
+
+
+
