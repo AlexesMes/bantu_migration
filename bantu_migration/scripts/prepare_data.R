@@ -6,6 +6,8 @@ library(rcarbon)
 library(nimbleCarbon)
 library(maptools)
 library(sf)
+library(rnaturalearth)
+library(rgeos)
 library(stringr)
 library(dplyr)
 library(tidyr)
@@ -20,6 +22,10 @@ rm(list = ls())
 ncores = (detectCores() - 1)
 
 `%!in%` <- Negate(`%in%`)
+
+
+source(here('src','hex_areas.R'))
+
 
 #-------------------------------------------------------------------------------
 ## List of countries in sub-Saharan Africa ----
@@ -107,14 +113,14 @@ p3k14c_dat <- read.csv(here("data", "p3k14c_raw.csv")) #p3k14c::p3k14c_data will
 
 SARD_sum_df <- SARD_dat %>%
   filter(Archaeological.Period=="Iron Age") %>% 
-  select(Lab.ID, X.Site, DecdegE, DecdegS, Date, Uncertainty) %>%
+  dplyr::select(Lab.ID, X.Site, DecdegE, DecdegS, Date, Uncertainty) %>%
   rename(labCode=Lab.ID, siteName=X.Site, lat=DecdegS, long=DecdegE, c14date=Date, c14std=Uncertainty) %>%
   mutate(c14date = as.numeric(c14date), c14std=as.numeric(c14std), dataorigin="SARD")  %>%
   filter(!is.na(lat) & !is.na(long) & !is.na(c14std) & !is.na(c14date)) %>% 
   filter(siteName !="Bambata Cave") #Designated pre-bantu (references given in Isern and Fort 2019, Suplementary Material S1, https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0215573) #TODO: decide if Shongweni North and South dates are to be removed? Isern and Fort also mention removing Shongweni Waterworks Park (2030 uncal BP) as being pre-bantu
 
 Russell_sum_df <- Russell_EIA_dat %>%
-  select(Site, Latitude, Longitude, Uncal.BP, St.Dev) %>%
+  dplyr::select(Site, Latitude, Longitude, Uncal.BP, St.Dev) %>%
   rename(siteName=Site, lat=Latitude, long=Longitude, c14date=Uncal.BP, c14std=St.Dev) %>%
   mutate(c14date = as.numeric(c14date), c14std=as.numeric(c14std), dataorigin="RussellEIA")  %>%
   filter(!is.na(lat) & !is.na(long) & !is.na(c14std) & !is.na(c14date)) %>% 
@@ -124,7 +130,7 @@ Russell_sum_df[,"labCode"] <- NA #No Lab Code present in this site level dataset
 
 HumActCA_sum_df <- HumActCA_dat %>% #I think all the sites in this database are associated with Bantu pottery finds
   filter(CLASS %!in% c('IIa', 'IIb', 'IIc', 'IIIa', 'IIIb', 'IIIc')) %>% #Filter for unreliable class of dates III and irrelevant (according to Seidensticker et al.) dates II (TODO: check whether class II dates should actually be excluded)
-  select(LABNR, SITE, LAT, LONG, C14AGE, C14STD) %>%
+  dplyr::select(LABNR, SITE, LAT, LONG, C14AGE, C14STD) %>%
   rename(labCode= LABNR, siteName=SITE, lat=LAT, long=LONG, c14date=C14AGE, c14std=C14STD) %>%
   mutate(c14date = as.numeric(c14date), c14std=as.numeric(c14std), dataorigin="HumActCA") %>%
   filter(!is.na(lat) & !is.na(long) & !is.na(c14std) & !is.na(c14date)) 
@@ -146,7 +152,7 @@ p3k14c_sum_df <- p3k14c_dat %>%
   filter(Continent=="Africa" & 
            (Country %in% c(subSahara_countries, "CAR", "Equat.Guinea", "DRC")) & #TODO: refine the determination of whether the site is Bantu at a later stage -- specifically filter for the correct period
            (Age != "Bomb C14")) %>% #Just cleaning up...
-  select(LabID, SiteName, Lat, Long, Age, Error, Source) %>%
+  dplyr::select(LabID, SiteName, Lat, Long, Age, Error, Source) %>%
   rename(labCode = LabID, siteName=SiteName, lat=Lat, long=Long, c14date=Age, c14std=Error, source=Source) %>%
   mutate(lat=as.numeric(lat), long=as.numeric(long), c14date = as.numeric(c14date), c14std=as.numeric(c14std), dataorigin="p3k14c") %>%
   filter(!is.na(lat) & !is.na(long) & !is.na(c14std) & !is.na(c14date)) 
@@ -158,7 +164,7 @@ p3k14c_sum_df <- p3k14c_dat %>%
 #Note, since p3k14c is a database of databases it contains a fair amount of information already present in the other databases, such as SARD. We want to use the original databases as far as possible. 
 p3k14c_fil_df <- p3k14c_sum_df %>%
   filter(!(source %in% c("aDRAC", "SARD", "RussellEIA"))) %>%  # This represents the HumActCA_dat, SARD_dat, and Russell_sum_df databases respectively
-  select(-source)
+  dplyr::select(-source)
 #Note there are 7 sites which are excluded (above) from aDRAC (being class II or class III) dates, which p3k14c adds back into the dataset here. TODO: take a look at this more closely... 
 
 # Combine datasets ----
@@ -205,28 +211,24 @@ siteInfo <- data.frame(siteID = earliest_dates$siteID,
                        n_dates = n_dates$median_dates) %>% unique()
 
 siteInfo <- siteInfo %>% 
-  left_join(unique(select(bantu_sites_df,
-                           lat,
-                           long,
-                           siteID,
-                           siteName,
-                           dataorigin,
-                           calCurve))) %>% 
+  left_join(unique(dplyr::select(bantu_sites_df,
+                                 lat,
+                                 long,
+                                 siteID,
+                                 siteName,
+                                 dataorigin,
+                                 calCurve))) %>% 
   distinct(siteID, .keep_all = TRUE)  #Some site duplicates introduced by slight differences in co-ordinate decimal places
 
-#TODO: add area info...
-# siteInfo <- left_join(siteInfo,unique(select(bantu_sites_df, lat, long, siteID, siteName, prefecture, region, area)))
-# siteInfo$area_id <- as.numeric(as.factor(siteInfo$area))
-
 # Collect date level information ----
-dateInfo <- unique(select(bantu_sites_df,
-                          ID,
-                          labCode,
-                          siteID,
-                          cra=c14date,
-                          cra_error=c14std,
-                          median_dates=median_dates,
-                          calCurve=calCurve)) %>% arrange(ID) 
+dateInfo <- unique(dplyr::select(bantu_sites_df,
+                                  ID,
+                                  labCode,
+                                  siteID,
+                                  cra=c14date,
+                                  cra_error=c14std,
+                                  median_dates=median_dates,
+                                  calCurve=calCurve)) %>% arrange(ID) 
 dateInfo$earliestAtSite  <- FALSE #initialize 
 
 for (i in unique(siteInfo$siteID))
@@ -266,6 +268,42 @@ origin_point  <- c(possible_origin_dat$LONG, possible_origin_dat$LAT) #Ngoume, H
 #origin_point  <- c(possible_origin_dat$long, possible_origin_dat$lat) #SARD Origin
 dist_org  <-  spDistsN1(sites, origin_point, longlat=TRUE) #distance from origin site
 
+
+#-------------------------------------------------------------------------------
+# Generate Spatial Window for Analyses: Sub-Saharan Africa ----
+
+#Sampling window ----
+sf_subsah_africa <- ne_countries(continent = "Africa", returnclass = "sf") %>%
+  filter_all(., any_vars(str_detect(., "Sub-Saharan"))) %>% 
+  filter(name_en %in% subSahara_countries) %>% 
+  filter(name_en != "Madagascar") #We focus on mainland sub-Saharan Africa
+
+sampling_win <- sf_subsah_africa %>% as("Spatial") #convert sf to sp object
+
+
+#Generate Hex Areas over Spatial Window ----
+hex_area_win <- hex_areas(sampling_win, cell_d = 6)
+
+#Assign hex area id to each site ----
+sites_sf <- as(sites, 'sf')
+siteInfo$area_id <- as.integer(st_within(sites_sf$geometry, hex_area_win$geometry)) #save to siteInfo df
+
+# #CHECK ---
+# area_freq  <- plyr::count(siteInfo, 'area_id') ##See how many sites fall in each hex area. Also make sure there are no 'NA' entries
+# 
+##Check that this lines up visually with how many sites are in each hex area
+# ggplot(data = hex_area_win) +
+#   geom_sf(data = st_buffer(as(gUnaryUnion(sampling_win), 'sf'), 40000), aes(color = "grey50")) + #sampling window with coastal buffer
+#   geom_sf() + #hex grid
+#   geom_sf_label(aes(label = area_ID)) +
+#   geom_sf(data = sites_sf, size=2, alpha=0.5) + #sites
+#   theme(panel.background = element_rect(fill = "lightblue",
+#                                         colour = "lightblue",
+#                                         size = 0.5,
+#                                         linetype = "solid"),
+#         legend.position = "none")
+
+
 #-------------------------------------------------------------------------------
 ## Create list with constants and data ----
 
@@ -277,12 +315,13 @@ bantu_dat <- list(cra=dateInfo$cra,
 data(intcal20)
 data(shcal20)
 constants <- list()
-constants$countries <- subSahara_countries #Useful list for later
+constants$countries <- subSahara_countries 
+constants$sample_win <- sampling_win
 constants$n_sites <- nrow(siteInfo)
 constants$n_dates  <- nrow(dateInfo)
-#constants$n_.areas  <- length(unique(siteInfo$area)) #TODO: add area info ... 
+constants$n_areas  <- length(unique(siteInfo$area_id))
 constants$id_sites <- dateInfo$siteID
-#constants$id_area  <- siteInfo$area_id #TODO: add area info ... 
+constants$id_area  <- siteInfo$area_id 
 constants$dist_mat  <- dist_mat
 constants$dist_org  <- dist_org
 constants$origin_point <- origin_point
