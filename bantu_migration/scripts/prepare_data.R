@@ -286,7 +286,7 @@ hex_area_win <- hex_areas(sampling_win, cell_d = 7)
   
 #Assign hex area id to each site ----
 sites_sf <- as(sites, 'sf')
-siteInfo$area_id <- as.integer(st_within(sites_sf$geometry, hex_area_win$geometry)) #save to siteInfo df
+siteInfo$area_id <- as.integer(st_within(sites_sf$geometry, hex_area_win$geometry))
 
 # #CHECK ---
 # area_freq  <- plyr::count(siteInfo, 'area_id') ##See how many sites fall in each hex area. Also make sure there are no 'NA' entries
