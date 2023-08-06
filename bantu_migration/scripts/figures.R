@@ -33,7 +33,7 @@ load(here('output','quantreg_res.RData'))
 
 #===============================================================================
 # Generate Spatial Window for Analyses: Sub-Saharan Africa ----
-sampling_win <- as(constants$sample_win, "SpatialPolygons") |>  unionSpatialPolygons(IDs = rep(1, nrow(constants$sample_win)))
+sampling_win <- as(sampling_win, "SpatialPolygons") |>  unionSpatialPolygons(IDs = rep(1, nrow(sampling_win)))
 sampling_win <- disaggregate(sampling_win) #create new raster layer with higher resolution (smaller cells)
 sampling_win  <- sampling_win[order(raster::area(sampling_win), decreasing=TRUE)]
 
@@ -546,22 +546,22 @@ load(here("output", "phasemodel_tactsim.RData"))
 #-------------------------------------------------------------------------------
 # Tactical Simulation Posterior Predictive Check for nu and upsilon ---- FIGURE 16
 
-#Select parameters a and b (i.e. start and end date of occupation in the region)
-post.model.a  <- do.call(rbind, mcmc.samples1)[ , c(1,2)]
-post.model.b  <- do.call(rbind, mcmc.samples2)[ , c(1,12)] 
+#For models (i) and (ii) select parameters a and b (i.e. start and end date of occupation in the region)
+post.model.i  <- do.call(rbind, mcmc.samples1)[ , c(1,2)]
+post.model.ii  <- do.call(rbind, mcmc.samples2)[ , c(1,12)]
 
-dens.a.nu  <- density(post.model.a[,1],bw = 5)
-dens.a.upsilon  <- density(post.model.a[,2],bw=5)
-dens.b.nu  <- density(post.model.b[,1],bw=5)
-dens.b.upsilon  <- density(post.model.b[,2],bw=5)
+dens.i.nu  <- density(post.model.i[,1],bw = 5)
+dens.i.upsilon  <- density(post.model.i[,2],bw=5)
+dens.ii.nu  <- density(post.model.ii[,1],bw=5)
+dens.ii.upsilon  <- density(post.model.ii[,2],bw=5)
 
 pdf(file=here('output','figures','figure16.pdf'), width=8, height=8)
 
 plot(NULL, xlim=c(3900,2500), ylim=c(0,0.022), xlab='Cal BP', ylab='Posterior Probability') 
-polygon(c(dens.a.nu$x, rev(dens.a.nu$x)), c(rep(0,length(dens.a.nu$x)), rev(dens.a.nu$y)), border=NA, col=rgb(0,0.4,0,0.5))
-polygon(c(dens.a.upsilon$x, rev(dens.a.upsilon$x)), c(rep(0,length(dens.a.upsilon$x)), rev(dens.a.upsilon$y)), border=NA, col=rgb(0,0.4,0,0.5))
-polygon(c(dens.b.nu$x, rev(dens.b.nu$x)), c(rep(0,length(dens.b.nu$x)), rev(dens.b.nu$y)), border=NA, col=rgb(1,0.55,0,0.5))
-polygon(c(dens.b.upsilon$x, rev(dens.b.upsilon$x)), c(rep(0,length(dens.b.upsilon$x)), rev(dens.b.upsilon$y)), border=NA, col=rgb(1,0.55,0,0.5))
+polygon(c(dens.i.nu$x, rev(dens.i.nu$x)), c(rep(0,length(dens.i.nu$x)), rev(dens.i.nu$y)), border=NA, col=rgb(0,0.4,0,0.5))
+polygon(c(dens.i.upsilon$x, rev(dens.i.upsilon$x)), c(rep(0,length(dens.i.upsilon$x)), rev(dens.i.upsilon$y)), border=NA, col=rgb(0,0.4,0,0.5))
+polygon(c(dens.ii.nu$x, rev(dens.ii.nu$x)), c(rep(0,length(dens.ii.nu$x)), rev(dens.ii.nu$y)), border=NA, col=rgb(1,0.55,0,0.5))
+polygon(c(dens.ii.upsilon$x, rev(dens.ii.upsilon$x)), c(rep(0,length(dens.ii.upsilon$x)), rev(dens.ii.upsilon$y)), border=NA, col=rgb(1,0.55,0,0.5))
 abline(v=c(3500, 3000),lty=2)
 axis(3,at=c(3500, 3000),labels=c(TeX('$\\nu$'),TeX('$\\upsilon$')))
 legend('topright',legend=c('Non hierarchichal','Hierarchichal'),fill=c('darkgreen','darkorange'))
