@@ -32,6 +32,15 @@ load(here('data','c14.RData'))
 load(here('output','quantreg_res.RData'))
 
 #===============================================================================
+# Generate Spatial Window for Analyses: Sub-Saharan Africa ----
+sampling_win <- as(constants$sample_win, "SpatialPolygons") |>  unionSpatialPolygons(IDs = rep(1, nrow(constants$sample_win)))
+sampling_win <- disaggregate(sampling_win) #create new raster layer with higher resolution (smaller cells)
+sampling_win  <- sampling_win[order(raster::area(sampling_win), decreasing=TRUE)]
+
+win.sf  <- as(sampling_win,'sf')
+win = sampling_win
+
+#===============================================================================
 ##Bayesian Quantile Regression
 
 ## quantreg.R Figures ----
@@ -57,13 +66,13 @@ post.ci <- t(apply(post.quantreg, 1, quantile, c(0.025,0.5,0.975)))
 col.alpha <- function(x,a=1){xx=col2rgb(x)/255;return(rgb(xx[1],xx[2],xx[2],a))}
 
 pdf(file=here('output','figures','figure1.pdf'), width=8.5, height=7)
-plot(NULL, xlim=c(0,4600), ylim=c(3600,100), axes=F, xlab='Distance from Ngoume Site (in km)', ylab='Cal BP') 
+plot(NULL, xlim=c(0,4600), ylim=c(4100,100), axes=F, xlab='Distance from Ngoume Site (in km)', ylab='Cal BP') 
 rect(xleft=-200, xright=4600, ybottom=2720, ytop=2350, col=col.alpha('grey',0.2), border=NA) #Demarcating Calibration Plateau Region
 abline(h=2720,lty=4)
 abline(h=2350,lty=4)
-axis(1, at=c(0,500, 1000, 1500, 2000, 2500, 3000, 3500, 4000, 4500, 4600, 4700)) #X-axis
-axis(2) #Y-axis left
-axis(4, at=BCADtoBP(c(-1400, -1000, -600, -200, 200, 600, 1000, 1400, 1800)), labels=c('1400BC', '1000BC', '600BC', '200BC', '200AD', '600AD', '1000AD', '1400BC','1800BC'), cex.axis=0.7) #Y-axis right
+axis(1, at=c(0,500, 1000, 1500, 2000, 2500, 3000, 3500, 4000, 4500)) #X-axis
+axis(2, at=c(0,500, 1000, 1500, 2000, 2500, 3000, 3500, 4000)) #Y-axis left
+axis(4, at=BCADtoBP(c(-1800, -1400, -1000, -600, -200, 200, 600, 1000, 1400, 1800)), labels=c('1800BC', '1400BC', '1000BC', '600BC', '200BC', '200AD', '600AD', '1000AD', '1400AD','1800AD'), cex.axis=0.6) #Y-axis right
 points(constants$dist_org, siteInfo$earliest) #Median Calibrated Date #Option: col=siteInfo$dataorigin
 points(constants$dist_org, post.theta.med, pch=20) #Median Posterior theta
 for (i in 1:nrow(siteInfo))
@@ -139,22 +148,7 @@ dev.off()
 #-------------------------------------------------------------------------------
 # Impact of rho and etasq on variability in dispersal rate ---- FIGURE 4
 
-# Generate Spatial Window for Analyses: Sub-Saharan Africa ----
-sf_subsah_africa <- ne_countries(continent = "Africa", returnclass = "sf") %>%
-  filter_all(., any_vars(str_detect(., "Sub-Saharan"))) %>% 
-  filter(name_en %in% constants$countries) %>% 
-  filter(name_en != "Madagascar") #We focus on mainland sub-Saharan Africa
-
-sp_ss_africa <- sf_subsah_africa %>% as("Spatial") #convert sf to sp object
-
-sampling_win <- as(sp_ss_africa, "SpatialPolygons") |>  unionSpatialPolygons(IDs = rep(1, nrow(sp_ss_africa)))
-sampling_win <- disaggregate(sampling_win) #create new raster layer with higher resolution (smaller cells)
-sampling_win  <- sampling_win[order(raster::area(sampling_win), decreasing=TRUE)]
-
-win.sf  <- as(sampling_win,'sf')
-win = sampling_win
-
-# fixed params
+# Fixed parameters
 n = 300
 origin.point = c(11.40, 5.48)
 beta0 = 3000
@@ -552,8 +546,9 @@ load(here("output", "phasemodel_tactsim.RData"))
 #-------------------------------------------------------------------------------
 # Tactical Simulation Posterior Predictive Check for nu and upsilon ---- FIGURE 16
 
-post.model.a  <- do.call(rbind, mcmc.samples1)[,1:2]
-post.model.b  <- do.call(rbind, mcmc.samples2)[,1:2]
+#Select parameters a and b (i.e. start and end date of occupation in the region)
+post.model.a  <- do.call(rbind, mcmc.samples1)[ , c(1,2)]
+post.model.b  <- do.call(rbind, mcmc.samples2)[ , c(1,12)] 
 
 dens.a.nu  <- density(post.model.a[,1],bw = 5)
 dens.a.upsilon  <- density(post.model.a[,2],bw=5)
@@ -563,16 +558,15 @@ dens.b.upsilon  <- density(post.model.b[,2],bw=5)
 pdf(file=here('output','figures','figure16.pdf'), width=8, height=8)
 
 plot(NULL, xlim=c(3900,2500), ylim=c(0,0.022), xlab='Cal BP', ylab='Posterior Probability') 
-polygon(c(dens.a.nu$x,rev(dens.a.nu$x)), c(rep(0,length(dens.a.nu$x)), rev(dens.a.nu$y)), border=NA, col=rgb(0,0.4,0,0.5))
-polygon(c(dens.a.upsilon$x,rev(dens.a.upsilon$x)), c(rep(0,length(dens.a.upsilon$x)), rev(dens.a.upsilon$y)), border=NA, col=rgb(0,0.4,0,0.5))
-polygon(c(dens.b.nu$x,rev(dens.b.nu$x)), c(rep(0,length(dens.b.nu$x)), rev(dens.b.nu$y)), border=NA, col=rgb(1,0.55,0,0.5))
-polygon(c(dens.b.upsilon$x,rev(dens.b.upsilon$x)), c(rep(0,length(dens.b.upsilon$x)), rev(dens.b.upsilon$y)), border=NA, col=rgb(1,0.55,0,0.5))
+polygon(c(dens.a.nu$x, rev(dens.a.nu$x)), c(rep(0,length(dens.a.nu$x)), rev(dens.a.nu$y)), border=NA, col=rgb(0,0.4,0,0.5))
+polygon(c(dens.a.upsilon$x, rev(dens.a.upsilon$x)), c(rep(0,length(dens.a.upsilon$x)), rev(dens.a.upsilon$y)), border=NA, col=rgb(0,0.4,0,0.5))
+polygon(c(dens.b.nu$x, rev(dens.b.nu$x)), c(rep(0,length(dens.b.nu$x)), rev(dens.b.nu$y)), border=NA, col=rgb(1,0.55,0,0.5))
+polygon(c(dens.b.upsilon$x, rev(dens.b.upsilon$x)), c(rep(0,length(dens.b.upsilon$x)), rev(dens.b.upsilon$y)), border=NA, col=rgb(1,0.55,0,0.5))
 abline(v=c(3500, 3000),lty=2)
 axis(3,at=c(3500, 3000),labels=c(TeX('$\\nu$'),TeX('$\\upsilon$')))
 legend('topright',legend=c('Non hierarchichal','Hierarchichal'),fill=c('darkgreen','darkorange'))
 
 dev.off()
-
 
 #-------------------------------------------------------------------------------
 
