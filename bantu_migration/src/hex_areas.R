@@ -33,7 +33,9 @@ hex_areas <- function(win, cell_d = 6){
   
   #Assign hex IDs ----
   hex_grid_clipped <- hex_grid_clipped %>% 
-    mutate(area_ID = row_number())  
+    mutate(area_ID = row_number(),
+           area_center = st_centroid(geometry)) 
+    
   
   
   #Return Output ----

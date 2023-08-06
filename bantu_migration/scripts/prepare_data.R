@@ -282,8 +282,8 @@ sampling_win <- sf_subsah_africa %>% as("Spatial") #convert sf to sp object
 
 
 #Generate Hex Areas over Spatial Window ----
-hex_area_win <- hex_areas(sampling_win, cell_d = 6)
-
+hex_area_win <- hex_areas(sampling_win, cell_d = 7)
+  
 #Assign hex area id to each site ----
 sites_sf <- as(sites, 'sf')
 siteInfo$area_id <- as.integer(st_within(sites_sf$geometry, hex_area_win$geometry)) #save to siteInfo df
@@ -291,18 +291,18 @@ siteInfo$area_id <- as.integer(st_within(sites_sf$geometry, hex_area_win$geometr
 # #CHECK ---
 # area_freq  <- plyr::count(siteInfo, 'area_id') ##See how many sites fall in each hex area. Also make sure there are no 'NA' entries
 # 
-##Check that this lines up visually with how many sites are in each hex area
+# #Check that this lines up visually with how many sites are in each hex area
 # ggplot(data = hex_area_win) +
 #   geom_sf(data = st_buffer(as(gUnaryUnion(sampling_win), 'sf'), 40000), aes(color = "grey50")) + #sampling window with coastal buffer
 #   geom_sf() + #hex grid
 #   geom_sf_label(aes(label = area_ID)) +
 #   geom_sf(data = sites_sf, size=2, alpha=0.5) + #sites
+#   #geom_sf(data = hex_area_win$area_center, size=2, alpha=1, aes(color = "purple")) + #hex-origins
 #   theme(panel.background = element_rect(fill = "lightblue",
 #                                         colour = "lightblue",
 #                                         size = 0.5,
 #                                         linetype = "solid"),
 #         legend.position = "none")
-
 
 #-------------------------------------------------------------------------------
 ## Create list with constants and data ----
@@ -316,10 +316,9 @@ data(intcal20)
 data(shcal20)
 constants <- list()
 constants$countries <- subSahara_countries 
-constants$sample_win <- sampling_win
 constants$n_sites <- nrow(siteInfo)
 constants$n_dates  <- nrow(dateInfo)
-constants$n_areas  <- length(unique(siteInfo$area_id))
+constants$n_areas  <- nrow(hex_area_win) #All areas (even empty ones) are included #Only occupied areas: length(unique(siteInfo$area_id))
 constants$id_sites <- dateInfo$siteID
 constants$id_area  <- siteInfo$area_id 
 constants$dist_mat  <- dist_mat
@@ -332,4 +331,4 @@ constants$C14err  <- cbind(intcal20$C14Age.sigma, shcal20$C14Age.sigma)
 
 #-------------------------------------------------------------------------------
 ## Save everything on a R image file ----
-save(sites, constants, bantu_dat, siteInfo, dateInfo, file=here('data','c14.RData'))
+save(sites, constants, bantu_dat, siteInfo, dateInfo, sampling_win, hex_area_win, file=here('data','c14.RData'))
