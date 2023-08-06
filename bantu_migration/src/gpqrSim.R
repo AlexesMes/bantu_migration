@@ -99,6 +99,6 @@ gpqrSim  <- function(win, n=600, seed=123, beta0=3000, beta1=0.7, sigma=100, eta
   out@data  <- out.df
   out.sf  <- as(out, 'sf')
   
-  #Store Output ---
+  #Return Output ---
   return(out.sf)
 }
