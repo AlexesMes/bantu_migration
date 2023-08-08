@@ -20,6 +20,8 @@ library(diagram)
 library(quantreg)
 library(coda)
 
+source(here('src','orderPPlot.R'))
+source(here('src','diffplot.R'))
 source(here('src','gpqrSim.R'))
 
 #===============================================================================
@@ -99,8 +101,8 @@ dev.off()
 
 
 #===============================================================================
+###Gaussian Process Quantile Regression
 #===============================================================================
-##Gaussian Process Quantile Regression
 
 ##Effect of parameter variation in covariance matrix
 
@@ -537,8 +539,9 @@ dev.off()
 
 
 #===============================================================================
+###Bayesian Hierarchical Phase Model
 #===============================================================================
-##Bayesian Hierarchical Phase Models with Constraints
+##Tactical Simulation of Bayesian Hierarchical Phase Model
 
 #Load Data ----
 load(here("output", "phasemodel_tactsim.RData"))
@@ -568,7 +571,149 @@ legend('topright',legend=c('Non hierarchichal','Hierarchichal'),fill=c('darkgree
 
 dev.off()
 
+#===============================================================================
+##Bayesian Hierarchical Phase Models without constraints
+
+#Classify hex areas
+East_hex <- c(35, 31, 30, 29, 28, 25, 24, 19, 18, 14, 10, 9, 6, 5, 3)
+West_hex <- c(26, 22, 21, 17, 16, 12)
+No_site_hex <- c(1, 2, 4, 7, 8, 11, 15, 20, 32, 33, 37, 38 ,39, 40, 41, 42, 44, 45, 46, 47)
+Origin_hex <- 34
+
+#Load Data ----
+load(here("output", "phase_model_a.RData"))
+load(here("output","phase_model_b.RData"))
+
 #-------------------------------------------------------------------------------
+# Prior Predictive check for duration parameter, delta ---- FIGURE 17
+nsim  <- 5000
+
+set.seed(123)
+
+gamma1  <- runif(nsim,1,20)
+gamma2  <- rtruncnorm(nsim, mean=200, sd=100, 1, 500)
+delta.mat = matrix(NA, ncol=1000, nrow=nsim) #Initialise
+
+for (i in 1:nsim) {
+  delta.mat[i,] = dgamma(1:1000, gamma1[i], (gamma1[i]-1)/gamma2[i])
+  }
+
+pdf(file=here('output','figures','figure17.pdf'), height=6, width=6)
+
+plot(NULL,xlab=TeX('$\\delta$'),ylab='Probability Density',xlim=c(1,1000),ylim=c(0,0.02))
+polygon(x=c(1:1000, 1000:1), y=c(apply(delta.mat,2,quantile,prob=0.025), rev(apply(delta.mat,2,quantile,prob=0.975))), border=NA, col=rgb(0.67,0.84,0.9,0.5))
+polygon(x=c(1:1000, 1000:1), y=c(apply(delta.mat,2,quantile,prob=0.25), rev(apply(delta.mat,2,quantile,prob=0.75))), border=NA, col=rgb(0.25,0.41,0.88,0.5))
+legend('topright', legend=c('50% percentile range', '95% percentile range'), fill=c(rgb(0.67,0.84,0.9,0.5), rgb(0.25,0.41,0.88,0.5)))
+
+dev.off()
 
 
+#-------------------------------------------------------------------------------
+# Marginal Posterior Distribution of nu, model a ---- FIGURE 18
 
+out.comb.unif.model.a  <- do.call(rbind, out_unif_model_a)
+post.nu.model.a  <- out.comb.unif.model.a[,paste0('a[',1:57,']')] %>%  round() #57 hex areas
+model.a.long  <- data.frame(value = as.numeric(post.nu.model.a),
+                            area = rep(1:57, each=nrow(post.nu.model.a)))
+
+for(i in 1:nrow(model.a.long)){
+  if(model.a.long$area[i] %in% East_hex){
+    model.a.long$stream[i] = "East"
+  } else if(model.a.long$area[i] %in% West_hex){
+    model.a.long$stream[i] = "West"
+  } else if(model.a.long$area[i] %in% No_site_hex){
+    model.a.long$stream[i] = "No sites"
+  } else if(model.a.long$area[i] == Origin_hex){
+    model.a.long$stream[i] = "Origin"
+  } else {
+    model.a.long$stream[i] = "Neither"
+  }
+}
+
+model.a.long  <- model.a.long %>%
+  mutate(area = factor(area, levels=paste0(1:57), ordered=TRUE),
+         stream = factor(stream, levels=c("Origin", "East", "West", "Neither", "No sites"))) %>% 
+  filter(area <= 47) #Don't plot hex_id>48 (assume no Bantu Expansion)
+
+
+#Plot
+pdf(file=here('output','figures','figure18.pdf'), height=10, width=8)
+
+ggplot(model.a.long, aes(x = value, y = area, fill=stream)) + 
+  geom_density_ridges() +
+  scale_x_reverse(limits=c(5000, 150), breaks=BCADtoBP(c(-3000, -2600, -2200, -1800, -1400, -1000, -600, -200, 200, 600, 1000, 1400, 1800)), labels=c('3000BC', '2600BC', '2200BC', '1800BC', '1400BC', '1000BC', '600BC', '200BC', '200AD', '600AD', '1000AD', '1400AD','1800AD')) +
+  scale_fill_viridis_d(name = "Stream") +
+  xlab(paste('Arrival time,', TeX('$a_k$'))) +
+  ylab(paste('Area,', TeX('$k$')))
+
+dev.off()
+
+#-------------------------------------------------------------------------------
+# Probability Matrix of nu, model a ---- FIGURE 19
+
+pdf(file=here('output','figures','figure19.pdf'), width=7, height=7.5)
+orderPPlot(post.nu.model.a, name.vec=paste("Area", as.character(1:57)))
+dev.off()
+
+
+#-------------------------------------------------------------------------------
+# Difference Matrix plot of nu, model a ---- FIGURE 20
+
+pdf(file=here('output','figures','figure20.pdf'), width=16, height=11)
+mat <- cbind(c(1,9:15),c(37,2,16:21),c(rep(37,2),3,22:26),c(rep(37,3),4,27:30),c(rep(37,4),5,31:33),c(rep(37,5),6,34:35),c(rep(37,6),7,36),c(rep(37,7),8))
+layout(mat)
+par(mar=c(0,0,0,0))
+for (i in 1:8){plot(NULL,xlim=c(0,1),ylim=c(0,1),xlab="",ylab="",axes=F);text(0.5,0.5,paste('Area',as.character(as.roman(i))),cex=3)}
+par(mar=c(3,0,0,1))
+for (i in 1:8){
+  for (j in 1:8){
+    if (i < j)
+    {
+      diffDens(post.nu.model.a[,i],post.nu.model.a[,j],xlim=c(-1200,1200),prob=0.9)
+    }
+  }
+}
+
+dev.off()
+
+#-------------------------------------------------------------------------------
+##Bayesian Hierarchical Phase Models with wave-of-advance constraints
+
+# Marginal Posterior Distribution of nu and upsilon, model b ---- FIGURE 21
+
+out.comb.unif.model.b  <- do.call(rbind, out.unif.model_b)
+post.nu.model.b  <- out.comb.unif.model.b[,paste0('a[',1:57,']')] %>%  round()
+model.b.long  <- data.frame(value = as.numeric(post.nu.model.b),
+                            area = rep(1:57, each=nrow(post.nu.model.b)))
+
+for(i in 1:nrow(model.b.long)){
+  if(model.b.long$area[i] %in% East_hex){
+    model.b.long$stream[i] = "East"
+  } else if(model.b.long$area[i] %in% West_hex){
+    model.b.long$stream[i] = "West"
+  } else if(model.b.long$area[i] %in% No_site_hex){
+    model.b.long$stream[i] = "No sites"
+  } else if(model.b.long$area[i] == Origin_hex){
+    model.b.long$stream[i] = "Origin"
+  } else {
+    model.b.long$stream[i] = "Neither"
+  }
+}
+
+model.b.long  <- model.b.long %>%
+  mutate(area = factor(area, levels=paste0(1:57), ordered=TRUE),
+         stream = factor(stream, levels=c("Origin", "East", "West", "Neither", "No sites"))) %>% 
+  filter(area <= 47) #Don't plot hex_id>48 (assume no Bantu Expansion)
+
+
+#Plot
+pdf(file=here('output','figures','figure21.pdf'), height=10, width=8)
+
+ggplot(model.b.long, aes(x = value, y = area, fill=stream)) + 
+  geom_density_ridges() +
+  scale_x_reverse(limits=c(5000, 150), breaks=BCADtoBP(c(-3000, -2600, -2200, -1800, -1400, -1000, -600, -200, 200, 600, 1000, 1400, 1800)), labels=c('3000BC', '2600BC', '2200BC', '1800BC', '1400BC', '1000BC', '600BC', '200BC', '200AD', '600AD', '1000AD', '1400AD','1800AD')) +
+  scale_fill_viridis_d(name = "Stream") +
+  xlab(paste('Arrival time,', TeX('$a_k$'))) +
+  ylab(paste('Area,', TeX('$k$')))
+
+dev.off()
