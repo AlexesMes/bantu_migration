@@ -290,19 +290,7 @@ siteInfo$area_id <- as.integer(st_within(sites_sf$geometry, hex_area_win$geometr
 
 # #CHECK ---
 # area_freq  <- plyr::count(siteInfo, 'area_id') ##See how many sites fall in each hex area. Also make sure there are no 'NA' entries
-# 
-# #Check that this lines up visually with how many sites are in each hex area
-# ggplot(data = hex_area_win) +
-#   geom_sf(data = st_buffer(as(gUnaryUnion(sampling_win), 'sf'), 40000), aes(color = "grey50")) + #sampling window with coastal buffer
-#   geom_sf() + #hex grid
-#   geom_sf_label(aes(label = area_ID)) +
-#   geom_sf(data = sites_sf, size=2, alpha=0.5) + #sites
-#   #geom_sf(data = hex_area_win$area_center, size=2, alpha=1, aes(color = "purple")) + #hex-origins
-#   theme(panel.background = element_rect(fill = "lightblue",
-#                                         colour = "lightblue",
-#                                         size = 0.5,
-#                                         linetype = "solid"),
-#         legend.position = "none")
+# To check that this lines up visually with how many sites are in each hex area -- see map_figure2
 
 #-------------------------------------------------------------------------------
 ## Create list with constants and data ----
