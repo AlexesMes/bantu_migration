@@ -16,12 +16,14 @@ library(rgeos)
 library(viridis)
 library(latex2exp)
 library(gridExtra)
+library(grid)
+library(gridBase)
 library(diagram)
 library(quantreg)
 library(coda)
 
+
 source(here('src','orderPPlot.R'))
-source(here('src','diffplot.R'))
 source(here('src','gpqrSim.R'))
 
 #===============================================================================
@@ -105,9 +107,11 @@ dev.off()
 #===============================================================================
 
 ##Effect of parameter variation in covariance matrix
-
 # Variance Covariance Function Parameters ---- FIGURE 3
-pdf(here('output','figures','figure3.pdf'), width=5, height=5)
+pdf(here('output','figures','figure3.pdf'), width=10, height=5)
+
+layout(matrix(c(1,2), nrow = 1, ncol = 2, byrow = TRUE))
+
 plot(NULL, xlim=c(0,500), ylim=c(0.00, 0.05), xlab=TeX('$d_{i,j}$'), ylab=TeX('$cov(i,j)$'))
 
 #Default parameter values
@@ -134,7 +138,7 @@ text(260, 0.006, label=TeX('$\\rho = 150$'), cex=0.85)
 text(365, 0.006, label=TeX('$\\rho = 200$'), cex=0.7)
 text(465, 0.006, label=TeX('$\\rho = 250$'), cex=0.7)
 
-plot(NULL, xlim=c(0,500), ylim=c(0.00, 0.1), xlab=TeX('$d_{i,j}$'), ylab=TeX('$cov(i,j)$'), sub=TeX("The quadratic exponential model and its relationship to the parameters $\\rho$, $\\eta$, and $d_{i,j}$, assuming ${i \\neq j}$."), cex.sub = 0.6)
+plot(NULL, xlim=c(0,500), ylim=c(0.00, 0.1), xlab=TeX('$d_{i,j}$'), ylab=TeX('$cov(i,j)$'), cex.sub = 0.6) #sub=TeX("The quadratic exponential model and its relationship to the parameters $\\rho$, $\\eta$, and $d_{i,j}$, assuming ${i \\neq j}$.")
 for (i in 1:length(etasq))
 {
   curve(etasq[i]*exp(-0.5*(x/rho_def)^2), from=0, to=500, col=cl[i], add = TRUE)
@@ -147,11 +151,12 @@ text(40, 0.095, label=TeX('$\\eta^2 = 0.1$'), cex=0.7)
 
 dev.off()
 
+
 #-------------------------------------------------------------------------------
 # Impact of rho and etasq on variability in dispersal rate ---- FIGURE 4
 
 # Fixed parameters
-n = 300
+n = 600
 origin.point = c(11.40, 5.48)
 beta0 = 3000
 beta1 = 0.5
@@ -191,9 +196,12 @@ for (i in 1:nrow(cov_param))
 }
 
 pdf(file=here('output','figures','figure4.pdf'), width=8, height=8)
-grid.arrange(grobs=out, nrow=3, ncol=3)
+grid.arrange(out[[1]], out[[2]], out[[3]], out[[1]], out[[4]], out[[7]], nrow=2, ncol=3)
 dev.off()
 
+# pdf(file=here('output','figures','figure4.pdf'), width=8, height=8)
+# grid.arrange(grobs=out, nrow=3, ncol=3)
+# dev.off()
 
 #-------------------------------------------------------------------------------
 # Relationship between slope and rate of dispersal ---- FIGURE 5
@@ -551,7 +559,7 @@ load(here("output", "phasemodel_tactsim.RData"))
 
 #For models (i) and (ii) select parameters a and b (i.e. start and end date of occupation in the region)
 post.model.i  <- do.call(rbind, mcmc.samples1)[ , c(1,2)]
-post.model.ii  <- do.call(rbind, mcmc.samples2)[ , c(1,12)]
+post.model.ii  <- do.call(rbind, mcmc.samples2)[ , c(1,27)]
 
 dens.i.nu  <- density(post.model.i[,1],bw = 5)
 dens.i.upsilon  <- density(post.model.i[,2],bw=5)
@@ -560,16 +568,28 @@ dens.ii.upsilon  <- density(post.model.ii[,2],bw=5)
 
 pdf(file=here('output','figures','figure16.pdf'), width=8, height=8)
 
-plot(NULL, xlim=c(3900,2500), ylim=c(0,0.022), xlab='Cal BP', ylab='Posterior Probability') 
+plot(NULL, xlim=c(4100,2700), ylim=c(0,0.022), xlab='Cal BP', ylab='Posterior Probability') 
 polygon(c(dens.i.nu$x, rev(dens.i.nu$x)), c(rep(0,length(dens.i.nu$x)), rev(dens.i.nu$y)), border=NA, col=rgb(0,0.4,0,0.5))
 polygon(c(dens.i.upsilon$x, rev(dens.i.upsilon$x)), c(rep(0,length(dens.i.upsilon$x)), rev(dens.i.upsilon$y)), border=NA, col=rgb(0,0.4,0,0.5))
 polygon(c(dens.ii.nu$x, rev(dens.ii.nu$x)), c(rep(0,length(dens.ii.nu$x)), rev(dens.ii.nu$y)), border=NA, col=rgb(1,0.55,0,0.5))
 polygon(c(dens.ii.upsilon$x, rev(dens.ii.upsilon$x)), c(rep(0,length(dens.ii.upsilon$x)), rev(dens.ii.upsilon$y)), border=NA, col=rgb(1,0.55,0,0.5))
-abline(v=c(3500, 3000),lty=2)
-axis(3,at=c(3500, 3000),labels=c(TeX('$\\nu$'),TeX('$\\upsilon$')))
-legend('topright',legend=c('Non hierarchichal','Hierarchichal'),fill=c('darkgreen','darkorange'))
+abline(v=c(3700, 3200),lty=2)
+axis(3,at=c(3700, 3200),labels=c(TeX('$a$'),TeX('$b$')))
+legend('topright', legend=c('Non hierarchichal','Hierarchichal'), fill=c('darkgreen','darkorange'))
 
 dev.off()
+
+#-------------------------------------------------------------------------------
+# Traceplot of start and end of occupation (a, b) ---- FIGURE 16.2
+
+pdf(file=here('output','figures','figure16.2.pdf'), width=8, height=8)
+par(mfrow=c(2,2))
+traceplot(mcmc.samples1[,'a'], main=TeX('$a$'), smooth=TRUE)
+traceplot(mcmc.samples1[,'b'], main=TeX('$b$'), smooth=TRUE)
+traceplot(mcmc.samples2[,'a'], main=TeX('$a$'), smooth=TRUE)
+traceplot(mcmc.samples2[,'b'], main=TeX('$b$'), smooth=TRUE)
+dev.off()
+
 
 #===============================================================================
 ##Bayesian Hierarchical Phase Models without constraints
@@ -650,31 +670,13 @@ dev.off()
 
 #-------------------------------------------------------------------------------
 # Probability Matrix of nu, model a ---- FIGURE 19
+source(here('src','orderPPlot.R'))
+post.nu.model.a_rel  <- out.comb.unif.model.a[,paste0('a[',1:47,']')] %>%  round() #Keep 47 relevant hex areas
 
-pdf(file=here('output','figures','figure19.pdf'), width=7, height=7.5)
-orderPPlot(post.nu.model.a, name.vec=paste("Area", as.character(1:57)))
+pdf(file=here('output','figures','figure19.pdf'), width=10, height=10.5)
+orderPPlot(post.nu.model.a_rel, name.vec=paste("Area", as.character(1:47)))
 dev.off()
 
-
-#-------------------------------------------------------------------------------
-# Difference Matrix plot of nu, model a ---- FIGURE 20
-
-pdf(file=here('output','figures','figure20.pdf'), width=16, height=11)
-mat <- cbind(c(1,9:15),c(37,2,16:21),c(rep(37,2),3,22:26),c(rep(37,3),4,27:30),c(rep(37,4),5,31:33),c(rep(37,5),6,34:35),c(rep(37,6),7,36),c(rep(37,7),8))
-layout(mat)
-par(mar=c(0,0,0,0))
-for (i in 1:8){plot(NULL,xlim=c(0,1),ylim=c(0,1),xlab="",ylab="",axes=F);text(0.5,0.5,paste('Area',as.character(as.roman(i))),cex=3)}
-par(mar=c(3,0,0,1))
-for (i in 1:8){
-  for (j in 1:8){
-    if (i < j)
-    {
-      diffDens(post.nu.model.a[,i],post.nu.model.a[,j],xlim=c(-1200,1200),prob=0.9)
-    }
-  }
-}
-
-dev.off()
 
 #-------------------------------------------------------------------------------
 ##Bayesian Hierarchical Phase Models with wave-of-advance constraints
@@ -717,3 +719,81 @@ ggplot(model.b.long, aes(x = value, y = area, fill=stream)) +
   ylab(paste('Area,', TeX('$k$')))
 
 dev.off()
+
+#-------------------------------------------------------------------------------
+# Estimated Arrival Date ---- FIGURE 22
+# Setup Functions and Variables
+extract <- function(x)
+{
+  tmp = do.call(rbind, x)
+  tmp2 = tmp[ , grep('^a\\[',colnames(tmp))]
+  qta = apply(tmp2, 2, quantile, prob=c(0, 0.05, 0.25, 0.5, 0.75, 0.95, 1))
+  return(qta)
+}
+
+post.bar <- function(x, i, h, col)
+{
+  # 	lines(c(x[1],x[7]),c(i,i),col=col)
+  rect(xleft=x[2], xright=x[6], ybottom=i-h/5, ytop=i+h/5, border=NA, col=col)
+  rect(xleft=x[3], xright=x[5], ybottom=i-h/3, ytop=i+h/3, border=NA, col=col)
+  lines(c(x[4],x[4]), c(i-h/2,i+h/2), lwd=2, col='grey44')
+}
+
+
+main.col <- c(rgb(68, 1, 84, maxColorValue=255), #Origin
+              rgb(59, 82, 139, maxColorValue=255), #East
+              rgb(33, 144, 140, maxColorValue=255), #West
+              rgb(93, 200, 99, maxColorValue=255), #Neither
+              rgb(253, 231, 37, maxColorValue=255)) #No sites
+
+
+pdf(file=here('output','figures','figure22.pdf'), width=10, height=18, pointsize=4)
+
+# Posterior Arrival Times
+plot(NULL, xlim=c(5000,150), ylim=c(3,125), xlab=paste('Arrival time,', TeX('$a_k$')), ylab=paste('Area,', TeX('$k$')), cex.lab = 2, axes=F)
+tmp.a = extract(out_unif_model_a)
+tmp.b = extract(out.unif.model_b)
+iseq.a = seq(2,by=3,length.out=43)
+iseq.b = seq(1,by=3,length.out=43)
+abline(h=seq(3,by=3,length.out=42), col='darkgrey',lty=2)
+
+for (i in 1:47)
+{
+  #Asign colour index
+  if(i %in% East_hex){ci <- 2
+  } else if(i %in% West_hex){ci <- 3
+  } else if(i %in% No_site_hex){ci <- 5
+  } else if(i == Origin_hex){ci <- 1
+  } else {ci <- 4
+  }
+  #Plot bar in area i
+  post.bar(tmp.a[,i], i=iseq.a[i], h=0.9, col=main.col[ci])
+  post.bar(tmp.b[,i], i=iseq.b[i], h=0.9, col=main.col[ci])
+}
+
+
+axis(2, at=iseq.a+0.5, labels = paste0(1:43), las=2, cex.axis=1.7)
+axis(1, at = BCADtoBP(c(-3000, -2200, -1400, -600, 200, 1000, 1800)), labels=c('3000BC', '2200BC', '1400BC', '600BC', '200AD', '1000AD', '1800AD'), tck=-0.01, cex.axis=1.7)
+axis(3, at = seq(5000, 150, -600), labels=paste0(seq(5000,150,-600),'BP'), tck=-0.01, cex.axis=1.7)
+axis(1, at = BCADtoBP(c(-3000, -2600, -2200, -1800, -1400, -1000, -600, -200, 200, 600, 1000, 1400, 1800)), labels=NA, tck=-0.01) #Minor tick marks
+axis(3, at = seq(5000, 150, -300), labels=NA, tck=-0.01) #Minor tick marks
+box()
+
+post.bar(c(800,700,600,500,400,300,200), i=1.5, h=0.9, col='lightgrey')
+arrows(x0=700, x1=300, y0=0.3, y1=0.3, angle = 90, code = 3, length = 0.01)
+arrows(x0=600, x1=400, y0=0.8, y1=0.8, angle = 90, code = 3, length = 0.01)
+text(x=785, y=0.9, "50% HPDI", cex=1.5)
+text(x=875, y=0.07,"90% HPDI", cex=1.5)
+text(x=820, y=2.3, "Median Posterior", cex=1.5)
+lines(x=c(550,500), y=c(2.35, 2.28))
+text(x=5000, y=2, 'Model A', cex=1.5)
+text(x=5000, y=1, 'Model B', cex=1.5)
+legend(x = 500, y = 122,        
+       legend = c("Origin", "East", "West", "Neither", "No sites"),
+       pch=15,        
+       col = main.col,
+       title = "Stream",
+       cex=1.9,
+       bty = "n") 
+dev.off()
+
