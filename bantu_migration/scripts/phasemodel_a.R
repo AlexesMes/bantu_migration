@@ -26,6 +26,7 @@ theta_init <- dateInfo$median_dates
 delta_init <- siteInfo$diff + buffer
 alpha_init <- siteInfo$earliest + buffer/2
 
+
 #Calibration curve
 constants$cc <- as.numeric(as.factor(dateInfo$calCurve)) #intcal20==1 and shcal20==2
 
@@ -33,7 +34,6 @@ constants$cc <- as.numeric(as.factor(dateInfo$calCurve)) #intcal20==1 and shcal2
 constants$calBP <- c(1000000, constants$calBP, -1000000)
 constants$C14BP <- rbind(c(1000000,1000000), constants$C14BP, c(-1000000,-1000000))
 constants$C14err <- rbind(c(1000,1000), constants$C14err, c(1000,1000))
-
 
 # Initialise regional parameters ----
 # Initialise hex areas which contain sites

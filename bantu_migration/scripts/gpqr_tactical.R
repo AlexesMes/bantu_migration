@@ -128,10 +128,10 @@ runFun  <- function(seed, dat, theta_init, constants, niter, nburnin, thin)
 
 
 ## Setup and Execution of MCMC in Parallel ----
-ncores <- 4
+ncores <- 8
 cl <- makeCluster(ncores)
 # Run the model in parallel:
-seeds <- c(12,45,67,89)
+seeds <- c(12, 45, 67, 89, 21, 54, 76, 98)
 niter = 200000
 nburnin = 100000
 thin = 50

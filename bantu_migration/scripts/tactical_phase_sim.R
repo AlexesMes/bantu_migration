@@ -2,9 +2,9 @@ library(rcarbon)
 library(nimbleCarbon)
 library(here)
 
-set.seed(123)
-Nsites <- 10
-Ndates <- 30
+set.seed(1223)
+Nsites <- 25
+Ndates <- 60
 id_sites <- c(1:Nsites, 
               sample(1:Nsites,
                      size=Ndates-Nsites,
@@ -30,11 +30,10 @@ sim_constants <- list()
 sim_constants$Nsites <- Nsites
 sim_constants$Ndates  <- Ndates
 sim_constants$id_sites  <- id_sites
-sim_constants$a <- 3500
-sim_constants$b <- 3000
+sim_constants$a <- 3700
+sim_constants$b <- 3200
 
 #Simulate ----
-set.seed(123)
 simModel <- nimbleModel(code = sim_model, constants = sim_constants)
 simModel$simulate('delta')
 simModel$simulate('alpha')

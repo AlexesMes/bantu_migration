@@ -103,19 +103,24 @@ unif.model.b <- function(seed, d, theta_init, alpha_init, delta_init, constants,
     
     # Define Dispersal Constraint
     constraint_dispersal ~ dconstraint(a[34]>a[27] & a[34]>a[26] & 
-                                       a[34]>a[21] & a[34]>a[22] & 
-                                       a[27]>a[16] & a[27]>a[17] & 
-                                       a[22]>a[12] & 
-                                       a[34]>a[35] & a[34]>a[43] & 
-                                       a[34]>a[28] & 
-                                       a[28]>a[23] & a[28]>a[29] & a[28]>a[23] & 
-                                       a[29]>a[30] & a[29]>a[24] & a[29]>a[25] & 
-                                       a[30]>a[31] & 
-                                       a[28]>a[18] & a[28]>a[19] &
-                                       a[18]>a[14] & a[18]>a[13] & a[18]>a[9] & 
-                                       a[14]>a[10] & a[14]>a[9] & 
-                                       a[9]>a[6] &  a[9]>a[5] &
-                                       a[6]>a[3])  
+                                         a[34]>a[21] & a[34]>a[22] &
+                                         a[27]>a[16] & a[27]>a[17] &
+                                         a[22]>a[12] &
+                                         a[34]>a[35] & a[34]>a[43] &
+                                         a[34]>a[28] &
+                                         a[28]>a[23] &  
+                                         a[14]>a[9] &
+                                         a[9]>a[5] &
+                                         a[29]>a[25] & a[29]>a[30] &
+                                         a[30]>a[31] &
+                                         a[28]>a[18] & a[28]>a[19] &
+                                         a[18]>a[9] & a[18]>a[14]) 
+    # Constraints which are not implemented: a[28]>a[29] & a[29]>a[24] #to allow for potential leapfrogging ... 
+    #                                        a[6]>a[3] & a[5]>a[3] & 
+    #                                        a[14]>a[10] & 
+    #                                        a[9]>a[6] &
+    #                                        a[18]>a[13]
+    
   })
   # Define Inits
   inits <- list(theta=theta_init, 
@@ -146,9 +151,9 @@ unif.model.b <- function(seed, d, theta_init, alpha_init, delta_init, constants,
 ncores  <-  4
 cl <- makeCluster(ncores)
 seeds <- c(12,34,56,78)
-niter  <- 2000000
-nburnin  <- 1000000
-thin  <- 100
+niter  <- 6000000
+nburnin  <- 3000000
+thin  <- 300
 
 out.unif.model_b  <-  parLapply(cl = cl, 
                                 X = seeds, 
@@ -168,7 +173,7 @@ out.unif.model_b <- mcmc.list(out.unif.model_b)
 
 # Diagnostics ----
 
-rhat.unif.model_b <- gelman.diag(out.unif.model_b,multivariate = FALSE)
+rhat.unif.model_b <- gelman.diag(out.unif.model_b, multivariate = FALSE)
 ess.unif.model_b <- effectiveSize(out.unif.model_b)
 a.unif.model_b <- agreementIndex(dat$cra,
                                  dat$cra_error,

@@ -76,8 +76,8 @@ runFun <- function(seed, dat, theta_init, constants, nburnin, thin, niter)
       sigmaDate[i] <- (cra_error[i]^2 + sigmaCurve[i]^2)^(1/2);
       cra[i] ~ dnorm(mean=c14age[i],sd=sigmaDate[i]);
     }
-    #priors #TODO: adjust priors... 
-    alpha ~ dnorm(3500, sd=200); #beta_0 #Assume the first migration to be somewhere between 3300BP and 3700BP. Note: age of approximate origin, Ngoume, 3618 BP
+    #priors 
+    alpha ~ dnorm(3300, sd=200); #beta_0 #Assume the first migration to be somewhere between 3100BP and 3500BP. Note: age of approximate origin, Ngoume, 3618 BP
     beta ~ dexp(1) #beta_1 #If we were focused on the introduction of farming, a sensible prior can be based on known archaeological examples of farming dispersal rates
     sigma ~ dexp(0.01) #lambda
   })

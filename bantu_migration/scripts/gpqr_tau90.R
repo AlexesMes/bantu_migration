@@ -30,9 +30,7 @@ constants$C14BP <- rbind(c(1000000,1000000), constants$C14BP, c(-1000000,-100000
 constants$C14err <- rbind(c(1000,1000), constants$C14err, c(1000,1000))
 
 # Fixed Inits
-theta_init <- medCal(calibrate(dat$cra, 
-                               dat$cra_error,
-                               calCurve=dateInfo$calCurve))
+theta_init <- dateInfo$median_dates
 
 #-------------------------------------------------------------------------------
 ## Define Run Function ----
@@ -71,6 +69,7 @@ runFun  <- function(seed,dat, theta_init, constants, niter, nburnin, thin)
       lim[i] ~ dconstraint(rate[i]>0)
       mu[i] <- beta0 + (s[i]-beta1)*dist_org[i]
       theta[i] ~ dAsymLaplace(mu=mu[i], sigma=sigma, tau=tau)
+      #Calibration
       mu.date[i] <- interpLin(z=theta[i], x=calBP[], y=C14BP[ , cc[i]]); #c14age #Index cc selects the correct calibration curve
       cra.constraint[i] ~ dconstraint(mu.date[i] < 50193 & mu.date[i] > 95)
       sigmaCurve[i] <- interpLin(z=theta[i], x=calBP[], y=C14err[ , cc[i]]);
@@ -78,11 +77,11 @@ runFun  <- function(seed,dat, theta_init, constants, niter, nburnin, thin)
       cra[i] ~ dnorm(mean=mu.date[i], sd=sd[i]);
     }
     #priors
-    beta0 ~ dnorm(3000, sd=200);
+    beta0 ~ dnorm(3300, sd=200);
     beta1 ~ dexp(1)
     sigma ~ dexp(0.01)
     etasq ~ dexp(20);
-    rho ~ T(dgamma(10, (10-1)/150), min=1, max=4400); #Rho is the length scale parameter defining the rate the covariance declines as a function of distance, i.e. it controls the extent of the spatial autocorrelation, currently defined to be uniform, with a mode 150 and defined between 1km and 4400km (the smallest and largest inter-distance between sampled sites). #TODO: build in a varying spatial autocorrelation -- see notes.
+    rho ~ T(dgamma(10, (10-1)/150), min=1, max=4600); #Rho is the length scale parameter defining the rate the covariance declines as a function of distance, i.e. it controls the extent of the spatial autocorrelation, currently defined to be uniform, with a mode 150 and defined between 1km and 4600km (the smallest and largest inter-distance between sampled sites). #TODO: build in a varying spatial autocorrelation -- see notes.
     mu_s[1:n_sites] <- 0;
     cov_s[1:n_sites, 1:n_sites] <- cov_ExpQ(dist_mat[1:n_sites, 1:n_sites], rho, etasq, sigmasq=0.000001) #Covariance Matrix. sigmasq is assigned a small positive constant value (10^-6) for programmatic reasons (non-positive eigenvectors). This parameter could, however, be used to introduce additional intra-site covariance, if necessary. 
     s[1:n_sites] ~ dmnorm(mu_s[1:n_sites], cov = cov_s[1:n_sites, 1:n_sites])
@@ -92,8 +91,8 @@ runFun  <- function(seed,dat, theta_init, constants, niter, nburnin, thin)
   set.seed(seed)
   inits  <-  list()
   inits$theta  <- theta_init
-  inits$beta0 <- rnorm(1, 3000, 200)
-  inits$beta1 <- rexp(1, 1)
+  inits$beta0 <- rnorm(1, 3300, 200)
+  inits$beta1 <- rexp(1, rate=2)
   inits$sigma  <- rexp(1, 0.01)
   inits$rho  <- rtgamma(1, shape=10, scale=(10-1)/200, min=1, max=4400)
   inits$etasq  <- rexp(1,20)
@@ -132,9 +131,9 @@ ncores <- 4
 cl <- makeCluster(ncores)
 
 # Run the model in parallel:
-seeds <- c(12,45,67,89)
-niter = 2000000
-nburnin = 1000000
+seeds <- c(12, 45, 67, 89)
+niter = 200000
+nburnin = 100000
 thin = 100
 
 #Run the model in parallel
