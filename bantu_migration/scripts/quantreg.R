@@ -123,6 +123,17 @@ quantreg_sample <- coda::mcmc.list(chain_output)
 qrhat <- coda::gelman.diag(quantreg_sample, multivariate = FALSE)
 qess <- coda::effectiveSize(quantreg_sample)
 
+#Agreement index
+agree_quantreg <- agreementIndex(dat$cra,
+                                 dat$cra_error,
+                                 calCurve = subset_dateInfo$calCurve, 
+                                 theta = quantreg_sample[[1]][ , grep("theta", colnames(quantreg_sample[[1]]))] , #a Matrix containing the posterior samples of each date
+                                 verbose = F) #For chain 1 -- can do this for other chains too
+#mean(agree_quantreg$agreement)
+##Agreement index of Mubuga (siteID=389), Kabacusi (167), and Mucucu (390)
+#agree_quantreg$agreement[389]
+#agree_quantreg$agreement[167]
+#agree_quantreg$agreement[390]
 
 #-------------------------------------------------------------------------------
 ## Store Output ----
