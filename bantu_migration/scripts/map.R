@@ -95,7 +95,7 @@ plt.main <- basemap() +
            ylim = c(-35, 6.5)) +
   scale_x_continuous(breaks = seq(8, 50, 2)) +
   labs(colour="Original dataset") +
-  scale_colour_discrete(labels = c("aDRAC", "RussellEIA", "SARD")) +
+  scale_colour_discrete(labels = c("aDRAC", "Collected", "SARD")) +
   theme_few() +
   theme(axis.title = element_blank(),
         plot.background = element_rect(color = NA,
