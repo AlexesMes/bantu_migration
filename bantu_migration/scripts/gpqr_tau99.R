@@ -91,7 +91,7 @@ runFun  <- function(seed,dat, theta_init, constants, niter, nburnin, thin)
   inits  <-  list()
   inits$theta  <- theta_init
   inits$beta0 <- rnorm(1, 3300, 200)
-  inits$beta1 <- rexp(1, rate=2)
+  inits$beta1 <- rexp(1, rate=1)
   inits$sigma  <- rexp(1, 0.01)
   inits$rho  <- rtgamma(1, shape=10, scale=(10-1)/200, min=1, max=4400)
   inits$etasq  <- rexp(1,20)
