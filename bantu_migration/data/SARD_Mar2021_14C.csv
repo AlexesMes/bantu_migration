@@ -423,8 +423,12 @@ Byneskranskop 1,BNK1,-34.583,19.467,South Africa,Western Cape,Y,Fynbos Biome,,co
 Byneskranskop 3,BNK3,-34.583,19.467,South Africa,Western Cape,Y,Fynbos Biome,,conventional 14C,bone,Homo sapiens,Pta-2869,2780,50,LSA,,,rock shelter,,devilliers1982hbb,
 Byneskranskop 3,BNK3,-34.583,19.467,South Africa,Western Cape,Y,Fynbos Biome,,conventional 14C,bone,Homo sapiens,Pta-2969,3190,50,LSA,,,rock shelter,,devilliers1982hbb,
 Byneskranskop 3,BNK3,-34.583,19.467,South Africa,Western Cape,Y,Fynbos Biome,,conventional 14C,bone,Homo sapiens,TO-9531,4820,90,LSA,,,rock shelter,,devilliers1982hbb,
-Caimane,CAI,-26.32,32.13,Mozambique,Maputo Province,S,,,conventional 14C,charcoal,,St-8873,880,210,Iron Age,Later Iron Age,,settlement,,morais1987efc,
-Caimane,CAI,-26.32,32.13,Mozambique,Maputo Province,S,,,conventional 14C,plant remains,,St-8874,715,90,Iron Age,Later Iron Age,,settlement,,morais1987efc,
+Caimane,CAI,-26.32,32.13,Mozambique,Maputo Province,S,,,conventional 14C,charcoal,,St-8873,880,210,Iron Age,Later Iron Age,,settlement,,morais1987efc,"Also refered to as Changalane/Daimane/Caimane Cave and Caimane II. See: PRELIMINARY RESULTS FROM RECENT IRON AGE
+ EXCAVATIONS IN SOUTHERN MOZAMBIQUE
+ MARJAANA KOHTAMÄKI & SHAW BADEN"
+Caimane,CAI,-26.32,32.13,Mozambique,Maputo Province,S,,,conventional 14C,plant remains,,St-8874,715,90,Iron Age,Later Iron Age,,settlement,,morais1987efc,"Also refered to as Changalane/Daimane/Caimane Cave and Caimane II. See: PRELIMINARY RESULTS FROM RECENT IRON AGE
+ EXCAVATIONS IN SOUTHERN MOZAMBIQUE
+ MARJAANA KOHTAMÄKI & SHAW BADEN"
 Camp Workings (Rooiberg Valley),CPW,-24.8,27.77,South Africa,Limpopo,S,Savanna Biome,,conventional 14C,charcoal,,ETH-5127,395,55,Iron Age,Later Iron Age,,settlement,,bandama2015ece,
 Camp Workings (Rooiberg Valley),CPW,-24.8,27.77,South Africa,Limpopo,S,Savanna Biome,,conventional 14C,wood,,GrN-5138,435,45,Iron Age,Later Iron Age,,settlement,,bandama2015ece,
 Canteen Kopje,CKP,-28.517,24.533,South Africa,Northern Cape,S,Savanna Biome,110-120 cm,AMS,charcoal,,Beta-254604,110,40,LSA,,,open site,,forssman2010lsa,Smithfield

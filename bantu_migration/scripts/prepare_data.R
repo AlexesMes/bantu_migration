@@ -11,6 +11,7 @@ library(rgeos)
 library(stringr)
 library(dplyr)
 library(tidyr)
+library(readxl)
 library(here)
 library(ggplot2)
 library(ggthemes)
@@ -74,22 +75,13 @@ subSahara_countries <- c("South Africa",
 #See Seidensticker et al., 2021, "Population collapse in Congo rainforest from 400 CE urges reassessment of the Bantu Expansion" (https://www.science.org/doi/full/10.1126/sciadv.abd8352)
 
 ##East African data
-#Note: There is potential to use these dates, but most seem to be geological (and not archaeological) in origin. Also seems unclear where this database has been used in research subsequent to its creation
-#EA_dat contains data from the York Institute for Tropical Ecosystems dataverse
-#Downloaded from: https://dataverse.harvard.edu/dataset.xhtml?persistentId=doi:10.7910/DVN/NJLNRJ 
-#See Mustaphi et al., 2016, "Radiocarbon dates from eastern Africa in the CARD2.0 format"
-
-##Russell Earliest Bantu dates
-#Note: This database has already been agregated at the site level (keeping the earliest dates at each site) #TODO: Obtain unagregated site from Thembi Russell 
-#Downloaded from: https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0087854 (Can also be downloaded from: https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0215573)
-#See Russell et al., 2014, "Modelling the spread of farming in the Bantu-Speaking regions of Africa"
+#Collected dates mainly from looking up dates mentioned by Russell et al., 2014, "Modelling the spread of farming in the Bantu-Speaking regions of Africa" in old journals
 
 ##Kay West Africa data
 #KayWA_dat contains data collected in West Africa associated with LandUse6K
 #Summary data can be downloaded from: https://link.springer.com/article/10.1007/s10963-019-09131-2#Sec32 
 #See Kay et al., 2019, "Diversification, Intensification and Specialization: Changing Land Use in Western Africa from 1800 BC to AD 1500"
-#Radiocarbon dates are included in p3k14c database, but complete raw data isn't seperately available yet.
-
+#Radiocarbon dates are included in p3k14c database, but complete raw data isn't separately available yet.
 
 ##p3k14c
 #p3k14c_dat contains data from the p13k14c Global Archaeological Radiocarbon Database
@@ -102,11 +94,11 @@ subSahara_countries <- c("South Africa",
 ## Read data sets  ----
 SARD_dat <- read.csv(here("data", "SARD_Mar2021_14C.csv"))
 HumActCA_dat <- read.csv(here("data", "HumActCA_Dec2020_14C.csv")) #Alternatively read in "aDRAC_April2023_14C.csv" -- this is a more up to date version from the aDRAC GitHub repository, but then we need to also filter for Bantu associated dates
-Russell_EIA_dat <- read.csv(here("data", "Russell_EarliestBantu_Jan2014_14C.csv")) 
-#EA_dat <- read.csv(here("data", "EastAfrica_April2016_14C.csv"))
-#KayWA_dat <- read.csv(here("data", "KayWA_SUMMARY_May2019_14C.csv")) #TODO: Replace this summary data with actual radiocarbon data when available --- for now, p3k14c contains these dates
+aDRAC_dat <- read.csv(here("data", "aDRAC_Oct2023_14C.csv"))#This is a more up-to-date version of HumActCA_dat, but not all the dates in aDRAC_dat are iron age, whereas all dates in the HumActCA are
+Collected_EIA_dat <- read_excel(here("data", "collected_dates.xlsx"), sheet = "Collected_dates_final") 
+p3k14c_dat <- read.csv(here("data", "p3k14c_raw.csv")) #Kay's West African dataset can be found here
 
-p3k14c_dat <- read.csv(here("data", "p3k14c_raw.csv")) #p3k14c::p3k14c_data will give the scrubbed and fuzzed p3k14c dataset
+
 
 #-------------------------------------------------------------------------------
 ## Data filtering and cleaning ----
@@ -117,40 +109,26 @@ SARD_sum_df <- SARD_dat %>%
   rename(labCode=Lab.ID, siteName=X.Site, lat=DecdegS, long=DecdegE, c14date=Date, c14std=Uncertainty) %>%
   mutate(c14date = as.numeric(c14date), c14std=as.numeric(c14std), dataorigin="SARD")  %>%
   filter(!is.na(lat) & !is.na(long) & !is.na(c14std) & !is.na(c14date)) %>% 
-  filter(siteName !="Bambata Cave") #Designated pre-bantu (references given in Isern and Fort 2019, Suplementary Material S1, https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0215573) #TODO: decide if Shongweni North and South dates are to be removed? Isern and Fort also mention removing Shongweni Waterworks Park (2030 uncal BP) as being pre-bantu
+  filter(siteName !="Bambata Cave") #Designated pre-bantu (references given in Isern and Fort 2019, Suplementary Material S1, https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0215573) 
 
-Russell_sum_df <- Russell_EIA_dat %>%
-  dplyr::select(Site, Latitude, Longitude, Uncal.BP, St.Dev) %>%
-  rename(siteName=Site, lat=Latitude, long=Longitude, c14date=Uncal.BP, c14std=St.Dev) %>%
-  mutate(c14date = as.numeric(c14date), c14std=as.numeric(c14std), dataorigin="RussellEIA")  %>%
-  filter(!is.na(lat) & !is.na(long) & !is.na(c14std) & !is.na(c14date)) %>% 
-  filter(siteName %!in% c("Bambata Cave Series", "Nakapapula", "Kwelikwiji", "Kumadzulo", "Ndonde", "Shongweni Waterworks Park")) %>% #Designated pre-bantu (references given in Isern and Fort 2019, Suplementary Material S1, https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0215573)
-  filter(siteName %!in% c('Bisoli', 'Bokele', 'Boma', 'Broadhurst', 'Broederstroom, 24/73 K', 'Campo', 'Chibuene', 'Ditouba', 'Djambala', 'Enkwazini', 'Hola hola', 'Imbonga', 'Kinsale Farm', 'Klein Afrika', 'Langubhela', 'Mabveni', 'Makokou', 'Malemba-Nkulu', 'Maluba', 'Massingir', 'Matola IV', 'Mbilap_ 4', 'Mpassa farm', 'Munda', 'Ntadi ntadi Cave', 'Ntsitsana, Pit 1', 'Oyem 2', 'Pikunda', 'Silver Leaves', 'Taukome (lower levels)', 'Toteng I', 'Tchissanga Ouest')) #Duplicate site entries already present in aDRAC and SARD databases. We prefer the entries in those databases, since they have labcodes attached and are unagregated
-Russell_sum_df[,"labCode"] <- NA #No Lab Code present in this site level dataset. Perhaps in the unagregated df?
-
-HumActCA_sum_df <- HumActCA_dat %>% #I think all the sites in this database are associated with Bantu pottery finds
-  filter(CLASS %!in% c('IIa', 'IIb', 'IIc', 'IIIa', 'IIIb', 'IIIc')) %>% #Filter for unreliable class of dates III and irrelevant (according to Seidensticker et al.) dates II (TODO: check whether class II dates should actually be excluded)
-  dplyr::select(LABNR, SITE, LAT, LONG, C14AGE, C14STD) %>%
-  rename(labCode= LABNR, siteName=SITE, lat=LAT, long=LONG, c14date=C14AGE, c14std=C14STD) %>%
-  mutate(c14date = as.numeric(c14date), c14std=as.numeric(c14std), dataorigin="HumActCA") %>%
+Collected_sum_df <- Collected_EIA_dat %>%
+  dplyr::select(LabID, Age, Error, Long, Lat, SiteName) %>%
+  rename(labCode=LabID, siteName=SiteName, lat=Lat, long=Long, c14date=Age, c14std=Error) %>%
+  mutate(c14date = as.numeric(c14date), c14std=as.numeric(c14std), dataorigin="Collected")  %>%
   filter(!is.na(lat) & !is.na(long) & !is.na(c14std) & !is.na(c14date)) 
 
-# EA_sum_df <- EA_dat %>%  #TODO: filter for Bantu dates
-#   filter(Type.of.Date == "Archaeological") %>% 
-#   select(Lab.Number, Site.Identifier, Latitude, Longitude, Normalized.Age, NA.Sigma) %>%
-#   rename(labCode= Lab.Number, siteName=Site.Identifier, lat=Latitude, long=Longitude, c14date=Normalized.Age, c14std=NA.Sigma) %>%
-#   mutate(c14date = as.numeric(c14date), c14std=as.numeric(c14std), dataorigin="EastAfrican") %>%
-#   filter(!is.na(lat) & !is.na(long) & !is.na(c14std) & !is.na(c14date))
-
-# KayWA_sum_df <- KayWA_dat %>%  #TODO: filter for Bantu dates
-#   select(Site.Name, X, Y) %>%
-#   rename(site=Site.Name, lat=X, long=Y) %>%
-#   mutate(c14date = as.numeric(c14date), c14std=as.numeric(c14std), dataorigin="KayWestAfrican") 
-
+aDRAC_sum_df <- aDRAC_dat %>% #To find extra dates not in HumActCA
+  dplyr::select(LABNR, SITE, LAT, LONG, C14AGE, C14STD, PHASE, CLASS) %>%
+  rename(labCode= LABNR, siteName=SITE, lat=LAT, long=LONG, c14date=C14AGE, c14std=C14STD) %>%
+  filter(!is.na(lat) & !is.na(long) & !is.na(c14std) & !is.na(c14date)) %>%
+  mutate(c14date = as.numeric(c14date), c14std=as.numeric(c14std), dataorigin="aDRAC") %>%
+  filter(siteName %in% HumActCA_dat$SITE | PHASE %in% c("N; EIA", "LIA", "EIA", "Iron Age")) %>% #All dates in HumActCA_dat should be associated with Bantu pottery finds
+  filter(CLASS %!in% c('IIa', 'IIb', 'IIc', 'IIIa', 'IIIb', 'IIIc')) %>% #Filter for unreliable class of dates III and irrelevant (according to Seidensticker et al.) dates II
+  dplyr::select(-PHASE, -CLASS)
 
 p3k14c_sum_df <- p3k14c_dat %>%
   filter(Continent=="Africa" & 
-           (Country %in% c(subSahara_countries, "CAR", "Equat.Guinea", "DRC")) & #TODO: refine the determination of whether the site is Bantu at a later stage -- specifically filter for the correct period
+           (Country %in% c(subSahara_countries, "CAR", "Equat.Guinea", "DRC")) & 
            (Age != "Bomb C14")) %>% #Just cleaning up...
   dplyr::select(LabID, SiteName, Lat, Long, Age, Error, Source) %>%
   rename(labCode = LabID, siteName=SiteName, lat=Lat, long=Long, c14date=Age, c14std=Error, source=Source) %>%
@@ -163,13 +141,30 @@ p3k14c_sum_df <- p3k14c_dat %>%
 
 #Note, since p3k14c is a database of databases it contains a fair amount of information already present in the other databases, such as SARD. We want to use the original databases as far as possible. 
 p3k14c_fil_df <- p3k14c_sum_df %>%
-  filter(!(source %in% c("aDRAC", "SARD", "RussellEIA"))) %>%  # This represents the HumActCA_dat, SARD_dat, and Russell_sum_df databases respectively
+  filter(!(source %in% c("aDRAC", "SARD", "Collected"))) %>%
   dplyr::select(-source)
 #Note there are 7 sites which are excluded (above) from aDRAC (being class II or class III) dates, which p3k14c adds back into the dataset here. TODO: take a look at this more closely... 
 
-# Combine datasets ----
-bantu_sites_df <- bind_rows(SARD_sum_df, HumActCA_sum_df, Russell_sum_df) %>% #TODO: Might need more careful filtering of Bantu dates... 
-  #bind_rows(p3k14c_fil_df, SARD_sum_df, HumActCA_sum_df, Russell_sum_df) %>%
+##------------
+# KAY_sum_df <- p3k14c_sum_df %>% 
+#   filter(source == "Kay_WestAfrica") %>% 
+#   dplyr::select(-source) %>% 
+#   mutate(dataorigin="Kay_WestAfrica") %>%
+#   filter(labCode %!in% aDRAC_sum_df$labCode) #Covers the same area, filter to avoid repetition #Rest of filtering done by hand
+# 
+# # Combine datasets ----
+# combined_WAsites_df <- bind_rows(KAY_sum_df, aDRAC_sum_df) %>%
+#   mutate(dataorigin=as.factor(dataorigin)) %>% 
+#   filter((c14date != 0) & (c14std != 0)) %>% #Apparently some of these datasets had modern dates (indicated with c14 date and error of 0), we remove these
+#   filter((c14date <=3357) & (c14date >=246)) #We assume an approximate origin at Ngoume, date 3357 +- 95BP. Dates earlier than this are assumed to not be of Bantu origin #TODO: build some flexibility into this... #Further, we assume the Dutch arrival in the Cape (1652) as the cut-off. Dates after this point of colonial contact are not considered.
+# 
+# # Write to csv for more careful sorting ... 
+# write.csv(combined_WAsites_df, file=here('data', "combined_WAdates.csv"), row.names = FALSE)
+
+##------------
+## Combine datasets ----
+bantu_sites_df <- bind_rows(SARD_sum_df, aDRAC_sum_df, Collected_sum_df) %>% 
+  #bind_rows(p3k14c_fil_df, KAY_sum_df, SARD_sum_df, aDRAC_sum_df, Collected_sum_df) %>%
   mutate(dataorigin=as.factor(dataorigin)) %>% 
   filter((c14date != 0) & (c14std != 0)) %>% #Apparently some of these datasets had modern dates (indicated with c14 date and error of 0), we remove these
   filter((c14date <=3357) & (c14date >=246)) #We assume an approximate origin at Ngoume, date 3357 +- 95BP (see later in this script). Dates earlier than this are assumed to not be of Bantu origin #TODO: build some flexibility into this... #Further, we assume the Dutch arrival in the Cape (1652) as the cut-off. Dates after this point of colonial contact are not considered.
