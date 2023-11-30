@@ -50,7 +50,7 @@ init_empty_area <- function(init_df) {
     
     if (i %!in% area_ids){
       empty_hex_id <- i #Id of empty hex
-      neighbour_hex <- which.min(abs(i - area_ids)) #Determine closest hex neighbor which has sites. If there are more than one neighbour hex with sites, it selects the first observation (i.e. hex with the smallest id, since ids are in ascending order). 
+      neighbour_hex <- which.min(abs(i - area_ids)) #Determine closest hex neighbor which has sites. If there are more than one neighbour hex with sites, it selects the first observation (i.e. hex with the smallest id, since ids are in ascending order). #TODO: give preference to sites which are north over south and west over east!
       neighbour_hex_id <- area_ids[neighbour_hex] #Determine area id of closest hex neighbor
       neighbour_date <- init_df[neighbour_hex , 2] #Select the date associated with the neighbour hex 
       init_df <- rbind(init_df, c(i, neighbour_date)) #Assign this date to the empty hex
@@ -102,7 +102,8 @@ unif.model.b <- function(seed, d, theta_init, alpha_init, delta_init, constants,
     gamma2 ~ T(dnorm(mean=200,sd=100),1,500)
     
     # Define Dispersal Constraint
-    constraint_dispersal ~ dconstraint(a[34]>a[27] & a[34]>a[26] & 
+    constraint_dispersal ~ dconstraint(a[30]>a[32] & a[34]>a[37] & a[34]>a[38] & a[34]>a[39] & a[34]>a[33] & a[34]>a[42] & a[34]>a[41] & a[34]>a[43] & a[34]>a[44] & a[34]>a[45] & a[34]>a[46] & a[34]>a[47] & a[34]>a[40] & a[34]>a[48] & a[16]>a[7] & a[21]>a[11] & a[11]>a[4] & a[18]>a[8] & a[24]>a[15] & a[28]>a[20] & #a[17]>a[8] & #a[8]>a[2] & #a[19]>a[15] & a[25]>a[20] & 
+                                         a[34]>a[27] & a[34]>a[26] & 
                                          a[34]>a[21] & a[34]>a[22] &
                                          a[27]>a[16] & a[27]>a[17] &
                                          a[22]>a[12] &

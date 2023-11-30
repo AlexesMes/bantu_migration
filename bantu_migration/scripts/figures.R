@@ -14,6 +14,8 @@ library(maptools)
 library(sf)
 library(rgeos)
 library(viridis)
+library(cowplot)
+library(wesanderson)
 library(latex2exp)
 library(gridExtra)
 library(grid)
@@ -23,8 +25,11 @@ library(quantreg)
 library(coda)
 
 
+
 source(here('src','orderPPlot.R'))
 source(here('src','gpqrSim.R'))
+
+`%!in%` <- Negate(`%in%`)
 
 #===============================================================================
 ## Load Data
@@ -43,6 +48,22 @@ sampling_win  <- sampling_win[order(raster::area(sampling_win), decreasing=TRUE)
 
 win.sf  <- as(sampling_win,'sf')
 win = sampling_win
+
+#===============================================================================
+#Sites per date plot ---- FIGURE 1.1
+
+date_freq  <- dateInfo %>% 
+  count(siteID, sort=TRUE) %>%
+  rename(n_dates = n)  
+  #count(n_dates, sort=TRUE) %>% 
+  #rename(n_sites = n)
+  
+pdf(file=here('output','figures','figure1.1.pdf'), width=8.5, height=7)
+ggplot(date_freq, aes(x=n_dates)) +
+  geom_bar() +
+  scale_y_continuous(name="Number of sites", breaks=seq(0, 350, 25)) +
+  scale_x_continuous(name="Number of dates per site", breaks=seq(1, 29, 2)) 
+dev.off()
 
 #===============================================================================
 ##Bayesian Quantile Regression
@@ -100,6 +121,51 @@ dev.off()
 pdf(here('output','figures','figure2.pdf'),height=5,width=5.5)
 postHPDplot(1/post.beta.quantreg, xlab='km/year', ylab='Probability Density', prob=.90, main=TeX('Posterior of $1/\\beta_1$'))
 dev.off()
+
+#-------------------------------------------------------------------------------
+##Prior predictive checks 
+
+#Prior Predictive Check beta0, beta1 ---- FIGURE 2.1
+
+nsim <- 5000
+beta0.prior <- rnorm(nsim, mean=3300, sd=200)
+beta1.prior  <- rexp(nsim, rate=1)
+slope  <-  beta1.prior
+beta0.prior  <- beta0.prior[which((1/slope)>0)] #Ensuring beta0 is positive
+slope  <- slope[which((1/slope)>0)] #Ensuring dispersal rate is always positive
+nsim2  <- length(slope)
+dists  <- -100:4600
+slope.mat = matrix(NA, nrow=nsim2, ncol=length(dists))
+for (i in 1:nsim2)
+{
+  slope.mat[i,] <- beta0.prior[i] - slope[i]*c(dists)	
+}
+
+pdf(file=here('output','figures','figure2.1.pdf'), width=6, height=6)
+plot(NULL, xlim=c(0,4500), ylim=c(3400,1300), type='n', xlab='Distance (km)', ylab='Cal BP', axes=F)
+axis(1, at=c(0,500, 1000, 1500, 2000, 2500, 3000, 3500, 4000, 4500), cex.axis=0.9) #X-axis
+axis(2, at=seq(3400, 1400, -400))
+axis(4, at=BCADtoBP(c(-1400, -1000, -600, -200, 200, 600)), labels=c('1400BC','1000BC','600BC','200BC','200AD','600AD'), cex.axis=0.9)
+box()
+polygon(x=c(dists, rev(dists)), y=c(apply(slope.mat, 2, quantile,prob=0.025), rev(apply(slope.mat, 2, quantile, prob=0.975))), border=NA, col=rgb(0.67,0.84,0.9,0.5))
+polygon(x=c(dists, rev(dists)), y=c(apply(slope.mat, 2, quantile,prob=0.25), rev(apply(slope.mat, 2, quantile, prob=0.75))), border=NA, col=rgb(0.25,0.41,0.88,0.5))
+
+abline(a=3300, b=-1/0.5, lty=2)
+text(x=500, y=1600, label='0.5km/yr')
+
+abline(a=3300, b=-1, lty=2)
+text(x=1700, y=1900, label='1km/yr')
+
+abline(a=3300, b=-1/3, lty=2)
+text(x=3500, y=2000, label='3km/yr')
+
+abline(a=3300, b=-1/5, lty=2)
+text(x=2250, y=2950, label='5km/yr')
+
+legend('bottomright', legend=c('50% percentile range', '95% percentile range'), fill=c(rgb(0.67,0.84,0.9,0.5), rgb(0.25,0.41,0.88,0.5)))
+dev.off()
+
+
 
 
 #===============================================================================
@@ -600,6 +666,10 @@ West_hex <- c(26, 22, 21, 17, 16, 12)
 No_site_hex <- c(1, 2, 4, 7, 8, 11, 15, 20, 32, 33, 37, 38 ,39, 40, 41, 42, 44, 45, 46, 47)
 Origin_hex <- 34
 
+#Hex areas with and without out sites
+Hex_without_sites <- c(8, 11, 15, 20, 32, 33, 37:42)
+Hex_with_sites <- which(rep(1:43) %!in% c(8, 11, 15, 20, 32, 33, 37:42))
+
 #Load Data ----
 load(here("output", "phase_model_a.RData"))
 load(here("output","phase_model_b.RData"))
@@ -653,7 +723,7 @@ for(i in 1:nrow(model.a.long)){
 model.a.long  <- model.a.long %>%
   mutate(area = factor(area, levels=paste0(1:57), ordered=TRUE),
          stream = factor(stream, levels=c("Origin", "East", "West", "Neither", "No sites"))) %>% 
-  filter(area <= 47) #Don't plot hex_id>48 (assume no Bantu Expansion)
+  filter(area %in% c(3,5,6,8:43)) #Don't plot areas where we know no Bantu Expansion took place
 
 
 #Plot
@@ -671,10 +741,10 @@ dev.off()
 #-------------------------------------------------------------------------------
 # Probability Matrix of nu, model a ---- FIGURE 19
 source(here('src','orderPPlot.R'))
-post.nu.model.a_rel  <- out.comb.unif.model.a[,paste0('a[',1:47,']')] %>%  round() #Keep 47 relevant hex areas
+post.nu.model.a_rel  <- out.comb.unif.model.a[,paste0('a[',c(3,5,6,8:43),']')] %>%  round() #Keep 47 relevant hex areas
 
 pdf(file=here('output','figures','figure19.pdf'), width=10, height=10.5)
-orderPPlot(post.nu.model.a_rel, name.vec=paste("Area", as.character(1:47)))
+orderPPlot(post.nu.model.a_rel, name.vec=paste("Area", c(3,5,6,8:43)))
 dev.off()
 
 
@@ -705,7 +775,7 @@ for(i in 1:nrow(model.b.long)){
 model.b.long  <- model.b.long %>%
   mutate(area = factor(area, levels=paste0(1:57), ordered=TRUE),
          stream = factor(stream, levels=c("Origin", "East", "West", "Neither", "No sites"))) %>% 
-  filter(area <= 47) #Don't plot hex_id>48 (assume no Bantu Expansion)
+  filter(area %in% c(3,5,6,8:43)) #Don't plot areas where we know no Bantu Expansion took place
 
 
 #Plot
@@ -757,7 +827,7 @@ iseq.a = seq(2,by=3,length.out=43)
 iseq.b = seq(1,by=3,length.out=43)
 abline(h=seq(3,by=3,length.out=42), col='darkgrey',lty=2)
 
-for (i in 1:47)
+for (i in c(3,5,6,8:43)) #Don't plot areas where we know no Bantu Expansion took place
 {
   #Asign colour index
   if(i %in% East_hex){ci <- 2
@@ -796,4 +866,249 @@ legend(x = 500, y = 122,
        cex=1.9,
        bty = "n") 
 dev.off()
+
+
+#-------------------------------------------------------------------------------
+## Plot HEX areas with median arrival times ---- FIGURE map_figure3
+
+#Extract arrival times for model A
+out.comb.unif.modela  <- do.call(rbind, out_unif_model_a)
+post.nu.modela  <- out.comb.unif.modela[,paste0('a[',1:43,']')]  %>% round() 
+hpdi.modela  <- apply(post.nu.modela, 2, function(x){HPDinterval(as.mcmc(x), prob = .90)}) 
+med.modela  <- apply(post.nu.modela, 2, median)
+hi90_modA  <- hpdi.modela[1,]
+lo90_modA  <- hpdi.modela[2,]
+
+median_hex_dates_modA <- hex_area_win %>% 
+  filter(area_ID %in% 1:43) %>% 
+  mutate(median_date = med.modela,
+         hpdi_high = hi90_modA,
+         hpdi_low = lo90_modA,
+         contains_sites = as.factor(case_when(area_ID %in% Hex_with_sites ~ 1, area_ID %in% Hex_without_sites ~ 0))) %>% 
+  filter(area_ID %!in% c(1, 2, 3, 4, 7))
+
+#Extract arrival times for model B
+out.comb.unif.modelb  <- do.call(rbind, out.unif.model_b)
+post.nu.modelb  <- out.comb.unif.modelb[,paste0('a[',1:43,']')]  %>% round()
+hpdi.modelb  <- apply(post.nu.modelb, 2, function(x){HPDinterval(as.mcmc(x), prob = .90)}) 
+med.modelb  <- apply(post.nu.modelb, 2, median)
+hi90_modB  <- hpdi.modelb[1,]
+lo90_modB  <- hpdi.modelb[2,]
+
+median_hex_dates_modB <- hex_area_win %>% 
+  filter(area_ID %in% 1:43) %>% 
+  mutate(median_date = med.modelb,
+         hpdi_high = hi90_modB,
+         hpdi_low = lo90_modB) %>% 
+  filter(area_ID %!in% c(1, 2, 3, 4, 7))
+
+
+#Plot
+#-----MODEL A
+modA <- ggplot(data = median_hex_dates_modA) +
+          geom_sf(data = st_buffer(as(gUnaryUnion(sampling_win), 'sf'), 40000), aes(color = "grey50")) + #sampling window with coastal buffer
+          geom_sf(aes(fill = median_date, alpha=contains_sites)) + #hex grid
+          scale_fill_viridis_c(option="F", direction=-1) +
+          scale_alpha_manual(values=c(0.45, 1)) +
+          xlab('Longitude') +
+          ylab('Latitude') +
+          geom_sf_label(aes(label = ifelse(contains_sites==0, NA, paste0(median_date, "BP"))), label.size  = NA, alpha = 0.4, size=3.5) + #hex grid labels
+          theme(panel.background = element_rect(fill = "lightblue",
+                                                colour = "lightblue",
+                                                size = 0.5,
+                                                linetype = "solid"),
+                legend.position = "none")
+
+
+
+
+modAHPDIlow <- ggplot(data = median_hex_dates_modA) +
+  geom_sf(data = st_buffer(as(gUnaryUnion(sampling_win), 'sf'), 40000), aes(color = "grey50")) + #sampling window with coastal buffer
+  geom_sf(aes(fill = hpdi_low, alpha=contains_sites)) + 
+  ggtitle('90% HPDI (low)') +
+  scale_fill_viridis_c(option="F", direction=-1) +
+  scale_alpha_manual(values=c(0.45, 1)) +
+  theme(axis.line=element_blank(),
+        axis.text.x=element_blank(),
+        axis.text.y=element_blank(),
+        axis.ticks=element_blank(),
+        panel.background = element_rect(fill='transparent'),
+        plot.background = element_rect(fill='transparent', color=NA),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        panel.border = element_blank(),
+        plot.title = element_text(size=12),
+        legend.position = "none")
+
+modAHPDIhigh <- ggplot(data = median_hex_dates_modA) +
+  geom_sf(data = st_buffer(as(gUnaryUnion(sampling_win), 'sf'), 40000), aes(color = "grey50")) + #sampling window with coastal buffer
+  geom_sf(aes(fill = hpdi_high, alpha=contains_sites)) + 
+  ggtitle('90% HPDI (high)') +
+  scale_fill_viridis_c(option="F", direction=-1) +
+  scale_alpha_manual(values=c(0.45, 1)) +
+  theme(axis.line=element_blank(),
+        axis.text.x=element_blank(),
+        axis.text.y=element_blank(),
+        axis.ticks=element_blank(),
+        panel.background = element_rect(fill='transparent'),
+        plot.background = element_rect(fill='transparent', color=NA),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        panel.border = element_blank(),
+        plot.title = element_text(size=12),
+        legend.position = "none")
+
+
+A <- cowplot::ggdraw() +
+  draw_plot(modA) +
+  draw_plot(modAHPDIlow, 
+            x = .73, y = .285, width = .25, height = .25) +
+  draw_plot(modAHPDIhigh, 
+            x = .73, y = .06, width = .25, height = .25)
+
+#-----MODEL B
+modB <- ggplot(data = median_hex_dates_modB) +
+          geom_sf(data = st_buffer(as(gUnaryUnion(sampling_win), 'sf'), 40000), aes(color = "grey50")) + #sampling window with coastal buffer
+          geom_sf(aes(fill = median_date)) + #hex grid
+          scale_fill_viridis_c(option="F", direction=-1) +
+          geom_sf_label(aes(label = paste0(median_date, "BP")), label.size  = NA, alpha = 0.4, size=3.5) + #hex grid labels
+          xlab('Longitude') +
+          ylab('Latitude') +
+          theme(panel.background = element_rect(fill = "lightblue",
+                                                colour = "lightblue",
+                                                size = 0.5,
+                                                linetype = "solid"),
+                legend.position = "none")
+
+modBHPDIlow <- ggplot(data = median_hex_dates_modB) +
+  geom_sf(data = st_buffer(as(gUnaryUnion(sampling_win), 'sf'), 40000), aes(color = "grey50")) + #sampling window with coastal buffer
+  geom_sf(aes(fill = hpdi_low)) + 
+  ggtitle('90% HPDI (low)') +
+  scale_fill_viridis_c(option="F", direction=-1) +
+  theme(axis.line=element_blank(),
+        axis.text.x=element_blank(),
+        axis.text.y=element_blank(),
+        axis.ticks=element_blank(),
+        panel.background = element_rect(fill='transparent'),
+        plot.background = element_rect(fill='transparent', color=NA),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        panel.border = element_blank(),
+        plot.title = element_text(size=12),
+        legend.position = "none")
+
+modBHPDIhigh <- ggplot(data = median_hex_dates_modB) +
+  geom_sf(data = st_buffer(as(gUnaryUnion(sampling_win), 'sf'), 40000), aes(color = "grey50")) + #sampling window with coastal buffer
+  geom_sf(aes(fill = hpdi_high)) + 
+  ggtitle('90% HPDI (high)') +
+  scale_fill_viridis_c(option="F", direction=-1) +
+  theme(axis.line=element_blank(),
+        axis.text.x=element_blank(),
+        axis.text.y=element_blank(),
+        axis.ticks=element_blank(),
+        panel.background = element_rect(fill='transparent'),
+        plot.background = element_rect(fill='transparent', color=NA),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        panel.border = element_blank(),
+        plot.title = element_text(size=12),
+        legend.position = "none")
+
+
+B <- cowplot::ggdraw() +
+  draw_plot(modB) +
+  draw_plot(modBHPDIlow, 
+            x = .73, y = .285, width = .25, height = .25) +
+  draw_plot(modBHPDIhigh, 
+            x = .73, y = .06, width = .25, height = .25)
+
+#Output
+pdf(file=here('output','figures','map_figure_arrival.pdf'), width=15, height=8)
+grid.arrange(A, B, ncol=2, padding=0)
+dev.off()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#-------------------------------------------------------------------------------
+## Plot HEX areas with median arrival times ---- FIGURE map_figure3
+
+#Extract arrival times for model A
+out.comb.unif.modela  <- do.call(rbind, out_unif_model_a)
+post.nu.modela  <- out.comb.unif.modela[,paste0('a[',1:43,']')]  %>% round() 
+hpdi.modela  <- apply(post.nu.modela, 2, function(x){HPDinterval(as.mcmc(x), prob = .90)}) 
+med.modela  <- apply(post.nu.modela, 2, median)
+hi90_modA  <- hpdi.modela[1,]
+lo90_modA  <- hpdi.modela[2,]
+
+median_hex_dates_modA <- hex_area_win %>% 
+  filter(area_ID %in% 1:43) %>% 
+  mutate(median_date = med.modela,
+         hpdi_high = hi90_modA,
+         hpdi_low = lo90_modA,
+         contains_sites = as.factor(case_when(area_ID %in% Hex_with_sites ~ 1, area_ID %in% Hex_without_sites ~ 0))) %>% 
+  filter(area_ID %!in% c(1, 2, 3, 4, 7))
+
+
+#Plot
+#-----MODEL A
+modA <- ggplot(data = median_hex_dates_modA) +
+  geom_sf(data = st_buffer(as(gUnaryUnion(sampling_win), 'sf'), 40000), aes(color = "grey50")) + #sampling window with coastal buffer
+  geom_sf(aes(fill = median_date, alpha=contains_sites)) + #hex grid
+  scale_fill_viridis_c(option="F", direction=-1) +
+  scale_alpha_manual(values=c(0.45, 1)) +
+  theme(
+    panel.background = element_rect(fill = "transparent", colour = NA),
+    plot.background = element_rect(fill = "transparent", colour = NA),
+    legend.position = "none"
+  )
+  # theme(panel.background = element_rect(fill = "lightblue",
+  #                                       colour = "lightblue",
+  #                                       size = 0.5,
+  #                                       linetype = "solid"),
+  #       legend.position = "none")
+
+
+A <- cowplot::ggdraw() +  draw_plot(modA) 
+
+
+#Output
+pdf(file=here('output','figures','map_africa.pdf'), width=15, height=8)
+grid.arrange(A, ncol=1, padding=0)
+dev.off()
+
+
 
