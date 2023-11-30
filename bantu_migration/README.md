@@ -31,12 +31,12 @@ All models were defined and fitted using the [nimble](https://r-nimble.org/) R p
 
 # File Relationships
 
-| **Analysis**                                              | **Data Generating Script**| **Input Data**           | **Analyses Script**   | **R Image containing Results**    |
-|-----------------------------------------------------------|---------------------------|--------------------------|-----------------------|-----------------------------------|
-| Bayesian Quantile Regression (Observed, tau=0.90)         | NA                        | c14rice.RData            | quantreg.R            | quantreg_res.RData                |
-| Gaussian Process Quantile Regression (Simulated)          | tactical_gpqr_sim.R       | tactical_sim_gpqr.RData  | gpqr_tactical.R       | gpqr_tactsim.RData                |
-| Gaussian Process Quantile Regression (Observed, tau=0.90) | NA                        | c14rice.RData            | gpqr_tau90.R          | gpqr_tau90.RData                  |
-| Gaussian Process Quantile Regression (Observed, tau=0.99) | NA                        | c14rice.RData            | gpqr_tau99.R          | gpqr_tau99.RData                  |
-| Hierarchical Phase Model (Simulated)                      | tactical_phase_sim.R      | tactical_sim_phase.RData | phasemodel_tactical.R | phasemodel_tactsim.RData          |
-| Hierarchical Phase Model (observed, model a)              | NA                        | c14rice.RData            | phasemodel_a.R        | phase_model_a.RData               |
-| Hierarchical Phase Model (observed, model b)              | NA                        | c14rice.RData            | phasemodel_b.R        | phase_model_b.RData               |
+| **Analysis**                                      | **Data Generating Script**| **Input Data**           | **Analyses Script**   | **R Image containing Results** |
+|---------------------------------------------------|---------------------------|--------------------------|-----------------------|--------------------------------|
+| Bayesian Quantile Regression (Observed, tau=0.90) | NA                        | c14.RData                | quantreg.R            | quantreg_res.RData             |
+| Gaussian Process Quantile Regression (Simulated)  | tactical_gpqr_sim.R       | tactical_sim_gpqr.RData  | gpqr_tactical.R       | gpqr_tactsim.RData             |
+| GP Quantile Regression (Observed, tau=0.90)       | NA                        | c14.RData                | gpqr_tau90.R          | gpqr_tau90.RData               |
+| GP Quantile Regression (Observed, tau=0.99)       | NA                        | c14.RData                | gpqr_tau99.R          | gpqr_tau99.RData               |
+| Hierarchical Phase Model (Simulated)              | tactical_phase_sim.R      | tactical_sim_phase.RData | phasemodel_tactical.R | phasemodel_tactsim.RData       |
+| Hierarchical Phase Model (observed, model a)      | NA                        | c14.RData                | phasemodel_a.R        | phase_model_a.RData            |
+| Hierarchical Phase Model (observed, model b)      | NA                        | c14.RData                | phasemodel_b.R        | phase_model_b.RData            |
