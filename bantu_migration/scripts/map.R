@@ -12,6 +12,7 @@ library(rnaturalearthdata)
 library(parallel)
 library(RColorBrewer)
 library(cowplot)
+library(rgeos)
 
 # Load and prepare data ----
 load(here('data','c14.RData'))
