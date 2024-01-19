@@ -1,3 +1,7 @@
+###In this script we look at a model similar to phasemodel, but code is simpler since we only have 1 chain (no paralisation)
+###and we took the nimble model out of the function() wrapper to make it easier to debug. 
+###In addition, in our model we are assuming independence of samples, but adding in regions
+
 # Load Library and Data ----
 library(here)
 library(dplyr)
@@ -67,18 +71,12 @@ init_b  <- init_b[ ,2] - buffer
 
 
 #===============================================================================
-# MCMC RunScript (Uniform Model a) ----
+# MCMC RunScript (Model assuming independence of samples, but adding in regions) ----
 
   #Define Core Model
   model <- nimbleCode({
-    for (j in 1:n_sites)
-    {
-      delta[j] ~ dgamma(gamma1, (gamma1-1)/gamma2)
-      alpha[j] ~ dunif(max = a[id_area[j]], min = b[id_area[j]]);
-    }
-    
     for (i in 1:n_dates){
-      theta[i] ~ dunif(min = (alpha[id_sites[i]] - (delta[id_sites[i]]+1)), max = alpha[id_sites[i]]);
+      theta[i] ~ dunif(min = b[id_area[id_sites[i]]], max = a[id_area[id_sites[i]]]);
       #Calibration
       mu[i] <- interpLin(z=theta[i], x=calBP[], y=C14BP[ , cc[i]]); #c14age #Index cc selects the correct calibration curve
       cra_constraint[i] ~ dconstraint(mu[i] < 50193 & mu[i] > 95) #C14 age must be within the calibration range
@@ -93,25 +91,18 @@ init_b  <- init_b[ ,2] - buffer
       b[k] ~ dunif(50,5000);
       constraint_uniform[k] ~ dconstraint(a[k]>b[k]) #In each area, start date of occupation, a_k, must be greater than the end date of occupation, b_k (note: BP dates in the positive direction)
     }
-    # Hyperprior for duration
-    gamma1 ~ dunif(1,20) #Hyperprior for rate
-    gamma2 ~ T(dnorm(mean=200,sd=100), 1, 500) #Hyperprior for mode
   })
   
   # Define Initial values ----
   inits <- list(theta=theta_init, 
-                alpha=alpha_init, 
-                delta=delta_init, 
                 a=init_a, 
                 b=init_b)
-  inits$gamma1  <- 10
-  inits$gamma2  <- 200
   
   # Compile and Run model	----
   model <- nimbleModel(model, constants=constants, data=dat, inits=inits)
   cModel <- compileNimble(model)
   conf <- configureMCMC(model, control=list(adaptInterval=20000, adaptFactorExponent=0.1))
-  conf$addMonitors(c('theta','delta','alpha'))
+  conf$addMonitors(c('theta'))
   MCMC <- buildMCMC(conf)
   cMCMC <- compileNimble(MCMC)
   
@@ -122,23 +113,14 @@ init_b  <- init_b[ ,2] - buffer
   results <- runMCMC(cMCMC, niter = niter, thin = thin, nburnin = nburnin, samplesAsCodaMCMC = T, setSeed = 12) 
 
 
-out_unif_model_a <- mcmc.list(results)
+out_unif_model <- mcmc.list(results)
 
 
 # Diagnostics ----
-rhat_unif_model_a <- gelman.diag(out_unif_model_a, multivariate = FALSE)
-ess_unif_model_a <- effectiveSize(out_unif_model_a)
+rhat_unif_model_a <- gelman.diag(out_unif_model, multivariate = FALSE)
+ess_unif_model_a <- effectiveSize(out_unif_model)
 agg_unif_model_a <- agreementIndex(dat$cra,
                                    dat$cra_error,
                                    calCurve = dateInfo$calCurve,
-                                   theta = out_unif_model_a[[1]][ , grep("theta", colnames(out_unif_model_a[[1]]))],
+                                   theta = out_unif_model[[1]][ , grep("theta", colnames(out_unif_model[[1]]))],
                                    verbose = F)
-
-
-#-------------------------------------------------------------------------------
-# Save output ----
-save(out_unif_model_a, 
-     rhat_unif_model_a, 
-     ess_unif_model_a, 
-     agg_unif_model_a, 
-     file=here("output","phase_model_a.RData"))
