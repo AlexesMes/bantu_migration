@@ -44,15 +44,22 @@ n_trans <- nrow(transitions) #save to constants$n_trans
 #Initial parameters --
 buffer <- 100
 theta_init <- dateInfo$median_dates
-delta_init <- c(buffer, buffer, buffer) #TODO: update... 
 
 #Initialise regional parameters
 #Initialise hex areas which contain sites
 init_a  <- aggregate(earliest~area_id, FUN=max, data=siteInfo) #parameter of earliest date in each region k
 
+#Duration parameter initialisation
+delta_init <- 0 
+for (t in 1:n_trans){ 
+  m <- transitions[[t,'region1_id']] #transition in row t, select first area
+  n <- transitions[[t,'region2_id']] #transition in row t, select second area
+  
+  delta_init[t] <- abs(init_a$earliest[init_a$area_id==m] - init_a$earliest[init_a$area_id==n]) + buffer
+}
+
 #Add buffer
 init_a  <- init_a[ ,2] + buffer
-
 
 #===============================================================================
 # MCMC RunScript (Model assuming independence of samples, no site hierarchy) ----
@@ -70,8 +77,8 @@ model <- nimbleCode({
   }
   
   for (t in 1:n_trans){ 
-    m <- transitions[t,'region1_id'] #transition in row t, select first area
-    n <- transitions[t,'region1_id'] #transition in row t, select second area
+    m <- transitions[[t,'region1_id']] #transition in row t, select first area
+    n <- transitions[[t,'region2_id']] #transition in row t, select second area
     
     #Arrival time in each area
     a[m] ~ dunif(50,5000); 
@@ -82,7 +89,7 @@ model <- nimbleCode({
   }
   # Hyperpriors
   lambda ~ dexp(1); #speed -- from pilot study estimate is between 3.5 and 4 km/year. speed is always positive
-  kappa[1:n_trans] ~ dbeta(seq(0,1, by=1/n_trans), shape1=5, shape2=5); #TODO: looser, nudged model later. Hyperpriors on these shape parameters?
+  kappa[1:n_trans] ~ dbeta(seq(0,1, by=1/n_trans), shape1=5, shape2=5); #TODO: looser, nudged model later. Hyperpriors on these shape parameters? #kappa ~ dunif(1,20)
 })
 
 # Define Initial values ----
