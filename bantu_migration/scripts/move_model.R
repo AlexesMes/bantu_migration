@@ -38,6 +38,9 @@ constants$calBP <- c(1000000, constants$calBP, -1000000)
 constants$C14BP <- rbind(c(1000000,1000000), constants$C14BP, c(-1000000,-1000000))
 constants$C14err <- rbind(c(1000,1000), constants$C14err, c(1000,1000))
 
+# Add transitions as matrix in constants
+constants$transitions  <- as.matrix(transitions)
+
 #Number of transitions --
 n_trans <- nrow(transitions) #save to constants$n_trans
 
@@ -75,21 +78,23 @@ model <- nimbleCode({
     sd[i] <- (cra_error[i]^2 + sigmaCurve[i]^2)^(1/2);
     cra[i] ~ dnorm(mean=mu[i], sd=sd[i]);
   }
+
+  for (k in 1:n_areas)
+  {
+	  a[k] ~ dunif(50,5000)
+  }
   
   for (t in 1:n_trans){ 
-    m <- transitions[[t,'region1_id']] #transition in row t, select first area
-    n <- transitions[[t,'region2_id']] #transition in row t, select second area
-    
-    #Arrival time in each area
-    a[m] ~ dunif(50,5000); 
-    a[n] ~ dunif(50,5000); 
     
     #Duration parameter 
-    delta[t] <- transitions[t,'distance']/(kappa[t]*lambda) #time = distance/speed, and transitions[t,'distance'] is the distance between the two areas #TODO: make speed regional -- add indices
+    kappa[t] ~ dbinom(size=1,prob=eta[t]); #kappa is a binomial with probability eta[5] of being 1  
+    eta[t] ~ dunif(0,1)
+    lambda[t] ~ dexp(1) #possibly replace with gamma with hyperprior at later stage
+    #TODO: looser, nudged model later. Hyperpriors on these shape parameters? #kappa ~ dunif(1,20)
+    delta[t] <- transitions[t,7]/((-1 + 2 *kappa[t])*lambda[t]) #time = distance/speed, and transitions[t,'distance'] is the distance between the two areas #TODO: make speed regional -- add indices
   }
   # Hyperpriors
-  lambda ~ dexp(1); #speed -- from pilot study estimate is between 3.5 and 4 km/year. speed is always positive
-  kappa[1:n_trans] ~ dbeta(seq(0,1, by=1/n_trans), shape1=5, shape2=5); #TODO: looser, nudged model later. Hyperpriors on these shape parameters? #kappa ~ dunif(1,20)
+#   iota ~ dexp(1); #speed -- from pilot study estimate is between 3.5 and 4 km/year. speed is always positive
 })
 
 # Define Initial values ----
