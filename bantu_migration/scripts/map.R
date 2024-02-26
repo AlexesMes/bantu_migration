@@ -1,5 +1,4 @@
 # Load Libraries and Data ----
-library(maptools)
 library(sf)
 library(stringr)
 library(dplyr)
@@ -12,7 +11,6 @@ library(rnaturalearthdata)
 library(parallel)
 library(RColorBrewer)
 library(cowplot)
-library(rgeos)
 
 # Load and prepare data ----
 load(here('data','c14.RData'))
@@ -28,9 +26,15 @@ bantu_sites_sf <- sf::st_as_sf(siteInfo,
                                crs = 4326, 
                                na.fail = F)
 
+#Sampling window without internal boundaries
+sf::sf_use_s2(FALSE) #turn off spherical co-ordinates
+sampling_win <-  sampling_win %>%
+  st_make_valid() %>%
+  st_union()
+sf::sf_use_s2(TRUE) #turn on spherical co-ordinates
+
 #-------------------------------------------------------------------------------
 ## Plot Data  ---- FIGURE map_figure
-
 
 world <- rnaturalearth::ne_countries(scale = "medium", returnclass = "sf")
 
@@ -79,7 +83,7 @@ plt.main <- basemap() +
           size = 2,
           alpha=0.5) +
   geom_point() +
-  geom_point(aes(x=constants$origin_point[1], y=constants$origin_point[2]), colour="purple", size=3) +
+  geom_point(aes(x=st_coordinates(constants$origin_point)[1], y=st_coordinates(constants$origin_point)[2]), colour="purple", size=3) +
   ggsn::north(data = bantu_sites_sf, location="bottomright", anchor = c(x = 43, y = -31)) + 
   ggsn::scalebar(bantu_sites_sf,
                  location  = "bottomright",
@@ -117,7 +121,7 @@ dev.off()
 pdf(file=here('output','figures','map_figure2.pdf'), width=8.5, height=7)
 
 ggplot(data = hex_area_win) +
-  geom_sf(data = st_buffer(as(gUnaryUnion(sampling_win), 'sf'), 40000), aes(color = "grey50")) + #sampling window with coastal buffer
+  geom_sf(data = st_buffer(st_as_sf(sampling_win, crs = 4326), 40000), aes(color = "grey50")) + #sampling window with coastal buffer
   geom_sf() + #hex grid
   geom_sf(data = as(sites, 'sf'), size=2, alpha=0.5) + #sites
   geom_sf_label(aes(label = area_ID)) + #hex grid labels
