@@ -1,10 +1,8 @@
 # Load Libraries and Data ----
 library(rcarbon)
 library(nimbleCarbon)
-library(maptools)
 library(sf)
 library(rnaturalearth)
-library(rgeos)
 library(stringr)
 library(dplyr)
 library(tidyr)
@@ -136,12 +134,9 @@ aDRAC_sum_df <- aDRAC_dat %>% #To find extra dates not in HumActCA
 ##------------
 ## Combine datasets ----
 bantu_sites_df <- bind_rows(SARD_sum_df, aDRAC_sum_df, Collected_sum_df) %>% 
-  #bind_rows(p3k14c_fil_df, KAY_sum_df, SARD_sum_df, aDRAC_sum_df, Collected_sum_df) %>%
   mutate(dataorigin=as.factor(dataorigin)) %>% 
   filter((c14date != 0) & (c14std != 0)) %>% #Apparently some of these datasets had modern dates (indicated with c14 date and error of 0), we remove these
   filter((c14date <=3357) & (c14date >=246)) #We assume an approximate origin at Ngoume, date 3357 +- 95BP (see later in this script). Dates earlier than this are assumed to not be of Bantu origin #TODO: build some flexibility into this... #Further, we assume the Dutch arrival in the Cape (1652) as the cut-off. Dates after this point of colonial contact are not considered.
-  #filter((c14date <=3070) & (c14date >=298)) #We assume an approximate origin at Obobogo, date 3070 +- 95BP (see later in this script). Dates earlier than this are assumed to not be of Bantu origin #TODO: build some flexibility into this... #Further, we assume the Dutch arrival in the Cape (1652) as the cut-off. Dates after this point of colonial contact are not considered.
-
   
 # Assign ID ----
 bantu_sites_df <- bantu_sites_df %>% mutate(ID = row_number())
@@ -235,40 +230,31 @@ possible_origin_dat <- possible_origin_dat %>%
 
 
 ## Compute Great-Arc Distances in km ----
-sites <- siteInfo
-coordinates(sites) <- c('long','lat')
-proj4string(sites)  <- "+proj=longlat +datum=WGS84 +no_defs +ellps=WGS84 +towgs84=0,0,0" 
-dist_mat  <- spDists(sites,longlat=TRUE) #inter-site distance matrix: each site's distance from every other site (i.e. with n sites, this matrix is n^2)
-origin_point  <- c(possible_origin_dat$LONG, possible_origin_dat$LAT) #Ngoume, HumActCA Origin
-#origin_point  <- c(possible_origin_dat$long, possible_origin_dat$lat) #SARD Origin
-dist_org  <-  spDistsN1(sites, origin_point, longlat=TRUE) #distance from origin site
-
+sites <- st_as_sf(siteInfo, coords = c('long','lat'))
+st_crs(sites)  <- "+proj=longlat +datum=WGS84 +no_defs +ellps=WGS84 +towgs84=0,0,0" 
+dist_mat  <- st_distance(sites)/1000 #inter-site distance matrix in km: each site's distance from every other site (i.e. with n sites, this matrix is n^2)
+origin_point  <- sites %>% filter(siteName == possible_origin_dat$SITE)
+dist_org  <-  st_distance(x=sites, y=origin_point)/1000 #distance from origin site
 
 #-------------------------------------------------------------------------------
 # Generate Spatial Window for Analyses: Sub-Saharan Africa ----
 
 #Sampling window ----
-sf_subsah_africa <- ne_countries(continent = "Africa", returnclass = "sf") %>%
+sampling_win <- ne_countries(continent = "Africa", returnclass = "sf") %>%
   filter_all(., any_vars(str_detect(., "Sub-Saharan"))) %>% 
   filter(name_en %in% subSahara_countries) %>% 
   filter(name_en != "Madagascar") #We focus on mainland sub-Saharan Africa
 
-sampling_win <- sf_subsah_africa %>% as("Spatial") #convert sf to sp object
+#Generate Spatial Hexagons ----
+hex_area_win <- hex_areas(sampling_win, cell_d = 10)
 
-
-#Generate Hex Areas over Spatial Window ----
-hex_area_win <- hex_areas(sampling_win, cell_d = 7)
-  
 #Assign hex area id to each site ----
-sites_sf <- as(sites, 'sf')
-siteInfo$area_id <- as.integer(st_within(sites_sf$geometry, hex_area_win$geometry))
+siteInfo$area_id <- as.integer(st_within(sites$geometry, hex_area_win$geometry))
 
 # #CHECK ---
-# area_freq  <- plyr::count(siteInfo, 'area_id') ##See how many sites fall in each hex area. Also make sure there are no 'NA' entries
-# To check that this lines up visually with how many sites are in each hex area -- see map_figure2
+area_freq  <- plyr::count(siteInfo, 'area_id') ##See how many sites fall in each hex area. Also make sure there are no 'NA' entries
+#In order to check that this lines up visually with how many sites are in each hex area see map_figure2
 
-#Collect area level information ---
-#TODO......
 
 #-------------------------------------------------------------------------------
 ## Create list with constants and data ----
