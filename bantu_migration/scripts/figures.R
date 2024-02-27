@@ -10,9 +10,7 @@ library(ggridges)
 library(rnaturalearth)
 library(nimbleCarbon)
 library(rcarbon)
-library(maptools)
 library(sf)
-library(rgeos)
 library(viridis)
 library(cowplot)
 library(wesanderson)
@@ -42,12 +40,11 @@ load(here('output','quantreg_res.RData'))
 
 #===============================================================================
 # Generate Spatial Window for Analyses: Sub-Saharan Africa ----
-sampling_win <- as(sampling_win, "SpatialPolygons") |>  unionSpatialPolygons(IDs = rep(1, nrow(sampling_win)))
-sampling_win <- disaggregate(sampling_win) #create new raster layer with higher resolution (smaller cells)
-sampling_win  <- sampling_win[order(raster::area(sampling_win), decreasing=TRUE)]
-
-win.sf  <- as(sampling_win,'sf')
-win = sampling_win
+#Sampling window ---- Background Map
+win <- ne_countries(continent = "Africa", scale = 10, returnclass = "sf") %>%
+  filter_all(., any_vars(str_detect(., "Sub-Saharan"))) %>% 
+  filter(name_en %in% subSahara_countries) %>% 
+  filter(name_en != "Madagascar") #We focus on mainland sub-Saharan Africa
 
 #===============================================================================
 #Sites per date plot ---- FIGURE 1.1
@@ -251,7 +248,7 @@ for (i in 1:nrow(cov_param))
                        seed = seed)
   
   out[[i]] <- ggplot() +
-    geom_sf(data=win.sf,aes(), fill='grey66', show.legend=FALSE, lwd=0) +
+    geom_sf(data=win, aes(), fill='grey66', show.legend=FALSE, lwd=0) +
     geom_sf(data=tmp[[i]], mapping = aes(fill=rate), pch=21, col='darkgrey', size=1.5) +
     xlim(-15,50) + #Center the frame on sub-Saharan Africa
     ylim(-35,30) +
@@ -350,14 +347,14 @@ load(here('data', 'tactical_sim_gpqr.RData'))
 load(here('output', 'gpqr_tactsim.RData'))
 
 gpqr_tactsim_post  <- do.call(rbind, gpqr_tactsim)
-tactsim_post_s  <- gpqr_tactsim_post[ ,paste0('s[',1:nrow(sim_sites),']')]
+tactsim_post_s  <- gpqr_tactsim_post[ , paste0('s[',1:nrow(sim_sites),']')]
 tactsim_post_beta1  <- gpqr_tactsim_post[ ,'beta1']
 tactsim_post_rate  <-  -1/(tactsim_post_s-tactsim_post_beta1)
 sim_sites$pred.rate  <- apply(tactsim_post_rate,2,median)
 
 
 s8a  <- ggplot() +
-  geom_sf(data = win.sf, aes(), fill='grey66', show.legend=FALSE, lwd=0) +
+  geom_sf(data = win, aes(), fill='grey66', show.legend=FALSE, lwd=0) +
   geom_sf(data = sim_sites, mapping = aes(fill=rate), pch=21, col='darkgrey', size=3) + 
   xlim(-15,50) + #Center the frame on sub-Saharan Africa
   ylim(-35,30) +
@@ -372,7 +369,7 @@ s8a  <- ggplot() +
 
 
 s8b  <- ggplot() +
-  geom_sf(data = win.sf, aes(), fill='grey66', show.legend=FALSE, lwd=0) +
+  geom_sf(data = win, aes(), fill='grey66', show.legend=FALSE, lwd=0) +
   geom_sf(data = sim_sites, mapping = aes(fill=pred.rate), pch=21, col='darkgrey', size=3) + 
   xlim(-15,50) + #Center the frame on sub-Saharan Africa
   ylim(-35,30) +
@@ -437,9 +434,6 @@ dev.off()
 # Load data
 load(here('output','gpqr_tau90.RData'))
 load(here('output','gpqr_tau99.RData'))
-
-# Obtain Background  Map
-win  <- ne_countries(continent = 'africa', scale=10, returnclass='sf')
 
 #-------------------------------------------------------------------------------
 # Posterior Mean of dispersal rate deviations ---- FIGURE 11
@@ -906,7 +900,7 @@ median_hex_dates_modB <- hex_area_win %>%
 #Plot
 #-----MODEL A
 modA <- ggplot(data = median_hex_dates_modA) +
-          geom_sf(data = st_buffer(as(gUnaryUnion(sampling_win), 'sf'), 40000), aes(color = "grey50")) + #sampling window with coastal buffer
+          geom_sf(data = st_buffer(st_as_sf(sampling_win, crs = 4326), 40000), aes(color = "grey50")) + #sampling window with coastal buffer
           geom_sf(aes(fill = median_date, alpha=contains_sites)) + #hex grid
           scale_fill_viridis_c(option="F", direction=-1) +
           scale_alpha_manual(values=c(0.45, 1)) +
@@ -923,7 +917,7 @@ modA <- ggplot(data = median_hex_dates_modA) +
 
 
 modAHPDIlow <- ggplot(data = median_hex_dates_modA) +
-  geom_sf(data = st_buffer(as(gUnaryUnion(sampling_win), 'sf'), 40000), aes(color = "grey50")) + #sampling window with coastal buffer
+  geom_sf(data = st_buffer(st_as_sf(sampling_win, crs = 4326), 40000), aes(color = "grey50")) + #sampling window with coastal buffer
   geom_sf(aes(fill = hpdi_low, alpha=contains_sites)) + 
   ggtitle('90% HPDI (low)') +
   scale_fill_viridis_c(option="F", direction=-1) +
@@ -941,7 +935,7 @@ modAHPDIlow <- ggplot(data = median_hex_dates_modA) +
         legend.position = "none")
 
 modAHPDIhigh <- ggplot(data = median_hex_dates_modA) +
-  geom_sf(data = st_buffer(as(gUnaryUnion(sampling_win), 'sf'), 40000), aes(color = "grey50")) + #sampling window with coastal buffer
+  geom_sf(data = st_buffer(st_as_sf(sampling_win, crs = 4326), 40000), aes(color = "grey50")) + #sampling window with coastal buffer
   geom_sf(aes(fill = hpdi_high, alpha=contains_sites)) + 
   ggtitle('90% HPDI (high)') +
   scale_fill_viridis_c(option="F", direction=-1) +
@@ -968,7 +962,7 @@ A <- cowplot::ggdraw() +
 
 #-----MODEL B
 modB <- ggplot(data = median_hex_dates_modB) +
-          geom_sf(data = st_buffer(as(gUnaryUnion(sampling_win), 'sf'), 40000), aes(color = "grey50")) + #sampling window with coastal buffer
+          geom_sf(data = st_buffer(st_as_sf(sampling_win, crs = 4326), 40000), aes(color = "grey50")) + #sampling window with coastal buffer
           geom_sf(aes(fill = median_date)) + #hex grid
           scale_fill_viridis_c(option="F", direction=-1) +
           geom_sf_label(aes(label = paste0(median_date, "BP")), label.size  = NA, alpha = 0.4, size=3.5) + #hex grid labels
@@ -981,7 +975,7 @@ modB <- ggplot(data = median_hex_dates_modB) +
                 legend.position = "none")
 
 modBHPDIlow <- ggplot(data = median_hex_dates_modB) +
-  geom_sf(data = st_buffer(as(gUnaryUnion(sampling_win), 'sf'), 40000), aes(color = "grey50")) + #sampling window with coastal buffer
+  geom_sf(data = st_buffer(st_as_sf(sampling_win, crs = 4326), 40000), aes(color = "grey50")) + #sampling window with coastal buffer
   geom_sf(aes(fill = hpdi_low)) + 
   ggtitle('90% HPDI (low)') +
   scale_fill_viridis_c(option="F", direction=-1) +
@@ -998,7 +992,7 @@ modBHPDIlow <- ggplot(data = median_hex_dates_modB) +
         legend.position = "none")
 
 modBHPDIhigh <- ggplot(data = median_hex_dates_modB) +
-  geom_sf(data = st_buffer(as(gUnaryUnion(sampling_win), 'sf'), 40000), aes(color = "grey50")) + #sampling window with coastal buffer
+  geom_sf(data = st_buffer(st_as_sf(sampling_win, crs = 4326), 40000), aes(color = "grey50")) + #sampling window with coastal buffer
   geom_sf(aes(fill = hpdi_high)) + 
   ggtitle('90% HPDI (high)') +
   scale_fill_viridis_c(option="F", direction=-1) +
@@ -1086,7 +1080,7 @@ median_hex_dates_modA <- hex_area_win %>%
 #Plot
 #-----MODEL A
 modA <- ggplot(data = median_hex_dates_modA) +
-  geom_sf(data = st_buffer(as(gUnaryUnion(sampling_win), 'sf'), 40000), aes(color = "grey50")) + #sampling window with coastal buffer
+  geom_sf(data = st_buffer(st_as_sf(sampling_win, crs = 4326), 40000), aes(color = "grey50")) + #sampling window with coastal buffer
   geom_sf(aes(fill = median_date, alpha=contains_sites)) + #hex grid
   scale_fill_viridis_c(option="F", direction=-1) +
   scale_alpha_manual(values=c(0.45, 1)) +

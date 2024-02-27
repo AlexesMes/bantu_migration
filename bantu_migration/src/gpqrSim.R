@@ -4,22 +4,21 @@ gpqrSim  <- function(win, n=600, seed=123, beta0=3000, beta1=0.7, sigma=100, eta
   require(nimbleCarbon)
   require(rcarbon)
   require(sf)
-  require(sp)
-  require(maptools)
   set.seed(seed)
+  
   
   #Initialise objects for storing output and site information
   out_fin_df <- data.frame()
-  tot_sites <- spsample(win, n = 1, type = 'random') #dummy site
+  tot_sites <- st_sample(win, size = 1, type = 'random') #dummy site
   
   while (nrow(out_fin_df) < n) { #where n is the number of sites
     
     #Generate sites and calculate distances from origin ---
-    sites <- spsample(win, n = n, type = 'random') 
-    dist_mat  <- spDists(sites, longlat=TRUE)
-    dist_org  <-  spDistsN1(sites, origin.point, longlat=TRUE)
+    sites <- st_sample(win, size = n, type = 'random') 
+    dist_mat  <- st_distance(sites)/1000 #in km
+    dist_org  <-  as.vector(st_distance(sites, origin.point)/1000) #in km 
     #Assign calibration curve 
-    cc <- ifelse((sites@coords[,2]>=0), 'intcal20', 'shcal20')
+    cc <- ifelse((st_coordinates(sites)[,2]>=0), 'intcal20', 'shcal20')
     
     #Covariance matrix ---
     cov_ExpQ <- nimbleFunction(run = function(dists = double(2), rho = double(0), etasq = double(0), sigmasq = double(0)) 
@@ -95,9 +94,7 @@ gpqrSim  <- function(win, n=600, seed=123, beta0=3000, beta1=0.7, sigma=100, eta
                                        calCurve=out.df$calCurve,
                                        verbose=F))
   #Save as sf object ---
-  out  <- as(sites, 'SpatialPointsDataFrame')
-  out@data  <- out.df
-  out.sf  <- as(out, 'sf')
+  out.sf  <- st_as_sf(sites, 'sf')
   
   #Return Output ---
   return(out.sf)
