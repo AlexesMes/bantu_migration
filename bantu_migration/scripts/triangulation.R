@@ -46,15 +46,17 @@ hex_dist_mat <- spDists(hex_area_centers, longlat=TRUE) #Inter-area distance mat
 #tiles <- tile.list(del)
 ##Selecting 3 triangles of interest -- TEST CASE
 center_coords <- hex_area_centers@coords[c(13, 14, 18), ]
-del <- deldir(center_coords, id=c(13,14, 18))
+del <- deldir(center_coords, id=c(1, 2, 3)) #Relabel ids for nimble (must be sequential from 1) 13 -> 1, 14 -> 2, 18 -> 3
 tiles <- tile.list(del)
 
+# Add center_coords in constants
+constants$center_coords <- center_coords
 
 ##Plot delaunay triangulation
 ggplot(data = hex_area_win[c(13,14, 18),]) + #ggplot(data = hex_area_win) + #TODO: Uncomment
   geom_sf(data = st_buffer(as(gUnaryUnion(sampling_win), 'sf'), 40000), aes(color = "grey50")) + #sampling window with coastal buffer
   geom_sf() + #hex grid
-  geom_sf_text(aes(label = area_ID), size=4, alpha=0.8) + #hex grid labels
+  geom_sf_text(aes(label = c('1','2','3')), size=4, alpha=0.8) + #hex grid labels #aes(label = area_ID)
   geom_sf(data = hex_area_win$area_center, size=2, alpha=1, aes(color = "purple")) + #hex-origins
   geom_delaunay_segment(aes(x=center_coords[,1], y=center_coords[,2]), 
                         alpha=0.5, 
@@ -81,12 +83,16 @@ transitions <- del$delsgs %>%
   rowwise() %>% 
   mutate(distance = hex_dist_mat[region1_id, region2_id]) #Great-arc distance between transitions in km
 
+
+# Add transitions as matrix in constants
+constants$transitions  <- as.matrix(transitions)
+constants$n_trans <- nrow(transitions) #Number of transitions
+
 #-------------------------------------------------------------------------------
 ## Save everything on a R image file ----
 save(del, 
      tiles, 
-     transitions,
-     center_coords, 
+     constants,
      file=here('data','trig.RData'))
 
 

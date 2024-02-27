@@ -7,6 +7,8 @@ library(coda)
 library(rcarbon)
 library(deldir)
 
+rm(list = ls())
+
 `%!in%` <- Negate(`%in%`)
 
 #-------------------------------------------------------------------------------
@@ -19,10 +21,13 @@ load(here('data','trig.RData'))
 ##General Setup ----
 
 #Filter for test case -- #TODO: remove when considering whole dataset
-siteInfo <- siteInfo %>% filter(area_id %in% c(13, 14, 18))
+siteInfo <- siteInfo %>% filter(area_id %in% c(13, 14, 18)) %>% mutate(area_id = case_when(area_id == 13 ~ 1, area_id == 14 ~ 2, area_id == 18 ~3))
 dateInfo <- dateInfo %>% filter(siteID %in% siteInfo$siteID)
 n_areas <- 3
 n_dates <- nrow(dateInfo)
+
+
+
 
 #Data --
 dat <- list(cra = dateInfo$cra,
@@ -38,11 +43,6 @@ constants$calBP <- c(1000000, constants$calBP, -1000000)
 constants$C14BP <- rbind(c(1000000,1000000), constants$C14BP, c(-1000000,-1000000))
 constants$C14err <- rbind(c(1000,1000), constants$C14err, c(1000,1000))
 
-# Add transitions as matrix in constants
-constants$transitions  <- as.matrix(transitions)
-
-#Number of transitions --
-n_trans <- nrow(transitions) #save to constants$n_trans
 
 #Initial parameters --
 buffer <- 100
@@ -54,9 +54,9 @@ init_a  <- aggregate(earliest~area_id, FUN=max, data=siteInfo) #parameter of ear
 
 #Duration parameter initialisation
 delta_init <- 0 
-for (t in 1:n_trans){ 
-  m <- transitions[[t,'region1_id']] #transition in row t, select first area
-  n <- transitions[[t,'region2_id']] #transition in row t, select second area
+for (t in 1:constants$n_trans){ 
+  m <- constants$transitions[[t,'region1_id']] #transition in row t, select first area
+  n <- constants$transitions[[t,'region2_id']] #transition in row t, select second area
   
   delta_init[t] <- abs(init_a$earliest[init_a$area_id==m] - init_a$earliest[init_a$area_id==n]) + buffer
 }
@@ -84,17 +84,16 @@ model <- nimbleCode({
 	  a[k] ~ dunif(50,5000)
   }
   
-  for (t in 1:n_trans){ 
+  for (t in 1:constants$n_trans){ 
     
     #Duration parameter 
     kappa[t] ~ dbinom(size=1,prob=eta[t]); #kappa is a binomial with probability eta[5] of being 1  
     eta[t] ~ dunif(0,1)
     lambda[t] ~ dexp(1) #possibly replace with gamma with hyperprior at later stage
-    #TODO: looser, nudged model later. Hyperpriors on these shape parameters? #kappa ~ dunif(1,20)
-    delta[t] <- transitions[t,7]/((-1 + 2 *kappa[t])*lambda[t]) #time = distance/speed, and transitions[t,'distance'] is the distance between the two areas #TODO: make speed regional -- add indices
+    delta[t] <- constants$transitions[t,7]/((-1 + 2 *kappa[t])*lambda[t]) #time = distance/speed, and transitions[t,'distance'] is the distance between the two areas #TODO: make speed regional -- add indices
   }
   # Hyperpriors
-#   iota ~ dexp(1); #speed -- from pilot study estimate is between 3.5 and 4 km/year. speed is always positive
+  # iota ~ dexp(1); #speed -- from pilot study estimate is between 3.5 and 4 km/year. speed is always positive
 })
 
 # Define Initial values ----
@@ -102,7 +101,7 @@ inits <- list(theta=theta_init,
               a=init_a,
               delta=delta_init)
 inits$lambda <- rexp(1, rate=1/3)
-inits$kappa <- rbeta(seq(0,1, by=1/n_trans), 5, 5)
+inits$kappa <- rbeta(seq(0,1, by=1/constants$n_trans), 5, 5)
 
 
 # Compile and Run model	----
