@@ -25,7 +25,7 @@ source(here('src','hex_areas.R'))
 ## List of countries in sub-Saharan Africa ----
 subSahara_countries <- c("South Africa", 
                          "Lesotho", 
-                         "eSwatini", 
+                         "eSwatini", "Swaziland", 
                          "Botswana",
                          "Zimbabwe",
                          "Namibia",
@@ -34,7 +34,7 @@ subSahara_countries <- c("South Africa",
                          "Mozambique",
                          "Malawi",
                          "Madagascar",
-                         "Tanzania",
+                         "Tanzania", "United Republic of Tanzania",
                          "Rwanda",
                          "Burundi",
                          "Kenya",
@@ -53,6 +53,20 @@ subSahara_countries <- c("South Africa",
                          "South Sudan",
                          "Chad")
 
+## List of countries associated with eastern EIA stream ----
+eastEIA_countries <- c("South Africa", 
+                         "Lesotho", 
+                         "eSwatini", "Swaziland", 
+                         "Botswana",
+                         "Zimbabwe",
+                         "Zambia",
+                         "Mozambique",
+                         "Malawi",
+                         "Tanzania", "United Republic of Tanzania",
+                         "Rwanda",
+                         "Burundi",
+                         "Kenya",
+                         "Uganda")
   
 #-------------------------------------------------------------------------------
 ## Data sources ----
@@ -145,34 +159,44 @@ bantu_sites_df <- bantu_sites_df %>% mutate(ID = row_number())
 bantu_sites_df$siteID  <- as.numeric(factor(bantu_sites_df$siteName))
 
 ##-----------
+##Filter for eastern EIA stream
+eastEIA_sites_df <- bantu_sites_df %>% filter(country %in% eastEIA_countries)
+
+##-----------
 ##Save Output as csv
 write.csv(bantu_sites_df, here('data','bantu_dataset.csv'), row.names = FALSE)
+write.csv(eastEIA_sites_df, here('data','eastEIA_dataset.csv'), row.names = FALSE)
 
+
+#===============================================================================
+##FROM HERE ONWARDS WE USE THE EASTERN EIA STREAM
+#But can easily add back in western EIA and rainforest pottery-using (aDRAC) 
+#dates by using bantu_sites_df instead of eastEIA_sites_df below
 #===============================================================================
 ## Determining which calibration curve should be used----
 
 #Remove unnecessary information
-bantu_sites_df <- bantu_sites_df %>%
+eastEIA_sites_df <- eastEIA_sites_df %>%
   dplyr::select(-reference, -material, -country)
 
 #Assign calibration curve ----
-bantu_sites_df$calCurve <- ifelse((bantu_sites_df$lat>=0), 'intcal20', 'shcal20') #Assign the calibration curve to use based on the site's position relative to the equator #TODO: refine this -- weird to have a hard step-change between calibration curves at the equator -- maybe use a gradient change function? Mixed Curve? Or is there perhaps better regional calibration curves to use?
-#table(bantu_sites_df$calCurve)
+eastEIA_sites_df$calCurve <- ifelse((eastEIA_sites_df$lat>=0), 'intcal20', 'shcal20') #Assign the calibration curve to use based on the site's position relative to the equator #TODO: refine this -- weird to have a hard step-change between calibration curves at the equator -- maybe use a gradient change function? Mixed Curve? Or is there perhaps better regional calibration curves to use?
+#table(eastEIA_sites_df$calCurve)
 
 #-------------------------------------------------------------------------------
 ## Restructure Data for Bayesian Analyses ----
 
 # Compute median calibrated dates ----
-bantu_sites_df$median_dates = medCal(calibrate(bantu_sites_df$c14date,
-                                               bantu_sites_df$c14std,
-                                               calCurve = bantu_sites_df$calCurve,
+eastEIA_sites_df$median_dates = medCal(calibrate(eastEIA_sites_df$c14date,
+                                               eastEIA_sites_df$c14std,
+                                               calCurve = eastEIA_sites_df$calCurve,
                                                ncores = ncores))
 
 
 # Collect site level information ----
-earliest_dates <- aggregate(median_dates ~ siteID, data = bantu_sites_df, FUN = max) #Earliest medCal Date for Each Site 
-latest_dates <- aggregate(median_dates ~ siteID, data=bantu_sites_df, FUN=min) #Latest medCal Date for Each Site
-n_dates <- aggregate(median_dates ~ siteID, data=bantu_sites_df, FUN=length) #Number of medCal Date for Each Site
+earliest_dates <- aggregate(median_dates ~ siteID, data = eastEIA_sites_df, FUN = max) #Earliest medCal Date for Each Site 
+latest_dates <- aggregate(median_dates ~ siteID, data=eastEIA_sites_df, FUN=min) #Latest medCal Date for Each Site
+n_dates <- aggregate(median_dates ~ siteID, data=eastEIA_sites_df, FUN=length) #Number of medCal Date for Each Site
 
 siteInfo <- data.frame(siteID = earliest_dates$siteID,
                        earliest = earliest_dates$median_dates,
@@ -181,7 +205,7 @@ siteInfo <- data.frame(siteID = earliest_dates$siteID,
                        n_dates = n_dates$median_dates) %>% unique()
 
 siteInfo <- siteInfo %>% 
-  left_join(unique(dplyr::select(bantu_sites_df,
+  left_join(unique(dplyr::select(eastEIA_sites_df,
                                  lat,
                                  long,
                                  siteID,
@@ -191,7 +215,7 @@ siteInfo <- siteInfo %>%
   distinct(siteID, .keep_all = TRUE)  #Some site duplicates introduced by slight differences in co-ordinate decimal places
 
 # Collect date level information ----
-dateInfo <- unique(dplyr::select(bantu_sites_df,
+dateInfo <- unique(dplyr::select(eastEIA_sites_df,
                                   ID,
                                   labCode,
                                   siteID,
@@ -212,41 +236,42 @@ for (i in unique(siteInfo$siteID))
 #-------------------------------------------------------------------------------
 ## Designating approximate origin ----
 
-#A generally acknowledged 'homeland region on the border between Nigeria and Cameroon' (Seidensticket,et al. 2020)
-possible_origin_dat <- HumActCA_dat %>%
-  filter(COUNTRY %in% c('CMR', 'NGA')) %>% #I don't think there are any sites in Nigeria in this dataset, but still ...
-  arrange(desc(C14AGE))
+# #A generally acknowledged 'homeland region on the border between Nigeria and Cameroon' (Seidensticket,et al. 2020)
+# possible_origin_dat <- HumActCA_dat %>%
+#   filter(COUNTRY %in% c('CMR', 'NGA')) %>% #I don't think there are any sites in Nigeria in this dataset, but still ...
+#   arrange(desc(C14AGE))
+# 
+# #Note: oldest class I date is Shum Laka -- but see recent genetic analysis discussing why this is a hunter-gather site ('Ancient West African foragers in the context of African population history', Lipson, 2020, https://www.nature.com/articles/s41586-020-1929-1). Also, see Piere de Maret's thoughts on the site. #TODO: Decide whether to designate pre-Bantu and exclude Shum Laka from analyses entirely...
+# #Therefore, as an approximate origin we select the next oldest class I date in the region: Ngoume
+# possible_origin_dat <- possible_origin_dat %>%
+#   filter(SITE=='Ngoume' & (CLASS %in% c('Ia', 'Ib', 'Ic'))) %>% #Alternatively select Obobogo
+#   slice(1L)
+# #Additional note: Recent linguistic origin used ('Exploring the relationships between genetic, linguistic and geographic distances in Bantu-speaking populations', Gonzalez-Santos, 2022) was that of the Lemande population: (lat, long) = (4.50, 11.08)
 
-#Note: oldest class I date is Shum Laka -- but see recent genetic analysis discussing why this is a hunter-gather site ('Ancient West African foragers in the context of African population history', Lipson, 2020, https://www.nature.com/articles/s41586-020-1929-1). Also, see Piere de Maret's thoughts on the site. #TODO: Decide whether to designate pre-Bantu and exclude Shum Laka from analyses entirely...
-#Therefore, as an approximate origin we select the next oldest class I date in the region: Ngoume
-possible_origin_dat <- possible_origin_dat %>%
-  filter(SITE=='Ngoume' & (CLASS %in% c('Ia', 'Ib', 'Ic'))) %>% #Alternatively select Obobogo
-  slice(1L)
-#Additional note: Recent linguistic origin used ('Exploring the relationships between genetic, linguistic and geographic distances in Bantu-speaking populations', Gonzalez-Santos, 2022) was that of the Lemande population: (lat, long) = (4.50, 11.08)
-
-## Possible Southern Africa start-point (oldest date) in SARD dataset
-# possible_origin_dat <- SARD_sum_df %>%
-#   slice_max(c14date, n=1)
+# Possible start-point (oldest date) in easter_EIA dataset
+possible_origin_dat <- eastEIA_sites_df %>%
+  slice_max(c14date, n=1)
 
 
 ## Compute Great-Arc Distances in km ----
 sites <- st_as_sf(siteInfo, coords = c('long','lat'))
-st_crs(sites)  <- "+proj=longlat +datum=WGS84 +no_defs +ellps=WGS84 +towgs84=0,0,0" 
+st_crs(sites)  <- 4326 
 dist_mat  <- st_distance(sites)/1000 #inter-site distance matrix in km: each site's distance from every other site (i.e. with n sites, this matrix is n^2)
-origin_point  <- sites %>% filter(siteName == possible_origin_dat$SITE)
-dist_org  <-  st_distance(x=sites, y=origin_point)/1000 #distance from origin site
+origin_point  <- sites %>% filter(siteName == possible_origin_dat$siteName)
+dist_org  <-  as.vector(st_distance(x=sites, y=origin_point)/1000) #distance from origin site
 
 #-------------------------------------------------------------------------------
 # Generate Spatial Window for Analyses: Sub-Saharan Africa ----
 
-#Sampling window ----
-sampling_win <- ne_countries(continent = "Africa", returnclass = "sf") %>%
-  filter_all(., any_vars(str_detect(., "Sub-Saharan"))) %>% 
-  filter(name_en %in% subSahara_countries) %>% 
-  filter(name_en != "Madagascar") #We focus on mainland sub-Saharan Africa
+# #Sampling window: Sub-Saharan Africa ----
+# sampling_win <- ne_countries(country = subSahara_countries, returnclass = "sf") %>%
+#   filter(name_en != "Madagascar") #We focus on mainland sub-Saharan Africa
+
+#Sampling window: Eastern Sub-Saharan Africa ----
+sampling_win <- ne_countries(continent = "Africa", country = eastEIA_countries, returnclass = "sf")
 
 #Generate Spatial Hexagons ----
-hex_area_win <- hex_areas(sampling_win, cell_d = 10)
+hex_area_win <- hex_areas(sampling_win, cell_d = 5)
 
 #Assign hex area id to each site ----
 siteInfo$area_id <- as.integer(st_within(sites$geometry, hex_area_win$geometry))
@@ -260,14 +285,15 @@ area_freq  <- plyr::count(siteInfo, 'area_id') ##See how many sites fall in each
 ## Create list with constants and data ----
 
 # Data
-bantu_dat <- list(cra=dateInfo$cra,
-                  cra_error=dateInfo$cra_error) #Creating bantu_dat with only date information
+eastEIA_dat <- list(cra=dateInfo$cra,
+                    cra_error=dateInfo$cra_error) #Creating eastEIA_dat with only date information
 
 ## Constants
 data(intcal20)
 data(shcal20)
 constants <- list()
 constants$countries <- subSahara_countries 
+constants$eastEIAcountries <- eastEIA_countries
 constants$n_sites <- nrow(siteInfo)
 constants$n_dates  <- nrow(dateInfo)
 constants$n_areas  <- nrow(hex_area_win) #All areas (even empty ones) are included #Only occupied areas: length(unique(siteInfo$area_id))
@@ -283,4 +309,4 @@ constants$C14err  <- cbind(intcal20$C14Age.sigma, shcal20$C14Age.sigma)
 
 #-------------------------------------------------------------------------------
 ## Save everything on a R image file ----
-save(sites, constants, bantu_dat, siteInfo, dateInfo, sampling_win, hex_area_win, file=here('data','c14.RData'))
+save(sites, constants, eastEIA_dat, siteInfo, dateInfo, sampling_win, hex_area_win, file=here('data','eastc14.RData'))

@@ -13,7 +13,7 @@ library(RColorBrewer)
 library(cowplot)
 
 # Load and prepare data ----
-load(here('data','c14.RData'))
+load(here('data','eastc14.RData'))
 
 
 #-------------------------------------------------------------------------------
@@ -107,7 +107,7 @@ plt.main <- basemap() +
                                        fill = NA))
 
 
-pdf(file=here('output','figures','map_figure.pdf'), width=8.5, height=7)
+pdf(file=here('output','figures','map_figure_EAST.pdf'), width=8.5, height=7)
 cowplot::ggdraw() +
   draw_plot(plt.main) +
   draw_plot(minimap, 
@@ -118,7 +118,7 @@ dev.off()
 #-------------------------------------------------------------------------------
 ## Plot HEX areas  ---- FIGURE map_figure2
 
-pdf(file=here('output','figures','map_figure2.pdf'), width=8.5, height=7)
+pdf(file=here('output','figures','map_figure2_EAST.pdf'), width=8.5, height=7)
 
 ggplot(data = hex_area_win) +
   geom_sf(data = st_buffer(st_as_sf(sampling_win, crs = 4326), 40000), aes(color = "grey50")) + #sampling window with coastal buffer

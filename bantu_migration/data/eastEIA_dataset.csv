@@ -1,0 +1,969 @@
+"labCode","siteName","long","lat","c14date","c14std","reference","material","country","dataorigin","ID","siteID"
+"Pta-9167","Basinghall",27.133,-23.513,870,45,"biemond2014sal","charcoal","Botswana","SARD",1,22
+"Pta-9169","Basinghall",27.133,-23.513,760,50,"biemond2014sal","charcoal","Botswana","SARD",2,22
+"Pta-9303","Basinghall",27.13,-23.51,300,15,"biemond2014sal","charcoal","Botswana","SARD",3,22
+"Pta-9392","Basinghall",27.133,-23.513,1010,40,"biemond2014sal","charcoal","Botswana","SARD",4,22
+"Pta-9442","Basinghall",27.133,-23.513,670,50,"biemond2014sal","charcoal","Botswana","SARD",5,22
+"UGAMS-03982","Basinghall",27.13,-23.51,315,25,"biemond2014sal","","Botswana","SARD",6,22
+"Pta-5947","Beauley",28.97,-23.12,850,50,"vanschalkwyk1998aib","charcoal","South Africa","SARD",7,26
+"Pta-5948","Beauley",28.97,-23.12,1120,50,"vanschalkwyk1998aib","charcoal","South Africa","SARD",8,26
+"Pta-5951","Beauley",28.97,-23.12,1135,50,"vanschalkwyk1998aib","wood","South Africa","SARD",9,26
+"I-12708","Bisoli",27.6,-21.02,1240,80,"campbell1996ves","charcoal","Botswana","SARD",10,38
+"Wits-1099","Bisoli",27.6,-21.02,1340,60,"campbell1996ves","charcoal","Botswana","SARD",11,38
+"Pta-2849","Blaauwbank Donga (RU 7/78)",27.79,-24.81,370,30,"bandama2015ece","charcoal","South Africa","SARD",12,40
+"Pta-162","Blackburn Ridge",31.064,-29.691,900,40,"davies1971eb","charcoal","South Africa","SARD",13,41
+"Pta-7273","Blyklip",29.283,-22.317,330,40,"vogel2000rds","charcoal","South Africa","SARD",14,42
+"Pta-7280","Blyklip",29.283,-22.317,340,45,"vogel2000rds","charcoal","South Africa","SARD",15,42
+"Beta-62740","Bobonong Road",28.8,-22.25,810,70,"kinahan1998asd","charcoal","Botswana","SARD",16,44
+"Pta-703","Border Cave",31.983,-27.017,500,45,"vogel1986prd","plant remains","South Africa","SARD",17,54
+"Pta-715","Border Cave",31.983,-27.017,440,60,"vogel1986prd","plant remains","South Africa","SARD",18,54
+"Beta-159776","Bosutswe",26.611,-21.953,400,50,"denbow2008aeb","","Botswana","SARD",19,56
+"Beta-159777","Bosutswe",26.611,-21.953,370,50,"denbow2008aeb","","Botswana","SARD",20,56
+"Beta-159778","Bosutswe",26.611,-21.953,570,60,"denbow2008aeb","","Botswana","SARD",21,56
+"Beta-159779","Bosutswe",26.611,-21.953,590,60,"denbow2008aeb","","Botswana","SARD",22,56
+"Beta-159780","Bosutswe",26.611,-21.953,850,40,"denbow2008aeb","","Botswana","SARD",23,56
+"Beta-159781","Bosutswe",26.611,-21.953,830,70,"denbow2008aeb","","Botswana","SARD",24,56
+"Beta-171912","Bosutswe",26.611,-21.953,740,60,"denbow2008aeb","","Botswana","SARD",25,56
+"Beta-171913","Bosutswe",26.611,-21.953,970,60,"denbow2008aeb","","Botswana","SARD",26,56
+"Beta-171914","Bosutswe",26.611,-21.953,470,60,"denbow2008aeb","","Botswana","SARD",27,56
+"Beta-171915","Bosutswe",26.611,-21.953,660,60,"denbow2008aeb","","Botswana","SARD",28,56
+"Beta-171916","Bosutswe",26.611,-21.953,360,60,"denbow2008aeb","","Botswana","SARD",29,56
+"Beta-171917","Bosutswe",26.611,-21.953,950,60,"denbow2008aeb","","Botswana","SARD",30,56
+"TX-6967","Bosutswe",26.611,-21.953,590,70,"denbow2008aeb","","Botswana","SARD",31,56
+"TX-6981","Bosutswe",26.611,-21.953,900,70,"denbow2008aeb","","Botswana","SARD",32,56
+"TX-6982","Bosutswe",26.611,-21.953,1170,80,"denbow2008aeb","","Botswana","SARD",33,56
+"TX-6983","Bosutswe",26.611,-21.953,680,70,"denbow2008aeb","","Botswana","SARD",34,56
+"TX-6985","Bosutswe",26.611,-21.953,1070,60,"denbow2008aeb","","Botswana","SARD",35,56
+"TX-6987","Bosutswe",26.611,-21.953,850,70,"denbow2008aeb","","Botswana","SARD",36,56
+"TX-6988","Bosutswe",26.611,-21.953,520,60,"denbow2008aeb","","Botswana","SARD",37,56
+"TX-6991","Bosutswe",26.611,-21.953,1400,60,"denbow2008aeb","","Botswana","SARD",38,56
+"TX-6992","Bosutswe",26.611,-21.953,1200,60,"denbow2008aeb","","Botswana","SARD",39,56
+"TX-6993","Bosutswe",26.611,-21.953,1020,70,"denbow2008aeb","","Botswana","SARD",40,56
+"TX-6994","Bosutswe",26.611,-21.953,1370,60,"denbow2008aeb","","Botswana","SARD",41,56
+"TX-6995","Bosutswe",26.611,-21.953,1070,60,"denbow2008aeb","","Botswana","SARD",42,56
+"TX-6996","Bosutswe",26.611,-21.953,980,80,"denbow2008aeb","","Botswana","SARD",43,56
+"TX-6997","Bosutswe",26.611,-21.953,1230,60,"denbow2008aeb","","Botswana","SARD",44,56
+"Beta-93179","Break Pressure Tank",27.58,-22.24,1100,60,"huffman2007h","","Botswana","SARD",45,60
+"Beta-93180","Break Pressure Tank",27.58,-22.24,890,70,"huffman2007h","","Botswana","SARD",46,60
+"Wits-837","Broadhurst",25.95,-24.533,590,50,"denbow1981bce","charcoal","Botswana","SARD",47,61
+"Fra-82","Broederstroom",27.835,-25.769,1450,100,"protsch1984frd","charcoal","South Africa","SARD",48,62
+"Fra-84","Broederstroom",27.835,-25.769,290,100,"protsch1984frd","charcoal","South Africa","SARD",49,62
+"Fra-85","Broederstroom",27.835,-25.769,1360,100,"protsch1984frd","charcoal","South Africa","SARD",50,62
+"Fra-88","Broederstroom",27.835,-25.769,1320,100,"protsch1984frd","charcoal","South Africa","SARD",51,62
+"KN-2641","Broederstroom",27.835,-25.769,1350,80,"mason1981esb","charcoal","South Africa","SARD",52,62
+"KN-2642","Broederstroom",27.835,-25.769,330,50,"mason1981esb","charcoal","South Africa","SARD",53,62
+"KN-2643","Broederstroom",27.835,-25.769,1600,50,"mason1981esb","charcoal","South Africa","SARD",54,62
+"KN-2644","Broederstroom",27.835,-25.769,1570,65,"mason1981esb","charcoal","South Africa","SARD",55,62
+"Pta-1343","Broederstroom",27.835,-25.769,1300,40,"mason1981esb","bone","South Africa","SARD",56,62
+"Pta-1375","Broederstroom",27.84,-25.77,1540,40,"huffman2007h","charcoal","South Africa","SARD",57,62
+"Pta-1384","Broederstroom",27.835,-25.769,1220,40,"mason1981esb","bone","South Africa","SARD",58,62
+"RL-351","Broederstroom",27.835,-25.769,1520,110,"mason1981esb","charcoal","South Africa","SARD",59,62
+"UCLA-1791A","Broederstroom",27.835,-25.769,1460,50,"mason1981esb","charcoal","South Africa","SARD",60,62
+"UCLA-1791B","Broederstroom",27.835,-25.769,1490,50,"mason1981esb","charcoal","South Africa","SARD",61,62
+"Wits-1474","Broederstroom",27.835,-25.769,1335,60,"mason1981esb","","South Africa","SARD",62,62
+"Wits-781a","Broederstroom",27.835,-25.769,1530,50,"mason1981esb","charcoal","South Africa","SARD",63,62
+"Wits-870","Broederstroom",27.835,-25.769,1440,50,"mason1981esb","charcoal","South Africa","SARD",64,62
+"Pta-2166","Buffelshoek",27.369,-26.796,350,30,"taylor1979wst","","South Africa","SARD",65,64
+"Pta-2380","Buffelshoek",27.369,-26.796,300,50,"taylor1979wst","","South Africa","SARD",66,64
+"Pta-8949","Burgersfort",30.32,-24.68,1320,50,"huffman2011leb","charcoal","South Africa","SARD",67,66
+"St-8873","Caimane",32.13,-26.32,880,210,"morais1987efc","charcoal","Mozambique","SARD",68,70
+"St-8874","Caimane",32.13,-26.32,715,90,"morais1987efc","plant remains","Mozambique","SARD",69,70
+"ETH-5127","Camp Workings (Rooiberg Valley)",27.77,-24.8,395,55,"bandama2015ece","charcoal","South Africa","SARD",70,71
+"GrN-5138","Camp Workings (Rooiberg Valley)",27.77,-24.8,435,45,"bandama2015ece","wood","South Africa","SARD",71,71
+"GrN-5022","Castle Cavern",31.042,-26.195,1535,30,"vogel1970grd","charcoal","Swaziland","SARD",72,76
+"GrN-5315","Castle Cavern",31.042,-26.195,1550,30,"vogel1970grd","charcoal","Swaziland","SARD",73,76
+"Y-1712","Castle Cavern",31.042,-26.195,1550,60,"stuiver1969nrm","charcoal","Swaziland","SARD",74,76
+"Y-1995","Castle Cavern",31.042,-26.195,1430,100,"stuiver1969nrm","charcoal","Swaziland","SARD",75,76
+"SR-177","Chedzurgwe",29.62,-16.78,415,120,"sheppard1971rrm","charcoal","Zimbabwe","SARD",76,80
+"SR-179","Chedzurgwe",29.62,-16.78,350,120,"sheppard1971rrm","charcoal","Zimbabwe","SARD",77,80
+"SR-180","Chedzurgwe",29.62,-16.78,550,95,"sheppard1971rrm","charcoal","Zimbabwe","SARD",78,80
+"R-1325","Chibuene",35.422,-22.237,1180,50,"sinclair2012tss","","Mozambique","SARD",79,83
+"St-8493","Chibuene",35.422,-22.237,665,80,"sinclair2012tss","","Mozambique","SARD",80,83
+"St-8494","Chibuene",35.422,-22.237,1270,80,"sinclair2012tss","","Mozambique","SARD",81,83
+"St-8495a","Chibuene",35.422,-22.237,1400,85,"sinclair2012tss","","Mozambique","SARD",82,83
+"St-8495b","Chibuene",35.422,-22.237,1080,80,"sinclair2012tss","","Mozambique","SARD",83,83
+"St-8496","Chibuene",35.422,-22.237,1155,85,"sinclair2012tss","","Mozambique","SARD",84,83
+"Ua-12267","Chibuene",35.422,-22.237,1225,70,"sinclair2012tss","","Mozambique","SARD",85,83
+"Ua-16266","Chibuene",35.422,-22.237,305,65,"sinclair2012tss","","Mozambique","SARD",86,83
+"Ua-16268","Chibuene",35.422,-22.237,1005,70,"sinclair2012tss","","Mozambique","SARD",87,83
+"Ua-16269","Chibuene",35.422,-22.237,890,50,"sinclair2012tss","","Mozambique","SARD",88,83
+"Ua-16270","Chibuene",35.422,-22.237,1235,50,"sinclair2012tss","","Mozambique","SARD",89,83
+"Ua-16271","Chibuene",35.422,-22.237,1105,70,"sinclair2012tss","","Mozambique","SARD",90,83
+"Ua-16272","Chibuene",35.422,-22.237,1410,75,"sinclair2012tss","","Mozambique","SARD",91,83
+"Wk-40712","Chicaza",35.25,-12.89,489,35,"bicho2016msn","bone","Mozambique","SARD",92,84
+"St-8590","Chongoene",33.8,-25.02,880,100,"morais1987efc","charcoal","Mozambique","SARD",93,88
+"SR-119","Cighwa",30.88,-20.35,1540,95,"sheppard1971rrm","charcoal","Zimbabwe","SARD",94,91
+"Pta-3732","Denver Farm, Lukwe River",28.52,-20.03,1130,40,"robinson1985dsu","","Zimbabwe","SARD",95,97
+"Beta-13264","Divuyu",21.736,-18.759,1330,60,"denbow2011edt","","Botswana","SARD",96,102
+"Beta-13265","Divuyu",21.736,-18.759,1330,60,"denbow2011edt","","Botswana","SARD",97,102
+"Beta-13266","Divuyu",21.736,-18.759,1190,70,"denbow2011edt","","Botswana","SARD",98,102
+"Beta-13267","Divuyu",21.736,-18.759,1220,70,"denbow2011edt","","Botswana","SARD",99,102
+"Beta-13268","Divuyu",21.736,-18.759,1400,70,"denbow2011edt","","Botswana","SARD",100,102
+"Beta-13269","Divuyu",21.736,-18.759,1370,60,"denbow2011edt","","Botswana","SARD",101,102
+"I-13560","Domboshaba",27.36,-20.6,450,80,"huffman2007h","","Botswana","SARD",102,107
+"I-13746","Domboshaba",27.36,-20.6,1150,80,"campbell1996ves","","Botswana","SARD",103,107
+"Wits-1216","Domboshaba",27.36,-20.6,490,50,"huffman2007h","","Botswana","SARD",104,107
+"Wits-1376","Domboshaba",27.36,-20.6,510,70,"huffman2007h","","Botswana","SARD",105,107
+"Wits-1395","Domboshaba",27.36,-20.6,470,70,"huffman2007h","","Botswana","SARD",106,107
+"Pta-4138","Doornpoort",26.962,-28.613,340,45,"dreyer1992adw","charcoal","South Africa","SARD",107,108
+"Wits-1599","Dzata",30.15,-22.867,260,70,"huffman2007h","","South Africa","SARD",108,111
+"Wits-1665","Dzata",30.15,-22.867,290,50,"huffman2007h","","South Africa","SARD",109,111
+"Wits-1668","Dzata",30.15,-22.867,320,40,"huffman2007h","","South Africa","SARD",110,111
+"Pta-7279","Edmondsburg",29.283,-22.317,850,50,"vogel2000rds","charcoal","South Africa","SARD",111,116
+"Pta-7450","Edmondsburg",29.283,-22.317,1040,40,"vogel2000rds","charcoal","South Africa","SARD",112,116
+"Pta-1522","Eiland",30.633,-23.767,850,50,"evers1988rgs","","South Africa","SARD",113,118
+"Pta-1524","Eiland",30.633,-23.767,1680,40,"maggs1977rrd","charcoal","South Africa","SARD",114,118
+"Pta-1607","Eiland",30.633,-23.767,1560,30,"maggs1984sz","charcoal","South Africa","SARD",115,118
+"Pta-1608","Eiland",30.633,-23.767,1630,30,"maggs1984sz","charcoal","South Africa","SARD",116,118
+"Pta-1668","Eiland",30.633,-23.767,1000,55,"evers1988rgs","","South Africa","SARD",117,118
+"Pta-1745","Eiland",30.633,-23.767,825,50,"evers1988rgs","","South Africa","SARD",118,118
+"Wits-764","Eiland",30.633,-23.767,1460,40,"klapwijk1996esl","charcoal","South Africa","SARD",119,118
+"AA-77934","Elandsberg ledge",27.7,-24.71,373,32,"bandama2015ece","charcoal","South Africa","SARD",120,119
+"Pta-2879","Emberton Way",31.101,-29.703,1050,60,"horwitz1991smi","charcoal","South Africa","SARD",121,123
+"Pta-2880","Emberton Way",31.101,-29.703,1130,40,"horwitz1991smi","charcoal","South Africa","SARD",122,123
+"Pta-2881","Emberton Way",31.101,-29.703,1270,60,"horwitz1991smi","charcoal","South Africa","SARD",123,123
+"Pta-1847","Enkwazini",32.511,-28.182,1650,50,"hall1980ezc","charcoal","South Africa","SARD",124,125
+"Pta-1977","Enkwazini",32.511,-28.182,1540,60,"hall1980ezc","charcoal","South Africa","SARD",125,125
+"Pta-2485","Enkwazini",32.511,-28.182,300,50,"hall1980ezc","charcoal","South Africa","SARD",126,125
+"Wits-780","Ficus",29.17,-24.15,390,50,"moore1981mvc","charcoal","South Africa","SARD",127,137
+"Wits-781b","Ficus",29.17,-24.15,1080,40,"moore1981mvc","charcoal","South Africa","SARD",128,137
+"Wits-782","Ficus",29.17,-24.15,1400,40,"moore1981mvc","charcoal","South Africa","SARD",129,137
+"Wits-787","Ficus",29.17,-24.15,460,50,"moore1981mvc","charcoal","South Africa","SARD",130,137
+"Wits-888","Ficus",29.17,-24.15,1115,50,"moore1981mvc","charcoal","South Africa","SARD",131,137
+"SR-26","Gokomere Tunnel Site",30.78,-19.96,1420,120,"huffman1976gpt","","Zimbabwe","SARD",132,156
+"M-913","Great Zimbabwe",30.933,-20.271,1630,75,"huffman1991cgz","charcoal","Zimbabwe","SARD",133,161
+"M-914","Great Zimbabwe",30.933,-20.271,875,75,"robinson1961ecd","charcoal","Zimbabwe","SARD",134,161
+"M-915","Great Zimbabwe",30.933,-20.271,510,75,"robinson1961ecd","charcoal","Zimbabwe","SARD",135,161
+"Pta-1192","Great Zimbabwe",30.933,-20.271,640,40,"huffman1991cgz","charcoal","Zimbabwe","SARD",136,161
+"Pta-1208","Great Zimbabwe",30.933,-20.271,600,50,"huffman1991cgz","charcoal","Zimbabwe","SARD",137,161
+"Pta-1594","Great Zimbabwe",30.933,-20.271,640,40,"huffman1991cgz","wood","Zimbabwe","SARD",138,161
+"Pta-1983","Great Zimbabwe",30.933,-20.271,670,40,"huffman1991cgz","charcoal","Zimbabwe","SARD",139,161
+"Pta-1984","Great Zimbabwe",30.933,-20.271,850,50,"robinson1961ecd","charcoal","Zimbabwe","SARD",140,161
+"Pta-1985","Great Zimbabwe",30.933,-20.271,690,45,"robinson1961ecd","charcoal","Zimbabwe","SARD",141,161
+"Pta-1986","Great Zimbabwe",30.933,-20.271,640,45,"robinson1961ecd","charcoal","Zimbabwe","SARD",142,161
+"Pta-2423","Great Zimbabwe",30.933,-20.271,540,50,"huffman1991cgz","charcoal","Zimbabwe","SARD",143,161
+"Pta-2429","Great Zimbabwe",30.933,-20.271,540,40,"huffman1991cgz","charcoal","Zimbabwe","SARD",144,161
+"Pta-2693","Great Zimbabwe",30.933,-20.271,710,45,"huffman1991cgz","charcoal","Zimbabwe","SARD",145,161
+"Pta-2694","Great Zimbabwe",30.933,-20.271,700,40,"huffman1991cgz","charcoal","Zimbabwe","SARD",146,161
+"Pta-2704","Great Zimbabwe",30.933,-20.271,670,45,"robinson1961ecd","plant remains","Zimbabwe","SARD",147,161
+"Pta-2705","Great Zimbabwe",30.933,-20.271,760,50,"huffman1991cgz","charcoal","Zimbabwe","SARD",148,161
+"Pta-2706","Great Zimbabwe",30.933,-20.271,580,50,"robinson1961ecd","charcoal","Zimbabwe","SARD",149,161
+"Pta-2711","Great Zimbabwe",30.933,-20.271,370,50,"huffman1991cgz","charcoal","Zimbabwe","SARD",150,161
+"Pta-5970","Great Zimbabwe",30.933,-20.271,590,50,"chirikure2013bcg","charcoal","Zimbabwe","SARD",151,161
+"Pta-745","Great Zimbabwe",30.933,-20.271,670,30,"huffman1991cgz","charcoal","Zimbabwe","SARD",152,161
+"Pta-792","Great Zimbabwe",30.933,-20.271,650,50,"huffman1991cgz","wood","Zimbabwe","SARD",153,161
+"SR-47","Great Zimbabwe",30.933,-20.271,570,90,"sheppard1966rrm","charcoal","Zimbabwe","SARD",154,161
+"Wits-774","Great Zimbabwe",30.933,-20.271,600,40,"huffman1991cgz","charcoal","Zimbabwe","SARD",155,161
+"Pta-2414","Happy Rest",29.72,-23.03,1480,50,"huffman2007h","charcoal","South Africa","SARD",156,163
+"Pta-2421","Happy Rest",29.72,-23.03,1600,50,"huffman2007h","charcoal","South Africa","SARD",157,163
+"SR-25","Harleigh Farm",32.083333,-18.533333,650,120,"robins1964srr","","Zimbabwe","SARD",158,164
+"SR-70","Harleigh Farm",32.083333,-18.533333,610,90,"robins1964srr","","Zimbabwe","SARD",159,164
+"SR-71","Harleigh Farm",32.083333,-18.533333,440,90,"robins1964srr","","Zimbabwe","SARD",160,164
+"Pta-8864","Hoekfontein",27.969,-25.612,390,50,"nienaber2005rea","bone","South Africa","SARD",161,165
+"R-1326","Hola Hola",34.3,-21.29,1060,50,"morais1987efc","bone","Mozambique","SARD",162,166
+"Pta-1652","Icon",29.257,-22.431,620,50,"vogel2000rds","charcoal","South Africa","SARD",163,168
+"Wits-1598","Ifafi 35/85",27.53,-25.45,440,30,"steel1987ics","","South Africa","SARD",164,169
+"Pta-5492","Inanda Quarry",30.914,-29.753,1580,50,"whitelaw1996cdp","charcoal","South Africa","SARD",165,178
+"Pta-0304","K2, Greefswald",29.383,-22.217,880,40,"vogel2000rds","charcoal","South Africa","SARD",166,191
+"Pta-0305","K2, Greefswald",29.383,-22.217,890,50,"vogel2000rds","charcoal","South Africa","SARD",167,191
+"Pta-0306","K2, Greefswald",29.383,-22.217,850,50,"vogel2000rds","charcoal","South Africa","SARD",168,191
+"Pta-0307","K2, Greefswald",29.383,-22.217,930,45,"vogel2000rds","charcoal","South Africa","SARD",169,191
+"Pta-1157","K2, Greefswald",29.383,-22.217,950,40,"vogel2000rds","plant remains","South Africa","SARD",170,191
+"Pta-1214","K2, Greefswald",29.383,-22.217,980,40,"vogel2000rds","charcoal","South Africa","SARD",171,191
+"Pta-1215","K2, Greefswald",29.383,-22.217,970,50,"vogel2000rds","charcoal","South Africa","SARD",172,191
+"Pta-1226","K2, Greefswald",29.383,-22.217,950,50,"vogel2000rds","charcoal","South Africa","SARD",173,191
+"Pta-2051","K2, Greefswald",29.383,-22.217,970,40,"vogel2000rds","bone","South Africa","SARD",174,191
+"Pta-6064","K2, Greefswald",29.383,-22.217,880,50,"vogel2000rds","bone","South Africa","SARD",175,191
+"Pta-6073","K2, Greefswald",29.383,-22.217,920,50,"vogel2000rds","bone","South Africa","SARD",176,191
+"Pta-6080","K2, Greefswald",29.383,-22.217,940,50,"vogel2000rds","bone","South Africa","SARD",177,191
+"Pta-6570","K2, Greefswald",29.383,-22.217,760,50,"vogel2000rds","bone","South Africa","SARD",178,191
+"Pta-6576","K2, Greefswald",29.383,-22.217,1010,50,"vogel2000rds","bone","South Africa","SARD",179,191
+"Pta-6680","K2, Greefswald",29.383,-22.217,1250,40,"vogel2000rds","bone","South Africa","SARD",180,191
+"I-13523","Kgaswe",27.04,-22.52,960,80,"huffman2007h","","Botswana","SARD",181,224
+"I-13524","Kgaswe",27.04,-22.52,940,80,"huffman2007h","","Botswana","SARD",182,224
+"Pta-338","Kgopolwe (Phalaborwa)",31.091,-23.959,720,45,"evers1987cpn","","South Africa","SARD",183,225
+"Pta-566","Kgopolwe (Phalaborwa)",31.091,-23.959,680,45,"evers1987cpn","bone","South Africa","SARD",184,225
+"Y-1637","Kgopolwe (Phalaborwa)",31.091,-23.959,910,60,"evers1987cpn","","South Africa","SARD",185,225
+"Y-1638","Kgopolwe (Phalaborwa)",31.091,-23.959,960,80,"evers1987cpn","","South Africa","SARD",186,225
+"Y-1639","Kgopolwe (Phalaborwa)",31.091,-23.959,850,60,"evers1987cpn","","South Africa","SARD",187,225
+"Y-1657","Kgopolwe (Phalaborwa)",31.091,-23.959,520,60,"evers1987cpn","charcoal","South Africa","SARD",188,225
+"Y-1658","Kgopolwe (Phalaborwa)",31.091,-23.959,280,60,"evers1987cpn","charcoal","South Africa","SARD",189,225
+"Y-1662","Kgopolwe (Phalaborwa)",31.091,-23.959,820,80,"evers1987cpn","","South Africa","SARD",190,225
+"Pta-3093","Khartoum near Jacobsdal",24.75,-29.267,570,60,"humphreys2009rr","","South Africa","SARD",191,226
+"SR-117","Kinsale Farm",30.3,-20.3,1410,95,"sheppard1971rrm","charcoal","Zimbabwe","SARD",192,234
+"Pta-1168","Klein Afrika",29.917,-22.917,1630,45,"vogel2000rds","charcoal","South Africa","SARD",193,240
+"Pta-1320","Klein Afrika",29.917,-22.917,1430,40,"vogel2000rds","charcoal","South Africa","SARD",194,240
+"Pta-1321","Klein Afrika",29.917,-22.917,1450,45,"vogel2000rds","charcoal","South Africa","SARD",195,240
+"Pta-2415","Klein Afrika",29.917,-22.917,1540,50,"vogel2000rds","charcoal","South Africa","SARD",196,240
+"Pta-2420","Klein Afrika",29.917,-22.917,1410,50,"vogel2000rds","charcoal","South Africa","SARD",197,240
+"Pta-277","Klein Afrika",29.917,-22.917,260,50,"vogel2000rds","iron","South Africa","SARD",198,240
+"Pta-8077","Kotha’s Field",31.489,-26.682,880,50,"ohinata2001auf","charcoal","Swaziland","SARD",199,246
+"Pta-8182","Kotha’s Field",31.489,-26.682,660,80,"ohinata2001auf","charcoal","Swaziland","SARD",200,246
+"Pta-6578","Kromdraai",30.2,-22.517,580,40,"vogel2000rds","bone","South Africa","SARD",201,255
+"Pta-6755","Kromdraai",30.2,-22.517,625,20,"vogel2000rds","bone","South Africa","SARD",202,255
+"Pta-6760","Kromdraai",30.2,-22.517,690,50,"vogel2000rds","bone","South Africa","SARD",203,255
+"Pta-6773","Kromdraai",30.2,-22.517,810,50,"vogel2000rds","bone","South Africa","SARD",204,255
+"Beta-296842","Kudumatse",27.14,-23.41,970,40,"biemond2014sal","","Botswana","SARD",205,256
+"Pta-5865","Kulubele",27.83,-32.43,1250,40,"binneman1996pri","charcoal","South Africa","SARD",206,257
+"Pta-6982","Kulubele",27.83,-32.43,1270,50,"binneman1996pri","charcoal","South Africa","SARD",207,257
+"Wits-1918","KwaGandaganda",30.836,-29.679,1395,60,"whitelaw1994ksp","charcoal","South Africa","SARD",208,259
+"Wits-1919","KwaGandaganda",30.836,-29.679,1245,60,"whitelaw1994ksp","charcoal","South Africa","SARD",209,259
+"Wits-1920","KwaGandaganda",30.836,-29.679,1080,60,"whitelaw1994ksp","charcoal","South Africa","SARD",210,259
+"Wits-1937","KwaGandaganda",30.836,-29.679,1260,60,"whitelaw1994ksp","charcoal","South Africa","SARD",211,259
+"Wits-1938","KwaGandaganda",30.836,-29.679,1315,60,"whitelaw1994ksp","charcoal","South Africa","SARD",212,259
+"Beta-200556","Kwali Camp",31.87,-21.03,1240,70,"swan2007emi","charcoal","Zimbabwe","SARD",213,263
+"Beta-200557","Kwali Camp",31.87,-21.03,1320,40,"swan2007emi","charcoal","Zimbabwe","SARD",214,263
+"Beta-200558","Kwali Camp",31.87,-21.03,1490,60,"swan2007emi","charcoal","Zimbabwe","SARD",215,263
+"Pta-3346","Langubehla",31.167,-26.283,1620,50,"vogel1986prd","charcoal","Swaziland","SARD",216,273
+"Pta-8772","Lebalelo",30.16,-24.57,1300,50,"huffman2011leb","charcoal","South Africa","SARD",217,278
+"GrA-9011","Leokwe Hill",29.364,-22.218,890,40,"vogel2000rds","charcoal","South Africa","SARD",218,285
+"Pta-7443","Leokwe Hill",29.364,-22.218,1000,60,"vogel2000rds","charcoal","South Africa","SARD",219,285
+"Pta-7444","Leokwe Hill",29.364,-22.218,940,60,"vogel2000rds","charcoal","South Africa","SARD",220,285
+"Pta-7449","Leokwe Hill",29.364,-22.218,980,50,"vogel2000rds","charcoal","South Africa","SARD",221,285
+"Pta-7517","Leokwe Hill",29.364,-22.218,940,50,"vogel2000rds","charcoal","South Africa","SARD",222,285
+"Pta-7563","Leokwe Hill",29.364,-22.218,880,25,"vogel2000rds","wood","South Africa","SARD",223,285
+"Pta-7578","Leokwe Hill",29.364,-22.218,890,20,"vogel2000rds","wood","South Africa","SARD",224,285
+"Pta-7665","Leokwe Hill",29.364,-22.218,950,50,"vogel2000rds","wood","South Africa","SARD",225,285
+"Pta-7669","Leokwe Hill",29.364,-22.218,910,40,"vogel2000rds","wood","South Africa","SARD",226,285
+"I-4862","Leopard's Kopje Main Kraal",28.43,-20.12,1130,95,"huffman2007h","","Zimbabwe","SARD",227,286
+"SR-225","Leopard's Kopje Main Kraal",28.43,-20.12,1280,90,"huffman2007h","","Zimbabwe","SARD",228,286
+"SR-55","Leopard's Kopje Main Kraal",28.43,-20.12,1250,110,"huffman2007h","","Zimbabwe","SARD",229,286
+"Beta-80095","Letsibogo 106",27.71,-21.84,1360,50,"campbell1996asl","","Botswana","SARD",230,288
+"Beta-80984","Letsibogo 109",27.71,-21.84,1220,60,"campbell1996asl","","Botswana","SARD",231,289
+"Beta-80985","Letsibogo 110",27.71,-21.84,370,90,"campbell1996asl","","Botswana","SARD",232,290
+"Beta-80986","Letsibogo 125",27.71,-21.84,710,60,"campbell1996asl","","Botswana","SARD",233,291
+"Beta-81224","Letsibogo 127",27.71,-21.84,360,70,"campbell1996asl","","Botswana","SARD",234,292
+"Beta-29951","Letsibogo 19",27.71,-21.84,1100,50,"campbell1996asl","","Botswana","SARD",235,293
+"Beta-80092","Letsibogo 2",27.71,-21.84,360,70,"campbell1996asl","","Botswana","SARD",236,294
+"Beta-81225","Letsibogo 26",27.71,-21.84,280,70,"campbell1996asl","","Botswana","SARD",237,295
+"Beta-81196","Letsibogo 30A",27.71,-21.84,1220,50,"campbell1996asl","","Botswana","SARD",238,296
+"Beta-80979","Letsibogo 4",27.71,-21.84,480,60,"campbell1996asl","","Botswana","SARD",239,297
+"Beta-80094","Letsibogo 79A",27.71,-21.84,400,70,"campbell1996asl","","Botswana","SARD",240,298
+"Beta-80982","Letsibogo 79B",27.71,-21.84,450,50,"campbell1996asl","","Botswana","SARD",241,299
+"Beta-80983","Letsibogo 86",27.71,-21.84,550,70,"campbell1996asl","","Botswana","SARD",242,300
+"BRAMS-2613","Likoaeng",28.763,-29.736,1481,27,"fewlass2020ced","lipids","Lesotho","SARD",243,301
+"Y-1635","Lolwe Mine (Phalaborwa)",31.091,-23.959,950,60,"vandermerwe1971psa","charcoal","South Africa","SARD",244,308
+"Y-1636","Lolwe Mine (Phalaborwa)",31.091,-23.959,1180,80,"vandermerwe1971psa","charcoal","South Africa","SARD",245,308
+"Beta-24514","Lose Hill",26.909,-22.949,920,70,"kiyagamulindwa1990eec","","Botswana","SARD",246,316
+"Beta-24515","Lose Hill",26.909,-22.949,690,60,"huffman2009mgz","","Botswana","SARD",247,316
+"Beta-24516","Lose Hill",26.909,-22.949,730,50,"huffman2009mgz","","Botswana","SARD",248,316
+"Beta-24518","Lose Hill",26.909,-22.949,750,60,"kiyagamulindwa1990eec","","Botswana","SARD",249,316
+"Beta-24519","Lose Hill",26.909,-22.949,1070,60,"kiyagamulindwa1990eec","","Botswana","SARD",250,316
+"Beta-11113","Lujojozi 3027",28.75,-32.2,1240,70,"feely2011des","charcoal","South Africa","SARD",251,321
+"Beta-11114","Lujojozi 3027",28.75,-32.2,1480,100,"feely2011des","charcoal","South Africa","SARD",252,321
+"Pta-1634","Lydenburg Heads",30.49,-25.11,1410,50,"evers1982elh","charcoal","South Africa","SARD",253,327
+"Pta-328","Lydenburg Heads",30.49,-25.11,1460,50,"evers1982elh","charcoal","South Africa","SARD",254,327
+"Pta-2105","Mabveni",30.47,-20.37,1365,30,"hall1980rrd","charcoal","Zimbabwe","SARD",255,331
+"SR-43","Mabveni",30.47,-20.37,1770,120,"sheppard1966rrm","charcoal","Zimbabwe","SARD",256,331
+"SR-79","Mabveni",30.47,-20.37,1380,110,"sheppard1967rrm","charcoal","Zimbabwe","SARD",257,331
+"Pta-3248","Machemma Ruins",29.617,-22.733,480,45,"vogel2000rds","charcoal","South Africa","SARD",258,332
+"Pta-3761","Machemma Ruins",29.617,-22.733,370,45,"vogel2000rds","charcoal","South Africa","SARD",259,332
+"Pta-4076","Machemma Ruins",29.617,-22.733,550,50,"vogel2000rds","charcoal","South Africa","SARD",260,332
+"Pta-4078","Machemma Ruins",29.617,-22.733,380,40,"vogel2000rds","charcoal","South Africa","SARD",261,332
+"Pta-2874","Magogo",30.396,-28.983,1360,50,"maggs1984esm","charcoal","South Africa","SARD",262,336
+"Pta-2875","Magogo",30.396,-28.983,1190,50,"maggs1984esm","charcoal","South Africa","SARD",263,336
+"Pta-5291","Magozastad",26.28,-25.55,330,20,"huffman2007h","charcoal","South Africa","SARD",264,337
+"Pta-5416","Magozastad",26.28,-25.55,400,50,"huffman2007h","charcoal","South Africa","SARD",265,337
+"Pta-5649","Magozastad",26.28,-25.55,280,40,"huffman2007h","charcoal","South Africa","SARD",266,337
+"Pta-7285","Magozastad",26.28,-25.55,300,50,"huffman2007h","charcoal","South Africa","SARD",267,337
+"Pta-7533","Maguga Dam",31.249,-26.064,570,50,"huffman2007h","","Swaziland","SARD",268,338
+"Pta-6149","Makahane",31.058,-22.488,500,25,"vogel2000rds","charcoal","South Africa","SARD",269,340
+"Pta-6151","Makahane",31.058,-22.488,710,45,"vogel2000rds","charcoal","South Africa","SARD",270,340
+"Pta-6152","Makahane",31.058,-22.488,790,50,"vogel2000rds","charcoal","South Africa","SARD",271,340
+"Pta-6153","Makahane",31.058,-22.488,900,50,"vogel2000rds","charcoal","South Africa","SARD",272,340
+"Pta-6310","Makahane",31.058,-22.488,840,50,"vogel2000rds","charcoal","South Africa","SARD",273,340
+"Pta-6312","Makahane",31.058,-22.488,910,40,"vogel2000rds","charcoal","South Africa","SARD",274,340
+"Pta-6313","Makahane",31.058,-22.488,910,40,"vogel2000rds","charcoal","South Africa","SARD",275,340
+"Beta-18637","Makodu",27.64,-22.75,1030,70,"huffman2016amt","","Botswana","SARD",276,342
+"Beta-18638","Makodu",27.64,-22.75,1070,60,"huffman2016amt","","Botswana","SARD",277,342
+"Beta-18639","Makodu",27.64,-22.75,1290,60,"huffman2016amt","","Botswana","SARD",278,342
+"Beta-18640","Makodu",27.64,-22.75,1110,90,"huffman2016amt","","Botswana","SARD",279,342
+"Beta-18641","Makodu",27.64,-22.75,1200,60,"huffman2016amt","","Botswana","SARD",280,342
+"Beta-18642","Makodu",27.64,-22.75,1070,80,"huffman2016amt","","Botswana","SARD",281,342
+"I-14725","Makodu",27.64,-22.75,1070,80,"huffman2016amt","","Botswana","SARD",282,342
+"I-14726","Makodu",27.64,-22.75,1080,80,"huffman2016amt","","Botswana","SARD",283,342
+"I-14727","Makodu",27.64,-22.75,1140,80,"huffman2016amt","","Botswana","SARD",284,342
+"I-14728","Makodu",27.64,-22.75,1050,80,"huffman2016amt","","Botswana","SARD",285,342
+"Pta-4093","Mamba Confluence",31.047,-28.943,1390,50,"vanschalkwyk1994evl","charcoal","South Africa","SARD",286,357
+"Pta-4114","Mamba Confluence",31.047,-28.943,1300,50,"vanschalkwyk1994evl","bone","South Africa","SARD",287,357
+"Pta-4132","Mamba Confluence",31.047,-28.943,1290,50,"vanschalkwyk1994evl","bone","South Africa","SARD",288,357
+"Pta-4137","Mamba Confluence",31.047,-28.943,1300,50,"vanschalkwyk1994evl","bone","South Africa","SARD",289,357
+"Pta-4164","Mamba Confluence",31.047,-28.943,1170,60,"vanschalkwyk1994evl","bone","South Africa","SARD",290,357
+"Pta-0768","Mapungubwe",29.373,-22.208,1030,50,"vogel2000rds","charcoal","South Africa","SARD",291,363
+"Pta-1145","Mapungubwe",29.373,-22.208,880,40,"vogel2000rds","charcoal","South Africa","SARD",292,363
+"Pta-1156","Mapungubwe",29.373,-22.208,860,40,"vogel2000rds","charcoal","South Africa","SARD",293,363
+"Pta-1158","Mapungubwe",29.373,-22.208,850,50,"vogel2000rds","charcoal","South Africa","SARD",294,363
+"Pta-1159","Mapungubwe",29.373,-22.208,840,40,"vogel2000rds","charcoal","South Africa","SARD",295,363
+"Pta-1209","Mapungubwe",29.373,-22.208,770,50,"vogel2000rds","charcoal","South Africa","SARD",296,363
+"Pta-2023","Mapungubwe",29.373,-22.208,930,40,"vogel2000rds","wood","South Africa","SARD",297,363
+"Pta-2024","Mapungubwe",29.373,-22.208,1030,40,"vogel2000rds","wood","South Africa","SARD",298,363
+"Pta-3480","Mapungubwe",29.373,-22.208,770,40,"vogel2000rds","bone","South Africa","SARD",299,363
+"Pta-3489","Mapungubwe",29.373,-22.208,850,40,"vogel2000rds","bone","South Africa","SARD",300,363
+"Pta-372","Mapungubwe",29.373,-22.208,880,45,"vogel2000rds","plant remains","South Africa","SARD",301,363
+"Pta-437","Mapungubwe",29.373,-22.208,810,45,"vogel2000rds","charcoal","South Africa","SARD",302,363
+"Pta-438","Mapungubwe",29.373,-22.208,820,60,"vogel2000rds","charcoal","South Africa","SARD",303,363
+"Pta-439","Mapungubwe",29.373,-22.208,840,50,"vogel2000rds","charcoal","South Africa","SARD",304,363
+"Pta-6692","Mapungubwe",29.373,-22.208,720,40,"vogel2000rds","charcoal","South Africa","SARD",305,363
+"Pta-752","Mapungubwe",29.373,-22.208,790,50,"vogel2000rds","charcoal","South Africa","SARD",306,363
+"Pta-766","Mapungubwe",29.373,-22.208,860,40,"vogel2000rds","charcoal","South Africa","SARD",307,363
+"Pta-1640","Massingir",32.07,-23.9,1030,40,"morais1987efc","charcoal","Mozambique","SARD",308,367
+"Pta-6311","Matjigwili",31.183,-22.6,560,60,"vogel2000rds","charcoal","South Africa","SARD",309,368
+"R-1327","Matola",32.47,-25.93,1880,50,"morais1987efc","charcoal","Mozambique","SARD",310,371
+"R-1328","Matola",32.47,-25.93,1120,50,"morais1987efc","charcoal","Mozambique","SARD",311,371
+"St-8546","Matola",32.47,-25.93,1720,110,"morais1987efc","charcoal","Mozambique","SARD",312,371
+"St-8547","Matola",32.47,-25.93,1470,80,"morais1987efc","charcoal","Mozambique","SARD",313,371
+"St-8548","Matola",32.47,-25.93,2025,80,"morais1987efc","shell","Mozambique","SARD",314,371
+"Pta-3305","Mawala Hill",28.58,-19.97,1100,50,"robinson1985dsu","charcoal","Zimbabwe","SARD",315,375
+"Pta-3307","Mawala Hill",28.58,-19.97,1080,50,"robinson1985dsu","charcoal","Zimbabwe","SARD",316,375
+"Pta-3308","Mawala Hill",28.58,-19.97,1070,45,"robinson1985dsu","charcoal","Zimbabwe","SARD",317,375
+"Pta-5129","Melora Hill",28.31,-23.86,250,50,"huffman2007h","","South Africa","SARD",318,387
+"Y-1338","Melville Koppies",28.004,-26.168,890,50,"mason1964rds","charcoal","South Africa","SARD",319,388
+"Beta-200559","Mhangula",31.93,-20.98,500,60,"swan2007emi","charcoal","Zimbabwe","SARD",320,394
+"Pta-3268","Mhlanga Lagoon",31.101,-29.703,1080,70,"horwitz1991smi","charcoal","South Africa","SARD",321,395
+"Pta-2878","Mhlopeni",30.412,-29.011,1400,50,"maggs1984esm","charcoal","South Africa","SARD",322,396
+"Pta-5480","Mhlopeni",30.412,-29.011,290,70,"maggs1995scm","charcoal","South Africa","SARD",323,396
+"Pta-6306","Millbank 1A",28.93,-23.24,1200,50,"huffman2007h","charcoal","South Africa","SARD",324,399
+"Pta-6307","Millbank 1A",28.93,-23.24,1190,50,"huffman2007h","charcoal","South Africa","SARD",325,399
+"Pta-6309","Millbank 1A",28.93,-23.24,1290,50,"huffman2007h","charcoal","South Africa","SARD",326,399
+"Pta-7468","Millbank 1A",28.94,-23.24,1250,50,"huffman2007h","charcoal","South Africa","SARD",327,399
+"Pta-7478","Millbank 1B",28.94,-23.24,1170,40,"huffman2007h","charcoal","South Africa","SARD",328,400
+"Pta-7480","Millbank 1B",28.94,-23.24,1190,45,"huffman2007h","charcoal","South Africa","SARD",329,400
+"Pta-7465","Millbank 325LR (2328BB5 (TM3))",28.93,-23.24,385,20,"vanschalkwyk2000emn","charcoal","South Africa","SARD",330,401
+"Pta-7471","Millbank 325LR (2328BB5 (TM3))",28.93,-23.24,270,45,"vanschalkwyk2000emn","charcoal","South Africa","SARD",331,401
+"Pta-7473","Millbank 325LR (2328BB5 (TM3))",28.93,-23.24,260,50,"vanschalkwyk2000emn","charcoal","South Africa","SARD",332,401
+"UGAMS--3593","Mmamabula",27.09,-23.57,295,30,"biemond2014sal","","Botswana","SARD",333,415
+"UGAMS-02961","Mmamabula",27.09,-23.57,390,30,"biemond2014sal","","Botswana","SARD",334,415
+"UGAMS-03595","Mmamabula",27.09,-23.57,910,30,"biemond2014sal","","Botswana","SARD",335,415
+"Beta-79883","Modipe 92.3",26.21,-24.65,880,130,"pearson1995arm","charcoal","Botswana","SARD",336,420
+"Beta-79884","Modipe 93.2",26.2,-24.65,260,50,"pearson1995arm","charcoal","Botswana","SARD",337,421
+"Beta-76690","Modipe Base 94.1",26.2,-24.66,260,60,"pearson1995arm","charcoal","Botswana","SARD",338,422
+"Beta-76691","Modipe Base 94.1",26.2,-24.66,430,50,"pearson1995arm","charcoal","Botswana","SARD",339,422
+"Beta-76694","Modipe Hill 94.2",26.19,-24.66,320,50,"pearson1995arm","charcoal","Botswana","SARD",340,423
+"Beta-76695","Modipe Hill 94.2",26.19,-24.66,300,50,"pearson1995arm","charcoal","Botswana","SARD",341,423
+"Beta-76696","Modipe Hill 94.2",26.19,-24.66,420,50,"pearson1995arm","charcoal","Botswana","SARD",342,423
+"Pta-849","Moor Park",29.809,-29.073,750,50,"davies1974ewe","charcoal","South Africa","SARD",343,432
+"Pta-850","Moor Park",29.809,-29.073,660,50,"davies1974ewe","charcoal","South Africa","SARD",344,432
+"Pta-853","Moor Park",29.809,-29.073,600,50,"davies1974ewe","charcoal","South Africa","SARD",345,432
+"Beta-93181","Moralane",27.68,-22.13,990,80,"huffman2007h","","Botswana","SARD",346,433
+"Beta-93182","Moralane",27.68,-22.13,1100,50,"huffman2007h","","Botswana","SARD",347,433
+"Beta-93183","Moralane",27.68,-22.13,1170,60,"huffman2007h","","Botswana","SARD",348,433
+"Beta-93184","Moralane",27.68,-22.13,1020,60,"huffman2007h","","Botswana","SARD",349,433
+"Wits-823","Moritsane",25.776,-24.648,855,75,"denbow1986acp","charcoal","Botswana","SARD",350,434
+"Pta-8872","Mototolong",30.23,-24.63,1250,25,"huffman2011leb","charcoal","South Africa","SARD",351,436
+"Pta-8906","Mototolong",30.23,-24.63,1400,20,"huffman2011leb","charcoal","South Africa","SARD",352,436
+"Pta-9981","Mototolong",30.23,-24.63,1250,35,"huffman2011leb","charcoal","South Africa","SARD",353,436
+"Pta-2527","Mpambanyoni ",30.736,-30.289,980,50,"robey1980mns","charcoal","South Africa","SARD",354,442
+"Pta-2528","Mpambanyoni ",30.736,-30.289,930,50,"robey1980mns","charcoal","South Africa","SARD",355,442
+"Pta-2534","Mpambanyoni ",30.736,-30.289,885,50,"robey1980mns","charcoal","South Africa","SARD",356,442
+"Pta-2019","Mpame",29.062,-32.075,1340,60,"cronin1982rde","","South Africa","SARD",357,443
+"Pta-4900","Mqanduli",28.76,-31.809,1340,60,"vogel1999sdr; huffman2007h","","South Africa","SARD",358,446
+"Pta-4917","Mqanduli",28.76,-31.809,1330,50,"vogel1999sdr; huffman2007h","","South Africa","SARD",359,446
+"Pta-2195","Msuluzi Confluence",30.146,-28.756,1310,40,"maggs1980mcs","charcoal","South Africa","SARD",360,447
+"Pta-2197","Msuluzi Confluence",30.146,-28.756,1370,30,"maggs1980mcs","charcoal","South Africa","SARD",361,447
+"Pta-8958","Mutshilachokwe",29.529,-22.129,910,60,"manyanga2006rls","","Zimbabwe","SARD",362,458
+"Pta-8996","Mutshilachokwe",29.529,-22.129,670,60,"manyanga2006rls","","Zimbabwe","SARD",363,458
+"Pta-1980","Mzonjani",31.054,-29.733,1670,40,"maggs1980mbn","charcoal","South Africa","SARD",364,467
+"St-8497","Nachengue",35.2,-23.88,1235,105,"morais1987efc","charcoal","Mozambique","SARD",365,468
+"Pta-267","Nagome (Phalaborwa)",31.091,-23.959,785,36,"evers1987cpn","","South Africa","SARD",366,469
+"Pta-568","Nagome (Phalaborwa)",31.091,-23.959,690,45,"evers1987cpn","","South Africa","SARD",367,469
+"Pta-3300","Nali Hill",28.53,-19.95,950,50,"robinson1985dsu","charcoal","Zimbabwe","SARD",368,470
+"Pta-3301","Nali Hill",28.53,-19.95,970,50,"robinson1985dsu","charcoal","Zimbabwe","SARD",369,470
+"Pta-3302","Nali Hill",28.53,-19.95,850,50,"robinson1985dsu","charcoal","Zimbabwe","SARD",370,470
+"Pta-3304","Nali Hill",28.53,-19.95,1060,50,"robinson1985dsu","charcoal","Zimbabwe","SARD",371,470
+"Wits-1917","Nanda",30.856,-29.668,1275,60,"whitelaw1993csp","charcoal","South Africa","SARD",372,475
+"Pta-2388","Ndondondwane",31.031,-28.897,1220,50,"maggs1984npr","charcoal","South Africa","SARD",373,493
+"Pta-2389","Ndondondwane",31.031,-28.897,1190,50,"maggs1984npr","charcoal","South Africa","SARD",374,493
+"Pta-002","Ndumu",32.257,-26.874,1320,40,"vogel1971prd","charcoal","South Africa","SARD",375,495
+"Beta-115554","Nkanya 3057",28.948,-32.152,1200,60,"feely1987eft","Marine shell","South Africa","SARD",376,512
+"Beta-13255","Nqoma",21.724,-18.729,970,70,"denbow2011edt","","Botswana","SARD",377,522
+"Beta-13256","Nqoma",21.724,-18.729,1220,70,"denbow2011edt","","Botswana","SARD",378,522
+"Beta-13257","Nqoma",21.724,-18.729,1290,60,"denbow2011edt","","Botswana","SARD",379,522
+"Beta-13260","Nqoma",21.724,-18.729,1000,60,"denbow2011edt","","Botswana","SARD",380,522
+"Beta-13261","Nqoma",21.724,-18.729,970,50,"denbow2011edt","","Botswana","SARD",381,522
+"Beta-13262","Nqoma",21.724,-18.729,980,60,"denbow2011edt","","Botswana","SARD",382,522
+"Beta-13263","Nqoma",21.724,-18.729,860,60,"denbow2011edt","","Botswana","SARD",383,522
+"Iso-11411","Nqoma",21.724,-18.729,1100,80,"denbow2011edt","","Botswana","SARD",384,522
+"Wits-836","Nqoma",21.724,-18.729,970,50,"denbow2011edt","","Botswana","SARD",385,522
+"Pta-1057","Ntshekane",30.408,-28.96,1100,50,"maggs1976net","charcoal","South Africa","SARD",386,526
+"Pta-1058","Ntshekane",30.408,-28.96,1150,45,"maggs1976net","charcoal","South Africa","SARD",387,526
+"Pta-4684","Ntsitsana",29.2,-31.067,1290,50,"prins1993efc","charcoal","South Africa","SARD",388,528
+"Pta-4687","Ntsitsana",29.2,-31.067,1180,50,"prins1993efc","charcoal","South Africa","SARD",389,528
+"Pta-4695","Ntsitsana",29.2,-31.067,1180,50,"prins1993efc","charcoal","South Africa","SARD",390,528
+"GrN-5304","Olifantspoort 20/71",27.33,-25.87,255,20,"mason1986obp","charcoal","South Africa","SARD",391,550
+"RL-186","Olifantspoort 20/71",27.33,-25.87,400,110,"mason1986obp","charcoal","South Africa","SARD",392,550
+"RL-187","Olifantspoort 20/71",27.33,-25.87,330,90,"mason1986obp","charcoal","South Africa","SARD",393,550
+"RL-189","Olifantspoort 20/71",27.33,-25.87,250,90,"mason1986obp","charcoal","South Africa","SARD",394,550
+"RL-201","Olifantspoort 20/71",27.33,-25.85,510,90,"mason1986obp","charcoal","South Africa","SARD",395,550
+"RL-199","Olifantspoort 29/72",27.33,-25.87,710,120,"mason1986obp","charcoal","South Africa","SARD",396,551
+"RL-243","Olifantspoort 29/72",27.33,-25.87,440,90,"mason1986obp","charcoal","South Africa","SARD",397,551
+"RL-244","Olifantspoort 29/72",27.33,-25.87,350,90,"mason1986obp","charcoal","South Africa","SARD",398,551
+"RL-203","Olifantspoort 61/71",27.32,-25.86,480,80,"mason1986obp","charcoal","South Africa","SARD",399,552
+"RL-202","Olifantspoort 62/71",27.32,-25.87,360,90,"mason1986obp","charcoal","South Africa","SARD",400,553
+"Pta-7281","Phatayasebilo",27.43,-22.7125,1120,30,"Huffman2007h","","Botswana","SARD",401,579
+"Pta-1635","Plaston",31.07,-25.33,1315,50,"evers1977pew","charcoal","South Africa","SARD",402,584
+"Pta-1818","Pont Drift",29.167,-22.233,840,50,"vogel2000rds","charcoal","South Africa","SARD",403,586
+"Pta-1959","Pont Drift",29.167,-22.233,1140,50,"vogel2000rds","charcoal","South Africa","SARD",404,586
+"Pta-1961","Pont Drift",29.167,-22.233,1110,50,"vogel2000rds","charcoal","South Africa","SARD",405,586
+"Beta-336278","Rhenosterkloof 1 (RU101/78)",27.93,-24.68,250,30,"bandama2015ece","charcoal","South Africa","SARD",406,595
+"Pta-2847","Rhenosterkloof 1 (RU101/78)",27.93,-24.68,310,40,"bandama2015ece","charcoal","South Africa","SARD",407,595
+"Beta-333838","Rhenosterkloof 2",27.93,-24.67,340,30,"bandama2015ece","charcoal","South Africa","SARD",408,596
+"Pta-7311","Rhino Andalusite mine",27.3,-24.7,1520,40,"huffman2007h","charcoal","South Africa","SARD",409,597
+"Pta-9543","Rhino Andalusite mine",27.3,-24.7,400,10,"bandama2015ece","charcoal","South Africa","SARD",410,597
+"Pta-9545","Rhino Andalusite mine",27.3,-24.7,530,25,"bandama2015ece","charcoal","South Africa","SARD",411,597
+"Pta-9546","Rhino Andalusite mine",27.3,-24.7,1550,80,"huffman2007h","charcoal","South Africa","SARD",412,597
+"Pta-9547","Rhino Andalusite mine",27.3,-24.7,320,40,"bandama2015ece","charcoal","South Africa","SARD",413,597
+"Pta-7591","Riverside, Nelspruit",30.97,-25.44,1540,50,"huffman1998paa","charcoal","South Africa","SARD",414,601
+"Pta-7654","Riverside, Nelspruit",30.97,-25.44,390,60,"huffman1998paa","bone","South Africa","SARD",415,601
+"Pta-7670","Riverside, Nelspruit",30.97,-25.44,1070,40,"huffman1998paa","charcoal","South Africa","SARD",416,601
+"Pta-2845","Rooikrans (RU131/78)",27.71,-24.81,280,50,"bandama2015ece","charcoal","South Africa","SARD",417,603
+"Pta-6579","Samaria",29.367,-22.2,510,50,"vogel2000rds","bone","South Africa","SARD",418,613
+"Pta-1819","Schroda",29.433,-22.183,1110,50,"vogel2000rds","wood","South Africa","SARD",419,617
+"Pta-1967","Schroda",29.433,-22.183,1160,50,"vogel2000rds","charcoal","South Africa","SARD",420,617
+"Pta-7650","Schroda",29.433,-22.183,1060,20,"vogel2000rds","charcoal","South Africa","SARD",421,617
+"pta-7659","Schroda",29.433,-22.183,1030,45,"vogel2000rds","charcoal","South Africa","SARD",422,617
+"Pta-7664","Schroda",29.433,-22.183,1140,45,"vogel2000rds","charcoal","South Africa","SARD",423,617
+"Pta-7666","Schroda",29.433,-22.183,1170,20,"vogel2000rds","charcoal","South Africa","SARD",424,617
+"Pta-4443","Shankare (Phalaborwa)",31.091,-23.959,890,50,"pistorius1989mp","","South Africa","SARD",425,620
+"Y-1766","Shankare (Phalaborwa)",31.091,-23.959,290,80,"mason1986obp","","South Africa","SARD",426,620
+"Beta-11112","Shixini 3013",28.551,-32.286,2020,60,"parkington1987prr","marine shell","South Africa","SARD",427,621
+"Pta-2601","Shongweni North",30.717,-29.85,670,40,"vogel1986prd","charcoal","South Africa","SARD",428,622
+"Pta-2602","Shongweni North",30.717,-29.85,950,50,"vogel1986prd","Wood","South Africa","SARD",429,622
+"Pta-4159","Shongweni North",30.717,-29.85,1490,50,"vogel1986prd","charcoal","South Africa","SARD",430,622
+"Pta-1060","Shongweni South",30.717,-29.85,700,60,"vogel1986prd","plant remains","South Africa","SARD",431,623
+"Pta-1948","Shongweni South",30.717,-29.85,940,135,"hall1980rrd","plant remains","South Africa","SARD",432,623
+"Pta-8015","Sibudu Cave",31.083,-29.5,960,25,"wadley2001lms","charcoal","South Africa","SARD",433,625
+"Pta-9196","Sibudu Cave",31.083,-29.5,1030,40,"wood2009cgb","charcoal","South Africa","SARD",434,625
+"Pta-9202","Sibudu Cave",31.083,-29.5,970,50,"wood2009cgb","charcoal","South Africa","SARD",435,625
+"Pta-2090","Silver Leaves",30.2,-23.88,860,35,"huffman2007h","","South Africa","SARD",436,627
+"Pta-2360","Silver Leaves",30.2,-23.88,1760,40,"klapwijk1996esl","","South Africa","SARD",437,627
+"Pta-2459","Silver Leaves",30.2,-23.88,1700,40,"klapwijk1996esl","","South Africa","SARD",438,627
+"Pta-901","Silver Leaves",30.2,-23.88,1680,55,"klapwijk1974prp","","South Africa","SARD",439,627
+"Pta-911","Silver Leaves",30.2,-23.88,850,50,"huffman2007h","","South Africa","SARD",440,627
+"Pta-914","Silver Leaves",30.2,-23.88,1620,50,"klapwijk1974prp","","South Africa","SARD",441,627
+"Pta-3715","Skutwater",29.543,-22.185,820,45,"vogel2000rds","","South Africa","SARD",442,632
+"Pta-3734","Skutwater",29.543,-22.185,830,40,"vogel2000rds","","South Africa","SARD",443,632
+"AA-77938","Smelterskop",27.75,-24.76,264,32,"bandama2015ece","charcoal","South Africa","SARD",444,633
+"Pta-4328","Stayt Farm",29.367,-22.6,910,50,"vogel2000rds","charcoal","South Africa","SARD",445,636
+"Pta-4363","Stayt Farm",29.367,-22.6,820,50,"vogel2000rds","bone","South Africa","SARD",446,636
+"Wits-1501","Strauss",27.875,-25.78,1390,70,"mason1986obp","","South Africa","SARD",447,637
+"Wits-1531","Strauss",27.875,-25.78,1410,110,"mason1986obp","","South Africa","SARD",448,637
+"I-11407","Taukome",26.94,-22.25,1265,80,"huffman2007h","","Botswana","SARD",449,641
+"I-11410","Taukome",26.94,-22.25,1240,80,"huffman2007h","","Botswana","SARD",450,641
+"Wits-409","Taukome",26.937,-22.248,995,75,"parkington1987prr","","Botswana","SARD",451,641
+"Wits-1437","Tavhatshena",29.915108,-23.205523,900,110,"Huffman2007h","","South Africa","SARD",452,642
+"Wits-1453","Tavhatshena",29.915108,-23.205523,660,80,"Huffman2007h","","South Africa","SARD",453,642
+"Wits-1549","Tavhatshena",29.915108,-23.205523,370,80,"Huffman2007h","","South Africa","SARD",454,642
+"Beta-333839","Tembi 1",27.74,-24.66,300,30,"bandama2015ece","charcoal","South Africa","SARD",455,646
+"Wits-407","Thatswane",27.141,-22.251,1265,80,"parkington1987prr","","Botswana","SARD",456,648
+"Wits-410","Thatswane",27.141,-22.251,1240,80,"parkington1987prr","","Botswana","SARD",457,648
+"Wits-414","Thatswane",27.141,-22.251,1025,80,"parkington1987prr","","Botswana","SARD",458,648
+"Wits-415","Thatswane",27.141,-22.251,840,75,"parkington1987prr","","Botswana","SARD",459,648
+"Pta-5658","Thula Mela",31.194,-22.431,420,50,"vogel2000rds","charcoal","South Africa","SARD",460,649
+"Pta-5659","Thula Mela",31.194,-22.431,390,50,"vogel2000rds","charcoal","South Africa","SARD",461,649
+"Pta-5676","Thula Mela",31.194,-22.431,370,50,"vogel2000rds","charcoal","South Africa","SARD",462,649
+"Pta-6079","Thula Mela",31.194,-22.431,480,30,"vogel2000rds","charcoal","South Africa","SARD",463,649
+"Pta-6086","Thula Mela",31.194,-22.431,350,45,"vogel2000rds","charcoal","South Africa","SARD",464,649
+"Pta-6089","Thula Mela",31.194,-22.431,360,50,"vogel2000rds","charcoal","South Africa","SARD",465,649
+"Pta-6824","Thula Mela",31.194,-22.431,550,50,"vogel2000rds","charcoal","South Africa","SARD",466,649
+"Pta-7102","Thula Mela",31.194,-22.431,590,40,"vogel2000rds","charcoal","South Africa","SARD",467,649
+"Pta-7103","Thula Mela",31.194,-22.431,390,35,"vogel2000rds","charcoal","South Africa","SARD",468,649
+"Pta-7105","Thula Mela",31.194,-22.431,560,35,"vogel2000rds","charcoal","South Africa","SARD",469,649
+"Pta-7106","Thula Mela",31.194,-22.431,820,40,"vogel2000rds","charcoal","South Africa","SARD",470,649
+"Pta-7107","Thula Mela",31.194,-22.431,530,30,"vogel2000rds","charcoal","South Africa","SARD",471,649
+"Pta-7243","Thula Mela",31.194,-22.431,520,40,"vogel2000rds","bone","South Africa","SARD",472,649
+"Pta-7276","Thula Mela",31.194,-22.431,370,40,"vogel2000rds","bone","South Africa","SARD",473,649
+"Pta-7304","Thula Mela",31.194,-22.431,450,50,"vogel2000rds","charcoal","South Africa","SARD",474,649
+"Pta-7305","Thula Mela",31.194,-22.431,600,50,"vogel2000rds","charcoal","South Africa","SARD",475,649
+"Pta-7307","Thula Mela",31.194,-22.431,650,45,"vogel2000rds","charcoal","South Africa","SARD",476,649
+"Pta-7310","Thula Mela",31.194,-22.431,590,60,"vogel2000rds","charcoal","South Africa","SARD",477,649
+"TX-6977","Tora Nju",26.183611,-20.702222,590,80,"wilmsen2017mta","","Botswana","SARD",478,651
+"TX-6989","Tora Nju",26.183611,-20.702222,970,80,"wilmsen2017mta","","Botswana","SARD",479,651
+"TX-6990","Tora Nju",26.183611,-20.702222,780,60,"wilmsen2017mta","","Botswana","SARD",480,651
+"AA-58186","Toteng 1",22.96,-20.36,1639,33,"robbins2008rar","other","Botswana","SARD",481,652
+"AA-58187","Toteng 1",22.96,-20.36,643,31,"robbins2008rar","other","Botswana","SARD",482,652
+"AA-58188","Toteng 1",22.96,-20.36,571,31,"robbins2008rar","other","Botswana","SARD",483,652
+"Beta-184609","Toteng 1",22.96,-20.36,1560,60,"robbins2008rar","charcoal","Botswana","SARD",484,652
+"Beta-186670","Toteng 1",22.96,-20.36,1480,40,"robbins2008rar","charcoal","Botswana","SARD",485,652
+"Beta-18669","Toteng 1",22.96,-20.36,2020,40,"robbins2008rar","bone","Botswana","SARD",486,652
+"Beta-1904888","Toteng 1",22.96,-20.36,2070,40,"robbins2008rar","bone","Botswana","SARD",487,652
+"Pta-5534","Toteng 1",22.96,-20.36,1820,50,"huffman1994tpo","charcoal","Botswana","SARD",488,652
+"Beta-182060","Toteng 3",22.96,-20.36,1610,40,"robbins2008rar","other","Botswana","SARD",489,653
+"Beta-186671","Toteng 3",22.96,-20.36,1130,40,"robbins2008rar","bone","Botswana","SARD",490,653
+"Beta-194360","Toteng 3",22.96,-20.36,1710,40,"robbins2008rar","other","Botswana","SARD",491,653
+"Beta-44965","Toteng 3",22.96,-20.36,1810,60,"huffman1994tpo","charcoal","Botswana","SARD",492,653
+"Beta-44966","Toteng 3",22.96,-20.36,1600,50,"huffman1994tpo","charcoal","Botswana","SARD",493,653
+"GX-3772","Toutswe",27.2,-22.233,645,95,"denbow1984phf","","Botswana","SARD",494,654
+"GX-3773","Toutswe",27.2,-22.233,755,75,"denbow1984phf","","Botswana","SARD",495,654
+"GX-3774","Toutswe",27.2,-22.233,860,105,"denbow1984phf","","Botswana","SARD",496,654
+"GX-3775","Toutswe",27.2,-22.233,450,95,"denbow1984phf","","Botswana","SARD",497,654
+"I-11412","Toutswe",27.2,-22.233,750,95,"denbow1984phf","","Botswana","SARD",498,654
+"I-11413","Toutswe",27.2,-22.233,990,75,"denbow1984phf","","Botswana","SARD",499,654
+"Pta-7247","Tshiendeulu",30.15,-22.833,480,40,"vogel2000rds","charcoal","South Africa","SARD",500,659
+"Pta-7249","Tshiendeulu",30.15,-22.833,320,40,"vogel2000rds","wood","South Africa","SARD",501,659
+"Pta-7251","Tshiendeulu",30.15,-22.833,440,40,"vogel2000rds","charcoal","South Africa","SARD",502,659
+"Pta-7252","Tshiendeulu",30.15,-22.833,500,40,"vogel2000rds","charcoal","South Africa","SARD",503,659
+"Pta-7429","Tshiendeulu",30.15,-22.833,350,50,"vogel2000rds","charcoal","South Africa","SARD",504,659
+"Pta-7430","Tshiendeulu",30.15,-22.833,630,50,"vogel2000rds","charcoal","South Africa","SARD",505,659
+"Pta-7554","Tshiendeulu",30.15,-22.833,350,20,"vogel2000rds","charcoal","South Africa","SARD",506,659
+"Pta-7580","Tshiendeulu",30.15,-22.833,350,40,"vogel2000rds","charcoal","South Africa","SARD",507,659
+"Pta-7587","Tshiendeulu",30.15,-22.833,300,40,"vogel2000rds","wood","South Africa","SARD",508,659
+"Pta-7657","Tshiendeulu",30.15,-22.833,360,40,"vogel2000rds","charcoal","South Africa","SARD",509,659
+"Pta-7663","Tshiendeulu",30.15,-22.833,350,50,"vogel2000rds","charcoal","South Africa","SARD",510,659
+"Pta-8969","Tshobwane",29.559,-22.116,790,60,"manyanga2006rls","","Zimbabwe","SARD",511,660
+"Pta-9000","Tshobwane",29.559,-22.116,890,60,"manyanga2006rls","","Zimbabwe","SARD",512,660
+"Pta-899","Tsindi Ruins (Lekkerwater Ruins)",31.71,-18.1,810,50,"rudd1984elr","charcoal","Zimbabwe","SARD",513,661
+"Pta-900","Tsindi Ruins (Lekkerwater Ruins)",31.71,-18.1,560,50,"rudd1984elr","charcoal","Zimbabwe","SARD",514,661
+"Pta-903","Tsindi Ruins (Lekkerwater Ruins)",31.71,-18.1,620,50,"rudd1984elr","charcoal","Zimbabwe","SARD",515,661
+"SR-108","Tsindi Ruins (Lekkerwater Ruins)",31.71,-18.1,560,120,"rudd1984elr","charcoal","Zimbabwe","SARD",516,661
+"SR-109","Tsindi Ruins (Lekkerwater Ruins)",31.71,-18.1,650,120,"rudd1984elr","charcoal","Zimbabwe","SARD",517,661
+"SR-124","Tsindi Ruins (Lekkerwater Ruins)",31.71,-18.1,440,90,"rudd1984elr","charcoal","Zimbabwe","SARD",518,661
+"SR-170","Tsindi Ruins (Lekkerwater Ruins)",31.71,-18.1,1040,90,"rudd1984elr","charcoal","Zimbabwe","SARD",519,661
+"SR-181","Tsindi Ruins (Lekkerwater Ruins)",31.71,-18.1,835,95,"rudd1984elr","charcoal","Zimbabwe","SARD",520,661
+"SR-182","Tsindi Ruins (Lekkerwater Ruins)",31.71,-18.1,370,90,"rudd1984elr","charcoal","Zimbabwe","SARD",521,661
+"SR-184","Tsindi Ruins (Lekkerwater Ruins)",31.71,-18.1,365,105,"rudd1984elr","charcoal","Zimbabwe","SARD",522,661
+"SR-194","Tsindi Ruins (Lekkerwater Ruins)",31.71,-18.1,705,65,"rudd1984elr","charcoal","Zimbabwe","SARD",523,661
+"Y-1323B","Uitkomst Cave",27.618,-25.884,300,80,"stuiver1969nrm","wood","South Africa","SARD",524,663
+"St-9836","University Campus",32.6,-25.95,1775,85,"morais1987efc","charcoal","Mozambique","SARD",525,664
+"St-9837","University Campus",32.6,-25.95,1355,100,"morais1987efc","charcoal","Mozambique","SARD",526,664
+"St-9838","University Campus",32.6,-25.95,1590,75,"morais1987efc","charcoal","Mozambique","SARD",527,664
+"Beta-230592","Vlakplaas 128",22.967,-28.55,980,40,"sampson2010cdl","plant remains","South Africa","SARD",528,670
+"Pta-7534","Wonderboom",26.18,-24.77,300,50,"grant2007emc","charcoal","South Africa","SARD",529,678
+"Pta-4094","Wosi",31.031,-28.907,1290,50,"vanschalkwyk1994mcp","charcoal","South Africa","SARD",530,679
+"Pta-4095","Wosi",31.031,-28.907,1270,60,"vanschalkwyk1994mcp","charcoal","South Africa","SARD",531,679
+"Pta-4100","Wosi",31.031,-28.907,1460,50,"vanschalkwyk1994mcp","charcoal","South Africa","SARD",532,679
+"Pta-4104","Wosi",31.031,-28.907,1430,60,"vanschalkwyk1994mcp","charcoal","South Africa","SARD",533,679
+"St-8589","Xai-Xai",33.72,-25.12,510,165,"morais1987efc","charcoal","Mozambique","SARD",534,680
+"St-8909","Zitundo",32.85,-26.77,1775,105,"morais1987efc","charcoal","Mozambique","SARD",535,688
+"St-8910","Zitundo",32.85,-26.77,1435,105,"morais1987efc","charcoal","Mozambique","SARD",536,688
+"St-8911","Zitundo",32.85,-26.77,1760,105,"morais1987efc","charcoal","Mozambique","SARD",537,688
+"St-8912","Zitundo",32.85,-26.77,1685,105,"morais1987efc","charcoal","Mozambique","SARD",538,688
+"St-8913","Zitundo",32.85,-26.77,1575,105,"morais1987efc","charcoal","Mozambique","SARD",539,688
+"OxA-14499","Wadh Lang'o",34.810693,-0.351268,1449,28,"Lane, P., Ashley, C., Seitsonen, O., Harvey, P., Mire, S., & Odede, F. (2007). The transition to farming in eastern Africa: new faunal and dating evidence from Wadh Lang'o and Usenge, Kenya. Antiquity, 81(311), 62-81.","charcoal","Kenya","Collected",1609,672
+"OxA-14500","Wadh Lang'o",34.810693,-0.351268,1484,26,"Lane, P., Ashley, C., Seitsonen, O., Harvey, P., Mire, S., & Odede, F. (2007). The transition to farming in eastern Africa: new faunal and dating evidence from Wadh Lang'o and Usenge, Kenya. Antiquity, 81(311), 62-81.","charcoal","Kenya","Collected",1610,672
+"OxA-14501","Wadh Lang'o",34.810693,-0.351268,1741,28,"Lane, P., Ashley, C., Seitsonen, O., Harvey, P., Mire, S., & Odede, F. (2007). The transition to farming in eastern Africa: new faunal and dating evidence from Wadh Lang'o and Usenge, Kenya. Antiquity, 81(311), 62-81.","charcoal","Kenya","Collected",1611,672
+"OxA-14502","Wadh Lang'o",34.810693,-0.351268,1698,28,"Lane, P., Ashley, C., Seitsonen, O., Harvey, P., Mire, S., & Odede, F. (2007). The transition to farming in eastern Africa: new faunal and dating evidence from Wadh Lang'o and Usenge, Kenya. Antiquity, 81(311), 62-81.","charcoal","Kenya","Collected",1612,672
+"OxA-14503","Wadh Lang'o",34.810693,-0.351268,1746,28,"Lane, P., Ashley, C., Seitsonen, O., Harvey, P., Mire, S., & Odede, F. (2007). The transition to farming in eastern Africa: new faunal and dating evidence from Wadh Lang'o and Usenge, Kenya. Antiquity, 81(311), 62-81.","charcoal","Kenya","Collected",1613,672
+"OxA-14504","Wadh Lang'o",34.810693,-0.351268,1742,27,"Lane, P., Ashley, C., Seitsonen, O., Harvey, P., Mire, S., & Odede, F. (2007). The transition to farming in eastern Africa: new faunal and dating evidence from Wadh Lang'o and Usenge, Kenya. Antiquity, 81(311), 62-81.","charcoal","Kenya","Collected",1614,672
+"Beta-190746","Usenge 3",34.04445,-0.036284,1560,40,"Lane, P., Ashley, C., Seitsonen, O., Harvey, P., Mire, S., & Odede, F. (2007). The transition to farming in eastern Africa: new faunal and dating evidence from Wadh Lang'o and Usenge, Kenya. Antiquity, 81(311), 62-81.","charcoal","Kenya","Collected",1615,667
+"GX-9936","Enkapune Ya Muto (GtJil2)",36.15,-0.83,1295,140,"Ambrose, Chronology of the Later Stone Age and Food Production in East Africa, 1998, Journal of Archeological Science","charcoal","Kenya","Collected",1621,124
+"GX-9935","Enkapune Ya Muto (GtJil2)",36.15,-0.83,500,145,"Ambrose, Chronology of the Later Stone Age and Food Production in East Africa, 1998, Journal of Archeological Science","charcoal","Kenya","Collected",1622,124
+"Har-2335","Mtuzi Hill Rockshelter (DZ126)",34.18,-14.27,1580,70,"Mgomezulu, Recent archaeological research and radiocarbon dates from Eastern Africa, Journal of African History, 1981",NA,"Malawi","Collected",1623,448
+"Pta-2030","Mtuzi Hill Rockshelter (DZ126)",34.18,-14.27,1680,50,"Mgomezulu, Recent archaeological research and radiocarbon dates from Eastern Africa, Journal of African History, 1982",NA,"Malawi","Collected",1624,448
+"Pta-2752","Munga Hill",33.7,-11.7,1750,60,"Mgomezulu, Recent archaeological research and radiocarbon dates from Eastern Africa, Journal of African History, 1983",NA,"Malawi","Collected",1625,454
+"N-784","Chobi",32.2,2.25,1660,125,"Sutton, New Radiocarbon dates for Eastern and Southern Africa, 1972, Journal of African History",NA,"Uganda","Collected",1628,86
+"GrN-5752","Rutare",30.17,-1.73,2179,50,"Sutton, New Radiocarbon dates for Eastern and Southern Africa, 1972, Journal of African History",NA,"Rwanda","Collected",1629,605
+"GrN-5753","Rutare",30.17,-1.73,1655,60,"Sutton, New Radiocarbon dates for Eastern and Southern Africa, 1972, Journal of African History",NA,"Rwanda","Collected",1630,605
+"N-890","Katuruka",31.77,-1.45,2399,115,"Sutton, New Radiocarbon dates for Eastern and Southern Africa, 1972, Journal of African History",NA,"Tanzania","Collected",1631,217
+"N-895","Katuruka",31.77,-1.45,2499,115,"Sutton, New Radiocarbon dates for Eastern and Southern Africa, 1972, Journal of African History",NA,"Tanzania","Collected",1632,217
+"N-891","Katuruka",31.77,-1.45,1890,115,"Sutton, New Radiocarbon dates for Eastern and Southern Africa, 1972, Journal of African History",NA,"Tanzania","Collected",1633,217
+"N-892","Katuruka",31.77,-1.45,1830,120,"Sutton, New Radiocarbon dates for Eastern and Southern Africa, 1972, Journal of African History",NA,"Tanzania","Collected",1634,217
+"N-898","Katuruka",31.77,-1.45,1780,100,"Sutton, New Radiocarbon dates for Eastern and Southern Africa, 1972, Journal of African History",NA,"Tanzania","Collected",1635,217
+"N-893","Katuruka",31.77,-1.45,250,100,"Sutton, New Radiocarbon dates for Eastern and Southern Africa, 1972, Journal of African History",NA,"Tanzania","Collected",1636,217
+"N-896","Katuruka",31.77,-1.45,305,120,"Sutton, New Radiocarbon dates for Eastern and Southern Africa, 1972, Journal of African History",NA,"Tanzania","Collected",1637,217
+"RL-405","Katuruka",31.77,-1.45,2549,100,"Mgomezulu, Recent archaeological research and radiocarbon dates from Eastern Africa, Journal of African History, 1981",NA,"Tanzania","Collected",1638,217
+"RL-406","Katuruka",31.77,-1.45,2469,110,"Mgomezulu, Recent archaeological research and radiocarbon dates from Eastern Africa, Journal of African History, 1981",NA,"Tanzania","Collected",1639,217
+"Pta-5161","Skeurkrans",28.467,-24.1,1850,50,"Vogel, Spatial distribution of radiocarbon dates for the Iron Age in Southern Africa, The South African Archaeological Bulletin, 1999",NA,"South Africa","Collected",1640,631
+"N-2314","Situmpa, Machili",25.12,-16.25,2259,60,"Maggs, Some Recent Radiocarbon Dates from Eastern and Southern Africa, Journal of African History, 1977",NA,"Zambia","Collected",1641,629
+"Pta-2486","Situmpa, Machili",25.12,-16.25,2100,60,"Vogel, Spatial distribution of radiocarbon dates for the Iron Age in Southern Africa, The South African Archaeological Bulletin, 2000",NA,"Zambia","Collected",1642,629
+"SR-24","Situmpa, Machili",25.12,-16.25,1930,100,"Fagan, Radiocarbon dates for sub-Saharan Africa III, Journal of African History, 1965","charcoal","Zambia","Collected",1643,629
+"C-829","Situmpa, Machili",25.12,-16.25,1854,200,"Fagan, Radiocarbon dates for sub-Saharan Africa III, Journal of African History, 1966",NA,"Zambia","Collected",1644,629
+"SR-40","Situmpa, Machili",25.12,-16.25,1710,100,"Fagan, Radiocarbon dates for sub-Saharan Africa IV, Journal of African History, 1966","charcoal","Zambia","Collected",1645,629
+"SR-28","Kamusongolwa Kopje, Kasempa",25.85,-13.45,800,100,"Fagan, Radiocarbon dates for sub-Saharan Africa III, Journal of African History, 1967",NA,"Zambia","Collected",1646,204
+"SR-33","Malapati",31.42,-22.05,1100,100,"Fagan, Radiocarbon dates for sub-Saharan Africa III, Journal of African History, 1968",NA,"Zimbabwe","Collected",1647,350
+"SR-17","Ziwa Farm",32.67,-18.2,1650,100,"Fagan, Radiocarbon dates for sub-Saharan Africa III, Journal of African History, 1969",NA,"Zimbabwe","Collected",1648,689
+"SR-32","Ziwa Farm",32.67,-18.2,1100,100,"Fagan, Radiocarbon dates for sub-Saharan Africa III, Journal of African History, 1970","charcoal","Zimbabwe","Collected",1649,689
+"SR-38","Ziwa Farm",32.67,-18.2,1050,100,"Fagan, Radiocarbon dates for sub-Saharan Africa III, Journal of African History, 1971","charcoal","Zimbabwe","Collected",1650,689
+"B-233","Ziwa Farm",32.67,-18.2,1020,110,"Summers, 'The Southern Rhodesian Iron Age', Joumal African History, 1961",NA,"Zimbabwe","Collected",1651,689
+"SR-36","Mutema's Sacred Grove, Melsetter",32.55,-19.98,720,120,"Fagan, Radiocarbon dates for sub-Saharan Africa III, Journal of African History, 1971",NA,"Zimbabwe","Collected",1652,456
+"SR-37","Mutema's Sacred Grove, Melsetter",32.55,-19.98,800,90,"Fagan, Radiocarbon dates for sub-Saharan Africa III, Journal of African History, 1971",NA,"Zimbabwe","Collected",1653,456
+"GrN-4646","Kalambo Falls",31.25,-8.58,1605,40,"Phillipson, The Early Iron Age in Zambia, Journal of African History, 1968",NA,"Zambia","Collected",1654,195
+"GrN-4647","Kalambo Falls",31.25,-8.58,1520,40,"The Chronology of Zambian Prehistory, Derricourt, Transafrican Journal of History, 1976",NA,"Zambia","Collected",1655,195
+"GrN-3580","Kalambo Falls",31.25,-8.58,930,40,"Fagan, Radiocarbon dates for sub-Saharan Africa III, Journal of African History, 1971",NA,"Zambia","Collected",1656,195
+"L-395A","Kalambo Falls",31.25,-8.58,970,150,"Fagan, Radiocarbon dates for sub-Saharan Africa III, Journal of African History, 1971",NA,"Zambia","Collected",1657,195
+"L-395B","Kalambo Falls",31.25,-8.58,1080,180,"Fagan, Radiocarbon dates for sub-Saharan Africa III, Journal of African History, 1971",NA,"Zambia","Collected",1658,195
+"L-395C","Kalambo Falls",31.25,-8.58,1400,150,"Fagan, Radiocarbon dates for sub-Saharan Africa III, Journal of African History, 1971",NA,"Zambia","Collected",1659,195
+"GXO-516","Bigo",29.9,0.38,445,70,"Fagan, Radiocarbon dates for sub-Saharan Africa IV, Journal of African History, 1966",NA,"Uganda","Collected",1660,35
+"GXO-517","Bigo",29.9,0.38,500,300,"Fagan, Radiocarbon dates for sub-Saharan Africa IV, Journal of African History, 1966",NA,"Uganda","Collected",1661,35
+"GXO-519","Bigo",29.9,0.38,580,90,"Fagan, Radiocarbon dates for sub-Saharan Africa IV, Journal of African History, 1966",NA,"Uganda","Collected",1662,35
+"SR-78","Kilwa Kisiwani",39.52,-8.95,1020,100,"Fagan, Radiocarbon dates for sub-Saharan Africa IV, Journal of African History, 1966",NA,"Tanzania","Collected",1663,229
+"SR-76","Kilwa Kisiwani",39.52,-8.95,890,100,"Fagan, Radiocarbon dates for sub-Saharan Africa IV, Journal of African History, 1966",NA,"Tanzania","Collected",1664,229
+"N-256","Kilwa Kisiwani",39.52,-8.95,790,110,"Fagan, Radiocarbon dates for sub-Saharan Africa V, Journal of African History, 1967","charcoal","Tanzania","Collected",1665,229
+"N-908","Kamnama",32.85,-13.53,1600,110,"Derricourt, The Chronology of Zambian Prehistory, Transafrican Journal of History, 1976",NA,"Zambia","Collected",1666,201
+"GX-1328","Kangonga",28.67,-21.65,1610,115,"Derricourt, The Chronology of Zambian Prehistory, Transafrican Journal of History, 1976",NA,"Zambia","Collected",1667,208
+"GX-1327","Kangonga",28.67,-21.65,1185,85,"Derricourt, The Chronology of Zambian Prehistory, Transafrican Journal of History, 1976",NA,"Zambia","Collected",1668,208
+"N-1286","Kansanshi",26.5,-11.67,1550,90,"Derricourt, The Chronology of Zambian Prehistory, Transafrican Journal of History, 1976",NA,"Zambia","Collected",1669,211
+"N-1283","Kansanshi",26.5,-11.67,1320,85,"Derricourt, The Chronology of Zambian Prehistory, Transafrican Journal of History, 1976",NA,"Zambia","Collected",1670,211
+"N-1284","Kansanshi",26.5,-11.67,1190,85,"Derricourt, The Chronology of Zambian Prehistory, Transafrican Journal of History, 1976",NA,"Zambia","Collected",1671,211
+"N-1439","Kansanshi",26.5,-11.67,900,60,"Derricourt, The Chronology of Zambian Prehistory, Transafrican Journal of History, 1976",NA,"Zambia","Collected",1672,211
+"N-1440","Kansanshi",26.5,-11.67,560,75,"Derricourt, The Chronology of Zambian Prehistory, Transafrican Journal of History, 1976",NA,"Zambia","Collected",1673,211
+"N-1441","Kansanshi",26.5,-11.67,450,75,"Derricourt, The Chronology of Zambian Prehistory, Transafrican Journal of History, 1976",NA,"Zambia","Collected",1674,211
+"N-1281","Kansanshi",26.5,-11.67,360,80,"Derricourt, The Chronology of Zambian Prehistory, Transafrican Journal of History, 1976",NA,"Zambia","Collected",1675,211
+"N-1282","Kansanshi",26.5,-11.67,295,80,"Derricourt, The Chronology of Zambian Prehistory, Transafrican Journal of History, 1976",NA,"Zambia","Collected",1676,211
+"GX-1013","Kapwirimbwe",28.37,-15.38,1540,85,"Derricourt, The Chronology of Zambian Prehistory, Transafrican Journal of History, 1976",NA,"Zambia","Collected",1677,214
+"GX-1013A","Kapwirimbwe",28.37,-15.38,1525,110,"Derricourt, The Chronology of Zambian Prehistory, Transafrican Journal of History, 1976",NA,"Zambia","Collected",1678,214
+"GX-1012","Kapwirimbwe",28.37,-15.38,1445,95,"Derricourt, The Chronology of Zambian Prehistory, Transafrican Journal of History, 1976",NA,"Zambia","Collected",1679,214
+"SR-211","Lubusi",23.82,-14.37,1070,60,"Derricourt, The Chronology of Zambian Prehistory, Transafrican Journal of History, 1976",NA,"Zambia","Collected",1680,320
+"GX-1551","Makwe Shelter",31.93,-14.4,1730,110,"Derricourt, The Chronology of Zambian Prehistory, Transafrican Journal of History, 1976",NA,"Zambia","Collected",1681,348
+"SR-207","Makwe Shelter",31.93,-14.4,1200,80,"Derricourt, The Chronology of Zambian Prehistory, Transafrican Journal of History, 1976",NA,"Zambia","Collected",1682,348
+"SR-206","Makwe Shelter",31.93,-14.4,970,70,"Derricourt, The Chronology of Zambian Prehistory, Transafrican Journal of History, 1976",NA,"Zambia","Collected",1683,348
+"R-874","Isamu Pati",26.33,-17.07,995,61,"Derricourt, The Chronology of Zambian Prehistory, Transafrican Journal of History, 1976",NA,"Zambia","Collected",1684,185
+"UCLA-177","Isamu Pati",26.33,-17.07,960,70,"Derricourt, The Chronology of Zambian Prehistory, Transafrican Journal of History, 1976",NA,"Zambia","Collected",1685,185
+"SR-30","Isamu Pati",26.33,-17.07,930,100,"Derricourt, The Chronology of Zambian Prehistory, Transafrican Journal of History, 1976",NA,"Zambia","Collected",1686,185
+"SR-20","Isamu Pati",26.33,-17.07,910,100,"Derricourt, The Chronology of Zambian Prehistory, Transafrican Journal of History, 1976",NA,"Zambia","Collected",1687,185
+"SR-31","Isamu Pati",26.33,-17.07,900,100,"Derricourt, The Chronology of Zambian Prehistory, Transafrican Journal of History, 1976",NA,"Zambia","Collected",1688,185
+"UCLA-176","Isamu Pati",26.33,-17.07,890,50,"Derricourt, The Chronology of Zambian Prehistory, Transafrican Journal of History, 1976",NA,"Zambia","Collected",1689,185
+"UCLA-175","Isamu Pati",26.33,-17.07,710,50,"Derricourt, The Chronology of Zambian Prehistory, Transafrican Journal of History, 1976",NA,"Zambia","Collected",1690,185
+"SR-19","Isamu Pati",26.33,-17.07,1300,90,"Derricourt, The Chronology of Zambian Prehistory, Transafrican Journal of History, 1976",NA,"Zambia","Collected",1691,185
+"N-585","Mwanamaimpa",26.12,-15.98,1410,115,"Derricourt, The Chronology of Zambian Prehistory, Transafrican Journal of History, 1976",NA,"Zambia","Collected",1692,462
+"N-586","Mwanamaimpa",26.12,-15.98,1200,115,"Derricourt, The Chronology of Zambian Prehistory, Transafrican Journal of History, 1976",NA,"Zambia","Collected",1693,462
+"N-582","Mwanamaimpa",26.12,-15.98,625,110,"Phillipson, Notes on the Later Prehistoric Radiocarbon Chronology of Eastern and Southern Africa, Journal of African History, 1970",NA,"Zambia","Collected",1694,462
+"N-583","Mwanamaimpa",26.12,-15.98,965,110,"Derricourt, The Chronology of Zambian Prehistory, Transafrican Journal of History, 1976",NA,"Zambia","Collected",1695,462
+"N-584","Mwanamaimpa",26.12,-15.98,950,115,"Derricourt, The Chronology of Zambian Prehistory, Transafrican Journal of History, 1976",NA,"Zambia","Collected",1696,462
+"N-587","Mwanamaimpa",26.12,-15.98,950,115,"Derricourt, The Chronology of Zambian Prehistory, Transafrican Journal of History, 1976",NA,"Zambia","Collected",1697,462
+"N-581","Mwanamaimpa",26.12,-15.98,755,110,"Derricourt, The Chronology of Zambian Prehistory, Transafrican Journal of History, 1976",NA,"Zambia","Collected",1698,462
+"N-582","Mwanamaimpa",26.12,-15.98,625,110,"Derricourt, The Chronology of Zambian Prehistory, Transafrican Journal of History, 1976",NA,"Zambia","Collected",1699,462
+"N-433","Ndonde",27.4,-16.73,845,100,"Derricourt, The Chronology of Zambian Prehistory, Transafrican Journal of History, 1976","charcoal","Zambia","Collected",1700,492
+"N-432","Ndonde",27.4,-16.73,745,105,"Derricourt, The Chronology of Zambian Prehistory, Transafrican Journal of History, 1976","charcoal","Zambia","Collected",1701,492
+"UCLA-1632B","Ndonde",27.4,-16.73,730,50,"Derricourt, The Chronology of Zambian Prehistory, Transafrican Journal of History, 1976","charcoal","Zambia","Collected",1702,492
+"SR-148","Phopo Hill",33.65,-11.12,1745,170,"Phillipson, Notes on the Later Prehistoric Radiocarbon Chronology of Eastern and Southern Africa, Journal of African History, 1970",NA,"Malawi","Collected",1703,580
+"SR-161","Phopo Hill",33.65,-11.12,1445,120,"Phillipson, Notes on the Later Prehistoric Radiocarbon Chronology of Eastern and Southern Africa, Journal of African History, 1970",NA,"Malawi","Collected",1704,580
+"SR-128","Phopo Hill",33.65,-11.12,1655,95,"Phillipson, Notes on the Later Prehistoric Radiocarbon Chronology of Eastern and Southern Africa, Journal of African History, 1970",NA,"Malawi","Collected",1705,580
+"N-463","Pwaga",30.38,-5.07,1530,160,"Phillipson, Notes on the Later Prehistoric Radiocarbon Chronology of Eastern and Southern Africa, Journal of African History, 1970",NA,"Tanzania","Collected",1706,588
+"N-462","Pwaga",30.38,-5.07,765,105,"Phillipson, Notes on the Later Prehistoric Radiocarbon Chronology of Eastern and Southern Africa, Journal of African History, 1970",NA,"Tanzania","Collected",1707,588
+"N-483","Kwale Forest",39.43,-4.18,1850,115,"Phillipson, Notes on the Later Prehistoric Radiocarbon Chronology of Eastern and Southern Africa, Journal of African History, 1970",NA,"Kenya","Collected",1708,262
+"N-484","Kwale Ditch",39.43,-4.2,1780,115,"Phillipson, Notes on the Later Prehistoric Radiocarbon Chronology of Eastern and Southern Africa, Journal of African History, 1970",NA,"Kenya","Collected",1709,261
+"N-291","Kwale",39.43,-4.2,1680,110,"Phillipson, Notes on the Later Prehistoric Radiocarbon Chronology of Eastern and Southern Africa, Journal of African History, 1970","charcoal","Kenya","Collected",1710,260
+"N-292","Kwale",39.43,-4.2,1690,110,"Phillipson, Notes on the Later Prehistoric Radiocarbon Chronology of Eastern and Southern Africa, Journal of African History, 1970","charcoal","Kenya","Collected",1711,260
+"N-347","Bombo",38,-4.267,1730,115,"Yamasaki, Riken Natural Radiocarbon Measurements IV, Radiocarbon, 1968","charcoal","Tanzania","Collected",1712,52
+"N-348","Bombo Mission",38,-4.267,1060,110,"Yamasaki, Riken Natural Radiocarbon Measurements IV, Radiocarbon, 1968","charcoal","Tanzania","Collected",1713,53
+"N-978","Coronation Park",31.1,-17.83,1240,100,"Yamasaki, Riken Natural Radiocarbon Measurements VIII, Radiocarbon, 1974",NA,"Zimbabwe","Collected",1714,93
+"N-979","Coronation Park",31.1,-17.83,970,100,"Yamasaki, Riken Natural Radiocarbon Measurements VIII, Radiocarbon, 1974",NA,"Zimbabwe","Collected",1715,93
+"N-1275","Makuru",29.967,-20.317,1260,65,"Yamasaki, Riken Natural Radiocarbon Measurements VIII, Radiocarbon, 1974",NA,"Zimbabwe","Collected",1716,345
+"N-272","Ivuna",32.48,-8.43,540,110,"Fagan, Radiocarbon dates for sub-Saharan Africa V, Journal of African History, 1967","charcoal","Tanzania","Collected",1717,189
+"N-273","Ivuna",32.48,-8.43,590,115,"Fagan, Radiocarbon dates for sub-Saharan Africa V, Journal of African History, 1967","charcoal","Tanzania","Collected",1718,189
+"N-274","Ivuna",32.48,-8.43,715,110,"Fagan, Radiocarbon dates for sub-Saharan Africa V, Journal of African History, 1967","charcoal","Tanzania","Collected",1719,189
+"N-275","Ivuna",32.48,-8.43,735,110,"Fagan, Radiocarbon dates for sub-Saharan Africa V, Journal of African History, 1967","charcoal","Tanzania","Collected",1720,189
+"GX-7020","Kwamboo",37.25,-1,1730,130,"Robertshaw, Archaeology in Eastern Africa: Recent Developments and More Dates, Journal of African History, 1984",NA,"Kenya","Collected",1721,264
+"GX-7021","Kwamboo",37.25,-1,1760,120,"Robertshaw, Archaeology in Eastern Africa: Recent Developments and More Dates, Journal of African History, 1984",NA,"Kenya","Collected",1722,264
+"GX-8746","Kithiru (GpJp 35)",37.77,0.42,1630,155,"Robertshaw, Archaeology in Eastern Africa: Recent Developments and More Dates, Journal of African History, 1984",NA,"Kenya","Collected",1723,238
+"GX-8748","Ganga (GpJa 17)",34.25,0.33,1760,160,"Robertshaw, Archaeology in Eastern Africa: Recent Developments and More Dates, Journal of African History, 1984",NA,"Kenya","Collected",1724,147
+"Pta-3255","Mufulwe",29.58,-13.97,930,50,"Robertshaw, Archaeology in Eastern Africa: Recent Developments and More Dates, Journal of African History, 1984",NA,"Zambia","Collected",1725,452
+"Pta-3256","Mufulwe",29.58,-13.97,2169,50,"Robertshaw, Archaeology in Eastern Africa: Recent Developments and More Dates, Journal of African History, 1984",NA,"Zambia","Collected",1726,452
+"NZ-4515","Muteteshi I",28.6,-14.28,1770,70,"Mgomezulu, Recent archaeological research and radiocarbon dates from Eastern Africa, Journal of African History, 1981",NA,"Zambia","Collected",1727,457
+"NZ-4518","Muteteshi I",28.6,-14.28,1810,80,"Mgomezulu, Recent archaeological research and radiocarbon dates from Eastern Africa, Journal of African History, 1981",NA,"Zambia","Collected",1728,457
+"NZ-4520","Muteteshi I",28.6,-14.28,2029,90,"Mgomezulu, Recent archaeological research and radiocarbon dates from Eastern Africa, Journal of African History, 1981",NA,"Zambia","Collected",1729,457
+"NZ-4522","Muteteshi I",28.6,-14.28,2039,70,"Mgomezulu, Recent archaeological research and radiocarbon dates from Eastern Africa, Journal of African History, 1981",NA,"Zambia","Collected",1730,457
+"N-3426","Salumano",24.12,-17.2,2329,65,"Mgomezulu, Recent archaeological research and radiocarbon dates from Eastern Africa, Journal of African History, 1981",NA,"Zambia","Collected",1731,611
+"N-3427","Salumano",24.12,-17.2,1110,80,"Mgomezulu, Recent archaeological research and radiocarbon dates from Eastern Africa, Journal of African History, 1981",NA,"Zambia","Collected",1732,611
+"N-3428","Salumano",24.12,-17.2,1300,75,"Mgomezulu, Recent archaeological research and radiocarbon dates from Eastern Africa, Journal of African History, 1981",NA,"Zambia","Collected",1733,611
+"N-3429","Salumano",24.12,-17.2,1420,95,"Mgomezulu, Recent archaeological research and radiocarbon dates from Eastern Africa, Journal of African History, 1981",NA,"Zambia","Collected",1734,611
+"Pta-1193","Ndaba",29.68,-16.87,1310,50,"Maggs, Some Recent Radiocarbon Dates from Eastern and Southern Africa, Journal of African History, 1977",NA,"Zimbabwe","Collected",1735,481
+"N-883","Mwika IV",37.58,-3.27,1700,330,"Sutton, New Radiocarbon dates for Eastern and Southern Africa, Journal of African History, 1972",NA,"Tanzania","Collected",1736,466
+"UCLA-1238","Chaminade",33.88,-9.95,2100,80,"Fagan, Radiocarbon dates for sub-Saharan Africa VI, Journal of African History, 1969",NA,"Malawi","Collected",1737,78
+"N-409","Kumadzulo",25.53,-17.62,1529,110,"Fagan, Radiocarbon dates for sub-Saharan Africa VI, Journal of African History, 1969",NA,"Zambia","Collected",1738,258
+"N-410","Kumadzulo",25.53,-17.62,1390,110,"Fagan, Radiocarbon dates for sub-Saharan Africa VI, Journal of African History, 1969",NA,"Zambia","Collected",1739,258
+"N-411","Kumadzulo",25.53,-17.62,1400,110,"Fagan, Radiocarbon dates for sub-Saharan Africa VI, Journal of African History, 1969",NA,"Zambia","Collected",1740,258
+"N-412","Kumadzulo",25.53,-17.62,1330,110,"Fagan, Radiocarbon dates for sub-Saharan Africa VI, Journal of African History, 1969",NA,"Zambia","Collected",1741,258
+"N-413","Kumadzulo",25.53,-17.62,1320,110,"Fagan, Radiocarbon dates for sub-Saharan Africa VI, Journal of African History, 1969",NA,"Zambia","Collected",1742,258
+"N-414","Kumadzulo",25.53,-17.62,1260,105,"Fagan, Radiocarbon dates for sub-Saharan Africa VI, Journal of African History, 1969",NA,"Zambia","Collected",1743,258
+"Beta-182951","Chowo River",31.2032,-18.2065,1670,40,"Barham, New Radiocarbon Dates for the Early Iron Age in
+the Luangwa Valley, Eastern Zambia, Azania, 2005","charcoal","Zambia","Collected",1744,89
+"Beta-182952","Chowo River",31.2032,-18.2065,1340,40,"Barham, New Radiocarbon Dates for the Early Iron Age in
+the Luangwa Valley, Eastern Zambia, Azania, 2005","charcoal","Zambia","Collected",1745,89
+"Beta-182953","Chowo River",31.2032,-18.2065,1410,40,"Barham, New Radiocarbon Dates for the Early Iron Age in
+the Luangwa Valley, Eastern Zambia, Azania, 2005","charcoal","Zambia","Collected",1746,89
+"Beta-182954","Chowo River",31.2032,-18.2065,1370,90,"Barham, New Radiocarbon Dates for the Early Iron Age in
+the Luangwa Valley, Eastern Zambia, Azania, 2005","charcoal","Zambia","Collected",1747,89
+"Beta-182955","Chowo River",31.2032,-18.2065,1010,130,"Barham, New Radiocarbon Dates for the Early Iron Age in
+the Luangwa Valley, Eastern Zambia, Azania, 2005","charcoal","Zambia","Collected",1748,89
+"Beta-182956","Chowo River",31.2032,-18.2065,1600,40,"Barham, New Radiocarbon Dates for the Early Iron Age in
+the Luangwa Valley, Eastern Zambia, Azania, 2005","charcoal","Zambia","Collected",1749,89
+"Beta-182957","Chowo River",31.2032,-18.2065,1480,40,"Barham, New Radiocarbon Dates for the Early Iron Age in
+the Luangwa Valley, Eastern Zambia, Azania, 2005","charcoal","Zambia","Collected",1750,89
+"Pta-3346","Langubhela I",31.17,-26.28,1620,50,"Vogel, Pretoria Radiocarbon Dates III, Radiocarbon, 1986","charcoal","Swaziland","Collected",1751,274
+"GX-109","Sebanzi Hill, Lochinvar",27.234,-15.991,750,135,"Fagan, Sebanzi: The Iron Age Sequence at Lochinvar, and the Tonga, The Journal of the Royal Anthropological Institute of Great Britain and Ireland, 1965","charcoal","Zambia","Collected",1752,618
+"ICEN-133","Riane Rock-shelter",40.1556,-13.725,1870,35,"Carlos Senna-Martinez, Early Iron Age Spread into Northern Mozambique, University of Lisbon, 2013","charcoal","Mozambique","Collected",1753,598
+"ICEN-132","Malessane",36.97,-15.47,1740,40,"Carlos Senna-Martinez, Early Iron Age Spread into Northern Mozambique, University of Lisbon, 2013","charcoal","Mozambique","Collected",1754,353
+"Ua-40070","Lumbi",35.696,-18.126,1892,30,"Hilario Madiquida, Archaeological and Historical Reconstructions of the Foraging and Farming Communities of the Lower Zambezi: From the mid-Holocene to the second Millennium AD, Uppsala 2015","charcoal","Mozambique","Collected",1755,324
+"Ua-40067","Lumbi",35.696,-18.126,1558,30,"Hilario Madiquida, Archaeological and Historical Reconstructions of the Foraging and Farming Communities of the Lower Zambezi: From the mid-Holocene to the second Millennium AD, Uppsala 2015","charcoal","Mozambique","Collected",1756,324
+"SR-209","Mitongwe-Liwadzi",34.67,-14.58,1580,60,"Sutton, New Radiocarbon dates for Eastern and Southern Africa, Journal of African History, 1972",NA,"Malawi","Collected",1757,412
+"SR-229","Mitongwe-Liwadzi",34.67,-14.58,1730,90,"Soper, New Radiocarbon dates for eastern and southern africa, Journal of African History, 1974",NA,"Malawi","Collected",1758,412
+"I-13803","Maunatlala",27.64,-22.59,1570,140,"Denbow, A new look at the later prehistory of the Kalahari, Journal of African History, 1986",NA,"Botswana","Collected",1759,374
+"SR-174","Nkope Hill",35.03,-14.2,1590,120,"Sheppard, Rhodesian Radiocarbon Measurements IV, Radiocarbon, 1971","charcoal","Malawi","Collected",1782,518
+"SR-178","Mawudzu Hill",35.08,-14.25,470,95,"Sheppard, Rhodesian Radiocarbon Measurements IV, Radiocarbon, 1971","charcoal","Malawi","Collected",1783,376
+"ST-9021","Riane Rock-shelter",40.1556,-13.725,1485,170,"Sinclair, Archaeology in Eastern Africa: an overview of current chronological issues, Journal of African History, 1991",NA,"Mozambique","Collected",1784,598
+"GX-14812","Namaso Bay",34.983,-14.17,1555,110,"Davison, Namaso: A newly-defined cultural entity of the late first millennium AD, and its place in the Iron Age sequence of southern Malawi, Azania, 1991",NA,"Malawi","Collected",1785,472
+"GX-14811","Namaso Bay",34.983,-14.17,1300,260,"Davison, Namaso: A newly-defined cultural entity of the late first millennium AD, and its place in the Iron Age sequence of southern Malawi, Azania, 1991",NA,"Malawi","Collected",1786,472
+"GX-14813","Namaso Bay",34.983,-14.17,1075,75,"Davison, Namaso: A newly-defined cultural entity of the late first millennium AD, and its place in the Iron Age sequence of southern Malawi, Azania, 1991",NA,"Malawi","Collected",1787,472
+"N-998","Chondwe",28.777,-13.194,1440,160,"Mills, Chondwe Iron Age Site, Azania 1972",NA,"Zambia","Collected",1788,87
+"N-997","Chondwe",28.777,-13.194,1150,145,"Mills, Chondwe Iron Age Site, Azania 1972",NA,"Zambia","Collected",1789,87
+"GX-1009","Chondwe",28.777,-13.194,1135,130,"Mills, Chondwe Iron Age Site, Azania 1972",NA,"Zambia","Collected",1790,87
+"GX-1010","Chondwe",28.777,-13.194,1060,95,"Mills, Chondwe Iron Age Site, Azania 1972",NA,"Zambia","Collected",1791,87
+"SR-106","Dambwa",25.849,-17.756,1350,100,"Fagan, Iron Age cultures in Zambia: Dambwa, Ingombe Ilede and the Tongo, Chatoo and Windus, 1969",NA,"Zambia","Collected",1792,96
+"SR-62","Dambwa",25.849,-17.756,1330,110,"Fagan, Iron Age cultures in Zambia: Dambwa, Ingombe Ilede and the Tongo, Chatoo and Windus, 1969",NA,"Zambia","Collected",1793,96
+"SR-97","Dambwa",25.849,-17.756,1200,95,"Fagan, Iron Age cultures in Zambia: Dambwa, Ingombe Ilede and the Tongo, Chatoo and Windus, 1969",NA,"Zambia","Collected",1794,96
+"SR-98","Dambwa",25.849,-17.756,1170,90,"Fagan, Iron Age cultures in Zambia: Dambwa, Ingombe Ilede and the Tongo, Chatoo and Windus, 1969",NA,"Zambia","Collected",1795,96
+"SR-96","Dambwa",25.849,-17.756,1090,95,"Fagan, Iron Age cultures in Zambia: Dambwa, Ingombe Ilede and the Tongo, Chatoo and Windus, 1969",NA,"Zambia","Collected",1796,96
+"SR-110","Dambwa",25.849,-17.756,1290,120,"Fagan, Iron Age cultures in Zambia: Dambwa, Ingombe Ilede and the Tongo, Chatoo and Windus, 1969",NA,"Zambia","Collected",1797,96
+"SR-22","Ingombe Ilede",28.8,-16.2,1120,200,"Fagan, Iron Age cultures in Zambia: Dambwa, Ingombe Ilede and the Tongo, Chatoo and Windus, 1969",NA,"Zambia","Collected",1798,181
+"SR-23","Ingombe Ilede",28.8,-16.2,1150,100,"Fagan, Iron Age cultures in Zambia: Dambwa, Ingombe Ilede and the Tongo, Chatoo and Windus, 1969",NA,"Zambia","Collected",1799,181
+"Q-720","Ingombe Ilede",28.8,-16.2,965,100,"Fagan, Iron Age cultures in Zambia: Dambwa, Ingombe Ilede and the Tongo, Chatoo and Windus, 1969",NA,"Zambia","Collected",1800,181
+"R-908","Ingombe Ilede",28.8,-16.2,1270,40,"Fagan, Iron Age cultures in Zambia: Dambwa, Ingombe Ilede and the Tongo, Chatoo and Windus, 1969",NA,"Zambia","Collected",1801,181
+"SR-65","Kalundu",26.5,-17.05,1650,90,"Fagan, Iron Age cultures in Zambia: Kalomo and Kangila, Chatto and Windus, 1967","charcoal","Zambia","Collected",1802,196
+"SR-66","Kalundu",26.5,-17.05,1050,100,"Fagan, Iron Age cultures in Zambia: Kalomo and Kangila, Chatto and Windus, 1967","charcoal","Zambia","Collected",1803,196
+"SR-74","Kalundu",26.5,-17.05,870,90,"Fagan, Iron Age cultures in Zambia: Kalomo and Kangila, Chatto and Windus, 1967","charcoal","Zambia","Collected",1804,196
+"SR-41","Kalundu",26.5,-17.05,1160,90,"Fagan, Iron Age cultures in Zambia: Kalomo and Kangila, Chatto and Windus, 1967","charcoal","Zambia","Collected",1805,196
+"SR-123","Kalundu",26.5,-17.05,1495,95,"Sheppard, Rhodesian Radiocarbon Measurements IV, Radiocarbon, 1971","charcoal","Zambia","Collected",1806,196
+"SR-139","Kalundu",26.5,-17.05,885,120,"Sheppard, Rhodesian Radiocarbon Measurements IV, Radiocarbon, 1971","charcoal","Zambia","Collected",1807,196
+"WK-47137","Kalundu",26.5,-17.05,653,17,"Goldstein, Revisiting Kalundu Mound, Zambia: Implications for the Timing of Social and Subsistence Transitions in Iron Age Southern Africa, African Arcaheological Review, 2021","bone","Zambia","Collected",1808,196
+"WK-47773","Kalundu",26.5,-17.05,606,15,"Goldstein, Revisiting Kalundu Mound, Zambia: Implications for the Timing of Social and Subsistence Transitions in Iron Age Southern Africa, African Arcaheological Review, 2021","macrobontanical","Zambia","Collected",1809,196
+"WK-47139","Kalundu",26.5,-17.05,683,15,"Goldstein, Revisiting Kalundu Mound, Zambia: Implications for the Timing of Social and Subsistence Transitions in Iron Age Southern Africa, African Arcaheological Review, 2021","bone","Zambia","Collected",1810,196
+"WK-47142","Kalundu",26.5,-17.05,684,16,"Goldstein, Revisiting Kalundu Mound, Zambia: Implications for the Timing of Social and Subsistence Transitions in Iron Age Southern Africa, African Arcaheological Review, 2021","bone","Zambia","Collected",1811,196
+"WK-47774","Kalundu",26.5,-17.05,850,17,"Goldstein, Revisiting Kalundu Mound, Zambia: Implications for the Timing of Social and Subsistence Transitions in Iron Age Southern Africa, African Arcaheological Review, 2021","macrobontanical","Zambia","Collected",1812,196
+"WK-47775","Kalundu",26.5,-17.05,851,15,"Goldstein, Revisiting Kalundu Mound, Zambia: Implications for the Timing of Social and Subsistence Transitions in Iron Age Southern Africa, African Arcaheological Review, 2021","bone","Zambia","Collected",1813,196
+"SR-86","Kalundu",26.5,-17.05,715,100,"Fagan, Radiocarbon dates for sub-Saharan Africa IV, Journal of African History, 1966",NA,"Zambia","Collected",1814,196
+"SR-42","Kangila",27.83,-15.92,1440,100,"Fagan, Iron Age cultures in Zambia: Kalomo and Kangila, Chatto and Windus, 1967","bone","Zambia","Collected",1815,205
+"GX-1331","Chondwe",28.777,-13.194,840,85,"Derricourt, The Chronology of Zambian Prehistory, Transafrican Journal of History, 1976",NA,"Zambia","Collected",1816,87
+"GX-1330","Chondwe",28.777,-13.194,795,85,"Derricourt, The Chronology of Zambian Prehistory, Transafrican Journal of History, 1976",NA,"Zambia","Collected",1817,87
+"GX-1114","Gundu",27.28,-16.75,1510,85,"Huffman, Iron Age Migrations, Witwatersrand University Press, 1989","carbonized nuts","Zambia","Collected",1818,162
+"GX-1115","Gundu",27.28,-16.75,1410,85,"Huffman, Iron Age Migrations, Witwatersrand University Press, 1989","charcoal","Zambia","Collected",1819,162
+"N-430","Gundu",27.28,-16.75,1200,110,"Huffman, Iron Age Migrations, Witwatersrand University Press, 1989",NA,"Zambia","Collected",1820,162
+"N-427","Gundu",27.28,-16.75,1100,110,"Huffman, Iron Age Migrations, Witwatersrand University Press, 1989",NA,"Zambia","Collected",1821,162
+"N-431","Gundu",27.28,-16.75,1070,105,"Huffman, Iron Age Migrations, Witwatersrand University Press, 1989",NA,"Zambia","Collected",1822,162
+"UCLA-1632A","Gundu",27.28,-16.75,1030,60,"Huffman, Iron Age Migrations, Witwatersrand University Press, 1989",NA,"Zambia","Collected",1823,162
+"N-428","Gundu",27.28,-16.75,935,105,"Huffman, Iron Age Migrations, Witwatersrand University Press, 1989",NA,"Zambia","Collected",1824,162
+"N-429","Gundu",27.28,-16.75,825,105,"Huffman, Iron Age Migrations, Witwatersrand University Press, 1989",NA,"Zambia","Collected",1825,162
+"SR-226","Mitongwe-Luwadzi",34.67,-14.58,1730,90,"Sheppard, Rhodesian Radiocarbon Measurements V, Radiocarbon, 1972","charcoal","Malawi","Collected",1826,413
+"N-597","Matobo",28.5,-20.533,1150,115,"Derricourt, The Chronology of Zambian Prehistory, Transafrican Journal of History, 1976",NA,"Zimbabwe","Collected",1827,370
+"N-596","Matobo",28.5,-20.533,1060,115,"Derricourt, The Chronology of Zambian Prehistory, Transafrican Journal of History, 1976",NA,"Zimbabwe","Collected",1828,370
+"Ua-37559","Samakande",32.79,-17.46,1370,35,"Manyanga, The Archaeology of the Northern Nyanga lowlands, South African Archaeological Bulletin, 2012",NA,"Zimbabwe","Collected",1829,612
+"Ua-37561","Samakande",32.79,-17.46,1375,35,"Manyanga, The Archaeology of the Northern Nyanga lowlands, South African Archaeological Bulletin, 2012",NA,"Zimbabwe","Collected",1830,612
+"Ua-37560","Samakande",32.79,-17.46,1440,40,"Manyanga, The Archaeology of the Northern Nyanga lowlands, South African Archaeological Bulletin, 2012",NA,"Zimbabwe","Collected",1831,612
+"Ua-37562","Samakande",32.79,-17.46,1365,40,"Manyanga, The Archaeology of the Northern Nyanga lowlands, South African Archaeological Bulletin, 2012",NA,"Zimbabwe","Collected",1832,612
+"Ua-37563","Samakande",32.79,-17.46,1580,35,"Manyanga, The Archaeology of the Northern Nyanga lowlands, South African Archaeological Bulletin, 2012",NA,"Zimbabwe","Collected",1833,612
+"Pta-7577","Zimbali",31.18,-29.57,1560,50,"Munzhedzi, Historical development of the KwaZulu-Natal Museum’s
+archaeological archive: the case of the Michael Moon collection, Witz MSc thesis, 2022","charcoal","South Africa","Collected",1834,687
+"N-1935","Samfya Forest South",29.56,-11.33,1600,80,"Derricourt, The Chronology of Zambian Prehistory, Transafrican Journal of History, 1976",NA,"Zambia","Collected",1835,615
+"N-1934","Samfya Forest South",29.56,-11.33,1520,80,"Derricourt, The Chronology of Zambian Prehistory, Transafrican Journal of History, 1976",NA,"Zambia","Collected",1836,615
+"N-1933","Samfya Forest North",29.58,-11.29,390,75,"Derricourt, The Chronology of Zambian Prehistory, Transafrican Journal of History, 1976",NA,"Zambia","Collected",1837,614
+"N-2339","Samfya Forest North",29.58,-11.29,255,70,"Derricourt, The Chronology of Zambian Prehistory, Transafrican Journal of History, 1976",NA,"Zambia","Collected",1838,614
+"N-1501","Sioma Mission",23.5,-16.6,1990,80,"Derricourt, The Chronology of Zambian Prehistory, Transafrican Journal of History, 1976",NA,"Zambia","Collected",1839,628
+"N-1498","Sioma Mission",23.5,-16.6,1400,75,"Derricourt, The Chronology of Zambian Prehistory, Transafrican Journal of History, 1976",NA,"Zambia","Collected",1840,628
+"N-1500","Sioma Mission",23.5,-16.6,1380,90,"Derricourt, The Chronology of Zambian Prehistory, Transafrican Journal of History, 1976",NA,"Zambia","Collected",1841,628
+"N-1499","Sioma Mission",23.5,-16.6,1360,75,"Derricourt, The Chronology of Zambian Prehistory, Transafrican Journal of History, 1976",NA,"Zambia","Collected",1842,628
+"NZ-4995","Chalaka",28.614,-14.324,1520,65,"Robertson, Early Iron Age Archaeology in Central Zambia, AZANIA, 2000",NA,"Zambia","Collected",1843,77
+"NZ-4514","Muteteshi I",28.6,-14.28,1640,50,"Robertson, Early Iron Age Archaeology in Central Zambia, AZANIA, 2000",NA,"Zambia","Collected",1844,457
+"NZ-4996","Mondake",28.617,-14.339,1145,70,"Robertson, Early Iron Age Archaeology in Central Zambia, AZANIA, 2000",NA,"Zambia","Collected",1845,427
+"NZ-4997","Mondake",28.617,-14.339,1510,105,"Robertson, Early Iron Age Archaeology in Central Zambia, AZANIA, 2000",NA,"Zambia","Collected",1846,427
+"NZ-4998","Mondake",28.617,-14.339,1355,60,"Robertson, Early Iron Age Archaeology in Central Zambia, AZANIA, 2000",NA,"Zambia","Collected",1847,427
+"NZ-4999","Fibobe",28.633,-14.275,1410,110,"Robertson, Early Iron Age Archaeology in Central Zambia, AZANIA, 2000",NA,"Zambia","Collected",1848,136
+"NZ-5000","Fibobe",28.633,-14.275,1200,65,"Robertson, Early Iron Age Archaeology in Central Zambia, AZANIA, 2000",NA,"Zambia","Collected",1849,136
+"NZ-5004","Fibobe",28.633,-14.275,1175,85,"Robertson, Early Iron Age Archaeology in Central Zambia, AZANIA, 2000",NA,"Zambia","Collected",1850,136
+"NZ-5001","Fibobe",28.633,-14.275,1019,60,"Robertson, Early Iron Age Archaeology in Central Zambia, AZANIA, 2000",NA,"Zambia","Collected",1851,136
+"NZ-5002","Fibobe",28.633,-14.275,1135,60,"Robertson, Early Iron Age Archaeology in Central Zambia, AZANIA, 2000",NA,"Zambia","Collected",1852,136
+"NZ-5003","Fibobe",28.633,-14.275,1050,60,"Robertson, Early Iron Age Archaeology in Central Zambia, AZANIA, 2000",NA,"Zambia","Collected",1853,136
+"NZ-5005","Fibobe",28.633,-14.275,1220,85,"Robertson, Early Iron Age Archaeology in Central Zambia, AZANIA, 2000",NA,"Zambia","Collected",1854,136
+"Birm-838","Namakala",24.95,-16.7,1400,100,"McKeeby, Archaeological survey in the Machili Valley,
+Zambia: a report on the 2019 preliminary field
+season, Azania, 2022","charcoal","Zambia","Collected",1855,471
+"N-2317","Namakala",24.95,-16.7,1360,80,"McKeeby, Archaeological survey in the Machili Valley,
+Zambia: a report on the 2019 preliminary field
+season, Azania, 2022","charcoal","Zambia","Collected",1856,471
+"Birm-836","Nanga",25,-16.65,1240,100,"McKeeby, Archaeological survey in the Machili Valley,
+Zambia: a report on the 2019 preliminary field
+season, Azania, 2022","charcoal","Zambia","Collected",1857,477
+"Birm-835","Nanga",25,-16.65,1190,100,"McKeeby, Archaeological survey in the Machili Valley,
+Zambia: a report on the 2019 preliminary field
+season, Azania, 2022","charcoal","Zambia","Collected",1858,477
+"Birm-837","Nanga",25,-16.65,1070,120,"McKeeby, Archaeological survey in the Machili Valley,
+Zambia: a report on the 2019 preliminary field
+season, Azania, 2022","charcoal","Zambia","Collected",1859,477
+"Birm-834","Nanga",25,-16.65,980,120,"McKeeby, Archaeological survey in the Machili Valley,
+Zambia: a report on the 2019 preliminary field
+season, Azania, 2022","charcoal","Zambia","Collected",1860,477
+"N-2318","Bulila 1",24.91,-16.42,885,65,"McKeeby, Archaeological survey in the Machili Valley,
+Zambia: a report on the 2019 preliminary field
+season, Azania, 2022","charcoal","Zambia","Collected",1861,65
+"N-2315","Kazindu 1",25,-16.8,1150,75,"McKeeby, Archaeological survey in the Machili Valley,
+Zambia: a report on the 2019 preliminary field
+season, Azania, 2022","charcoal","Zambia","Collected",1862,219
+"N-2316","Kazindu 2",25,-16.8,1130,75,"McKeeby, Archaeological survey in the Machili Valley,
+Zambia: a report on the 2019 preliminary field
+season, Azania, 2022","charcoal","Zambia","Collected",1863,220
+"SR-147","Lumbule Hill",33.5,-11,1385,100,"Sheppard, Rhodesian Radiocarbon Measurements IV, Radiocarbon, 1971","charcoal","Malawi","Collected",1864,325
+"N-1917","Kabondo Kumbo",25.9,-17.2,1020,95,"Vogel, Kabondo Kumbo and the Early Iron Age in Victoria Falls Region, AZANIA, 1975","charcoal","Zambia","Collected",1865,192
+"N-1918","Kabondo Kumbo",25.9,-17.2,1430,80,"Vogel, Kabondo Kumbo and the Early Iron Age in Victoria Falls Region, AZANIA, 1975","charcoal","Zambia","Collected",1866,192
+"N-1919","Kabondo Kumbo",25.9,-17.2,1150,85,"Vogel, Kabondo Kumbo and the Early Iron Age in Victoria Falls Region, AZANIA, 1975","charcoal","Zambia","Collected",1867,192
+"N-1920","Kabondo Kumbo",25.9,-17.2,1160,85,"Vogel, Kabondo Kumbo and the Early Iron Age in Victoria Falls Region, AZANIA, 1975","charcoal","Zambia","Collected",1868,192
+"N-1921","Kabondo Kumbo",25.9,-17.2,1090,130,"Vogel, Kabondo Kumbo and the Early Iron Age in Victoria Falls Region, AZANIA, 1975","charcoal","Zambia","Collected",1869,192
+"N-1922","Kabondo Kumbo",25.9,-17.2,1240,65,"Vogel, Kabondo Kumbo and the Early Iron Age in Victoria Falls Region, AZANIA, 1975","charcoal","Zambia","Collected",1870,192
+"SR-163","Chitope Chiconyora Farm",30.8,-16.9,840,95,"Sheppard, Rhodesian Radiocarbon Measurements IV, Radiocarbon, 1971","charcoal","Zimbabwe","Collected",1871,85
+"Pta-1602","Banda Hill",34.3,-14.4,1400,50,"Maggs, Some Recent Radiocarbon Dates from Eastern and Southern Africa, Journal of African History, 1977",NA,"Malawi","Collected",1872,17
+"Pta-3716","Magogo",30.396,-28.983,1320,50,"Whitelaw, The ceramics and distribution of pioneer agriculturists in KwaZulu-Natal, Southern African Humanities, 1996","charcoal","South Africa","Collected",1873,336
+"AMS","Caimane",32.13,-26.32,1930,50,"Kohtamaki, Transitions: A landscape approach to social and cultural changes in Southern Mozambique, PhD Thesis, Uppsala University, 2013","microscopic carbon residue in pottery","Mozambique","Collected",1874,70
+"AMS","Caimane",32.13,-26.32,2190,60,"Kohtamaki, Transitions: A landscape approach to social and cultural changes in Southern Mozambique, PhD Thesis, Uppsala University, 2013","microscopic carbon residue in pottery","Mozambique","Collected",1875,70
+"AMS","University Campus",32.6,-25.95,2170,50,"Kohtamaki, Transitions: A landscape approach to social and cultural changes in Southern Mozambique, PhD Thesis, Uppsala University, 2013","microscopic carbon residue in pottery","Mozambique","Collected",1876,664
+"AMS","Zitundo",32.85,-26.77,1490,50,"Kohtamaki, Transitions: A landscape approach to social and cultural changes in Southern Mozambique, PhD Thesis, Uppsala University, 2013","microscopic carbon residue in pottery","Mozambique","Collected",1877,688
+"AMS","Zitundo",32.85,-26.77,2200,50,"Kohtamaki, Transitions: A landscape approach to social and cultural changes in Southern Mozambique, PhD Thesis, Uppsala University, 2013","microscopic carbon residue in pottery","Mozambique","Collected",1878,688
+"Beta-30641","Magagarape",25.44,-24.45,1220,60,"Huffman, A cultural proxy for drought: ritual burning in the Iron age of Southern Africa, Journal of Archaeological Science, 2009",NA,"Botswana","Collected",1879,335
+"Beta-30640","Magagarape",25.44,-24.45,1340,90,"Huffman, A cultural proxy for drought: ritual burning in the Iron age of Southern Africa, Journal of Archaeological Science, 2009",NA,"Botswana","Collected",1880,335
+"Beta-28226","Magagarape",25.44,-24.45,1100,60,"Huffman, A cultural proxy for drought: ritual burning in the Iron age of Southern Africa, Journal of Archaeological Science, 2009",NA,"Botswana","Collected",1881,335
+"Beta-31194","Baratani",25.73,-25.01,1430,60,"Huffman, A cultural proxy for drought: ritual burning in the Iron age of Southern Africa, Journal of Archaeological Science, 2009",NA,"Botswana","Collected",1882,20
+"Beta-38436","Baratani",25.73,-25.01,1440,80,"Huffman, A cultural proxy for drought: ritual burning in the Iron age of Southern Africa, Journal of Archaeological Science, 2009",NA,"Botswana","Collected",1883,20
+"Pta-2045","Mpame",29.062,-32.075,1230,40,"Hall, Some recent radiocarbon dates from Southern Africa, Journal of African History, 1980",NA,"South Africa","Collected",1884,443
+"Pta-0248","Koffiefontein",24.983,-29.383,380,50,"Vogel, Spatial distribution of radiocarbon dates for Iron Age in Southern Africa, Southern African Archaeological Bulletin, 1999","skeleton","South Africa","Collected",1885,243
+"Pta-2731","Koffiefontein",24.983,-29.383,350,50,"Vogel, Spatial distribution of radiocarbon dates for Iron Age in Southern Africa, Southern African Archaeological Bulletin, 1999","charcoal","South Africa","Collected",1886,243
+"GX-1014","Ntsuanatsatsi",28.8,-27.3,505,95,"Maggs, Iron Age patterns and Sotho history on the Southern Highveld: South Africa, World Archaeology, 1976",NA,"South Africa","Collected",1887,529
+"GX-1015","Ntsuanatsatsi",28.8,-27.3,455,110,"Maggs, Iron Age patterns and Sotho history on the Southern Highveld: South Africa, World Archaeology, 1976",NA,"South Africa","Collected",1888,529
+"Pta-927","Tambala",34.25,-14.03,1360,50,"Maggs, Some Recent Radiocarbon Dates from Eastern and Southern Africa, Journal of African History, 1977",NA,"Malawi","Collected",1889,639
+"N-1137","Chundu",25.68,-17.58,1190,100,"Yamasaki, Riken Natural Radiocarbon Measurements VIII, Radiocarbon, 1974",NA,"Zambia","Collected",1890,90
+"N-1138","Chundu",25.68,-17.58,1290,100,"Yamasaki, Riken Natural Radiocarbon Measurements VIII, Radiocarbon, 1974",NA,"Zambia","Collected",1891,90
+"N-1139","Chundu",25.68,-17.58,1160,160,"Yamasaki, Riken Natural Radiocarbon Measurements VIII, Radiocarbon, 1974",NA,"Zambia","Collected",1892,90
+"I-12801","Matlapaneng",23.55,-19.88,1270,80,"Parkington, Patterning in Recent Radiocarbon Dates from Southern Africa as a Reflection of Prehistoric Settlement and Interaction, Journal of African History, 1987",NA,"Botswana","Collected",1893,369
+"B-10562","Matlapaneng",23.55,-19.88,970,50,"Denbow, Iron Age sites in northern Botswana’s Okavango
+Delta 1: the southern Delta sites Mat82 and
+Matlapaneng plus Qogana on the region’s eastern
+margin, AZANIA, 2023",NA,"Botswana","Collected",1894,369
+"B-10563","Matlapaneng",23.55,-19.88,1120,110,"Denbow, Iron Age sites in northern Botswana’s Okavango
+Delta 1: the southern Delta sites Mat82 and
+Matlapaneng plus Qogana on the region’s eastern
+margin, AZANIA, 2023",NA,"Botswana","Collected",1895,369
+"B-10564","Matlapaneng",23.55,-19.88,1260,60,"Denbow, Iron Age sites in northern Botswana’s Okavango
+Delta 1: the southern Delta sites Mat82 and
+Matlapaneng plus Qogana on the region’s eastern
+margin, AZANIA, 2023",NA,"Botswana","Collected",1896,369
+"B-10565","Matlapaneng",23.55,-19.88,1040,50,"Denbow, Iron Age sites in northern Botswana’s Okavango
+Delta 1: the southern Delta sites Mat82 and
+Matlapaneng plus Qogana on the region’s eastern
+margin, AZANIA, 2023",NA,"Botswana","Collected",1897,369
+"I-13757","Qogana",23.05,-19.08,1190,80,"Denbow, Iron Age sites in northern Botswana’s Okavango
+Delta 1: the southern Delta sites Mat82 and
+Matlapaneng plus Qogana on the region’s eastern
+margin, AZANIA, 2023","charcoal","Botswana","Collected",1898,589
+"Tx-5662","Qogana",23.05,-19.08,1100,90,"Denbow, Iron Age sites in northern Botswana’s Okavango
+Delta 1: the southern Delta sites Mat82 and
+Matlapaneng plus Qogana on the region’s eastern
+margin, AZANIA, 2023","charcoal","Botswana","Collected",1899,589
+"Ua-13192","Malumba",30.93,-21.92,990,75,"Manyanga, Resilient Landscapes: socio-environmental dynamics in the Shashi-Limpopo Basin, southern Zimbabwe c. AD 800 to the present, Doctoral Thesis, 2006",NA,"Zimbabwe","Collected",1900,356
+"Ua-13194","Malumba",30.93,-21.92,965,80,"Manyanga, Resilient Landscapes: socio-environmental dynamics in the Shashi-Limpopo Basin, southern Zimbabwe c. AD 800 to the present, Doctoral Thesis, 2006",NA,"Zimbabwe","Collected",1901,356
+"Pta-8535","Malumba",30.93,-21.92,900,50,"Manyanga, Resilient Landscapes: socio-environmental dynamics in the Shashi-Limpopo Basin, southern Zimbabwe c. AD 800 to the present, Doctoral Thesis, 2006",NA,"Zimbabwe","Collected",1902,356
+"Ua-13193","Malumba",30.93,-21.92,840,75,"Manyanga, Resilient Landscapes: socio-environmental dynamics in the Shashi-Limpopo Basin, southern Zimbabwe c. AD 800 to the present, Doctoral Thesis, 2006",NA,"Zimbabwe","Collected",1903,356
+"Ua-13191","Malumba",30.93,-21.92,690,95,"Manyanga, Resilient Landscapes: socio-environmental dynamics in the Shashi-Limpopo Basin, southern Zimbabwe c. AD 800 to the present, Doctoral Thesis, 2006",NA,"Zimbabwe","Collected",1904,356
+"Ua-11802","Mwenezi Farm",31.03,-21.67,1250,75,"Manyanga, Resilient Landscapes: socio-environmental dynamics in the Shashi-Limpopo Basin, southern Zimbabwe c. AD 800 to the present, Doctoral Thesis, 2006",NA,"Zimbabwe","Collected",1905,465
+"Ua-11800","Mwenezi Farm",31.03,-21.67,800,70,"Manyanga, Resilient Landscapes: socio-environmental dynamics in the Shashi-Limpopo Basin, southern Zimbabwe c. AD 800 to the present, Doctoral Thesis, 2006",NA,"Zimbabwe","Collected",1906,465
+"N-1140","Zambezi Farm",25.62,-17.82,1410,130,"Soper, New Radiocarbon dates for eastern and southern africa, Journal of African History, 1974",NA,"Zambia","Collected",1907,685
+"N-1141","Zambezi Farm",25.62,-17.82,895,110,"Soper, New Radiocarbon dates for eastern and southern africa, Journal of African History, 1974",NA,"Zambia","Collected",1908,685
+"N-1142","Zambezi Farm",25.62,-17.82,795,95,"Soper, New Radiocarbon dates for eastern and southern africa, Journal of African History, 1974",NA,"Zambia","Collected",1909,685
+"N-1143","Zambezi Farm",25.62,-17.82,910,160,"Soper, New Radiocarbon dates for eastern and southern africa, Journal of African History, 1974",NA,"Zambia","Collected",1910,685
+"N-1144","Zambezi Farm",25.62,-17.82,710,100,"Soper, New Radiocarbon dates for eastern and southern africa, Journal of African History, 1974",NA,"Zambia","Collected",1911,685
+"N-415","Kamangoza",25.53,-17.62,920,110,"Vogel, Kamangoza: An introduction to the Iron Age culutures of the Victoria Falls Region, Zambia Musuem Papers, 1971",NA,"Zambia","Collected",1912,198
+"N-416","Kamangoza",25.53,-17.62,920,105,"Vogel, Kamangoza: An introduction to the Iron Age culutures of the Victoria Falls Region, Zambia Musuem Papers, 1971",NA,"Zambia","Collected",1913,198
+"N-417","Kamangoza",25.53,-17.62,925,115,"Vogel, Kamangoza: An introduction to the Iron Age culutures of the Victoria Falls Region, Zambia Musuem Papers, 1971",NA,"Zambia","Collected",1914,198
+"N-455","Kamangoza",25.53,-17.62,875,120,"Vogel, Kamangoza: An introduction to the Iron Age culutures of the Victoria Falls Region, Zambia Musuem Papers, 1971",NA,"Zambia","Collected",1915,198
+"N-419","Kamangoza",25.53,-17.62,1015,105,"Vogel, Kamangoza: An introduction to the Iron Age culutures of the Victoria Falls Region, Zambia Musuem Papers, 1971",NA,"Zambia","Collected",1916,198
+"N-420","Kamangoza",25.53,-17.62,800,110,"Vogel, Kamangoza: An introduction to the Iron Age culutures of the Victoria Falls Region, Zambia Musuem Papers, 1971",NA,"Zambia","Collected",1917,198
+"N-421","Kamangoza",25.53,-17.62,1040,105,"Vogel, Kamangoza: An introduction to the Iron Age culutures of the Victoria Falls Region, Zambia Musuem Papers, 1971",NA,"Zambia","Collected",1918,198
+"N-457","Kamangoza",25.53,-17.62,975,105,"Vogel, Kamangoza: An introduction to the Iron Age culutures of the Victoria Falls Region, Zambia Musuem Papers, 1971",NA,"Zambia","Collected",1919,198
+"N-423","Kamangoza",25.53,-17.62,940,105,"Vogel, Kamangoza: An introduction to the Iron Age culutures of the Victoria Falls Region, Zambia Musuem Papers, 1971",NA,"Zambia","Collected",1920,198
+"N-424","Kamangoza",25.53,-17.62,900,105,"Vogel, Kamangoza: An introduction to the Iron Age culutures of the Victoria Falls Region, Zambia Musuem Papers, 1971",NA,"Zambia","Collected",1921,198
+"N-425","Kamangoza",25.53,-17.62,870,105,"Vogel, Kamangoza: An introduction to the Iron Age culutures of the Victoria Falls Region, Zambia Musuem Papers, 1971",NA,"Zambia","Collected",1922,198
+"N-426","Kamangoza",25.53,-17.62,900,105,"Vogel, Kamangoza: An introduction to the Iron Age culutures of the Victoria Falls Region, Zambia Musuem Papers, 1971",NA,"Zambia","Collected",1923,198
+"Pta-3507","SK17",31.71,-24.96,1210,50,"Jordaan, An archaeological study of two Early Farming sites in the southern Kruger National Park, South Africa, University of Pretoria, 2016","collagen","South Africa","Collected",1924,630
+"D-AMS004214","SK17",31.71,-24.96,1284,27,"Jordaan, An archaeological study of two Early Farming sites in the southern Kruger National Park, South Africa, University of Pretoria, 2016","charcoal","South Africa","Collected",1925,630
+"D-AMS004213","SK17",31.71,-24.96,1335,28,"Jordaan, An archaeological study of two Early Farming sites in the southern Kruger National Park, South Africa, University of Pretoria, 2016","charcoal","South Africa","Collected",1926,630
+"Pta-3825","Tsh1",31.67,-24.85,1440,50,"Jordaan, An archaeological study of two Early Farming sites in the southern Kruger National Park, South Africa, University of Pretoria, 2016","charcoal","South Africa","Collected",1927,658
+"D-AMS004217","Tsh1",31.67,-24.85,1510,28,"Jordaan, An archaeological study of two Early Farming sites in the southern Kruger National Park, South Africa, University of Pretoria, 2016","charcoal","South Africa","Collected",1928,658
+"D-AMS004216","Tsh1",31.67,-24.85,1535,29,"Jordaan, An archaeological study of two Early Farming sites in the southern Kruger National Park, South Africa, University of Pretoria, 2016","charcoal","South Africa","Collected",1929,658
+"D-AMS004215","Tsh1",31.67,-24.85,1368,31,"Jordaan, An archaeological study of two Early Farming sites in the southern Kruger National Park, South Africa, University of Pretoria, 2016","charcoal","South Africa","Collected",1930,658
+"Pta-3725","Ma38",31.37,-23.5,1480,50,"Meyer, 'n Kultuurhistoriese interpretasie van die ystertydperk in die Nasionale Krugerwildtuin, University of Pretoria, 1986","bone","South Africa","Collected",1931,329
+"Pta-3491","Le6",31.535,-23.796,1160,50,"Meyer, 'n Kultuurhistoriese interpretasie van die ystertydperk in die Nasionale Krugerwildtuin, University of Pretoria, 1986","collagen","South Africa","Collected",1932,276
+"Pta-3478","Le7",31.535,-23.796,1120,50,"Meyer, 'n Kultuurhistoriese interpretasie van die ystertydperk in die Nasionale Krugerwildtuin, University of Pretoria, 1986","collagen","South Africa","Collected",1933,277
+"Pta-3473","Ol20",31.73,-24.97,1100,50,"Meyer, 'n Kultuurhistoriese interpretasie van die ystertydperk in die Nasionale Krugerwildtuin, University of Pretoria, 1986","collagen","South Africa","Collected",1934,549
+"N-1148","Tafuna Hill",31.536,-17.385,1070,105,"Soper, New Radiocarbon dates for eastern and southern africa, Journal of African History, 1974",NA,"Zimbabwe","Collected",1935,638
+"Pta-606","Lanlory",29.47,-16.76,1130,50,"Soper, New Radiocarbon dates for eastern and southern africa, Journal of African History, 1974",NA,"Zimbabwe","Collected",1936,275
+"SR-245","Lanlory",29.47,-16.76,920,50,"Soper, New Radiocarbon dates for eastern and southern africa, Journal of African History, 1974",NA,"Zimbabwe","Collected",1937,275
+"SR-248","Lanlory",29.47,-16.76,770,55,"Soper, New Radiocarbon dates for eastern and southern africa, Journal of African History, 1974",NA,"Zimbabwe","Collected",1938,275
+"N-905","Thandwe",32.47,-13.82,890,110,"Yamasaki, Riken Natural Radiocarbon Measurements VII, Radiocarbon, 1972",NA,"Zambia","Collected",1939,647
+"N-906","Thandwe",32.47,-13.82,1060,110,"Yamasaki, Riken Natural Radiocarbon Measurements VII, Radiocarbon, 1972",NA,"Zambia","Collected",1940,647
+"GX-1423","Twickenham Road",28.3,-15.4,1145,105,"Phillipson, Notes on the Later Prehistoric Radiocarbon Chronology of Eastern and Southern Africa, Journal of African History, 1970",NA,"Zambia","Collected",1941,662
+"GX-1422","Twickenham Road",28.3,-15.4,1220,105,"Phillipson, Notes on the Later Prehistoric Radiocarbon Chronology of Eastern and Southern Africa, Journal of African History, 1970",NA,"Zambia","Collected",1942,662
+"GX-1329","Twickenham Road",28.3,-15.4,1010,110,"Phillipson, Notes on the Later Prehistoric Radiocarbon Chronology of Eastern and Southern Africa, Journal of African History, 1970",NA,"Zambia","Collected",1943,662
+"GX-662","Twickenham Road",28.3,-15.4,895,110,"Phillipson, Notes on the Later Prehistoric Radiocarbon Chronology of Eastern and Southern Africa, Journal of African History, 1970",NA,"Zambia","Collected",1944,662
+"Pta-2147","Chia Lagoon, Mtanga",34.33,-13.12,935,50,"Robinson, The Nkhotakota Lake Shore and Marginal Areas, Malawi, Ministry of Local Government Publication, 1979",NA,"Malawi","Collected",1945,81
+"Pta-2358","Chia Lagoon, Thandizani Store",34.31,-13.12,960,50,"Robinson, The Nkhotakota Lake Shore and Marginal Areas, Malawi, Ministry of Local Government Publication, 1979",NA,"Malawi","Collected",1946,82
+"Pta-2148","Mphonde Hill",34.22,-12.8,275,50,"Robinson, The Nkhotakota Lake Shore and Marginal Areas, Malawi, Ministry of Local Government Publication, 1979",NA,"Malawi","Collected",1947,445
+"Pta-2357","Lake Chilingale",34.2,-12.92,1150,50,"Robinson, The Nkhotakota Lake Shore and Marginal Areas, Malawi, Ministry of Local Government Publication, 1979",NA,"Malawi","Collected",1948,269
+"UCLA-1242","Mwabulambo",33.75,-9.87,655,80,"Robinson, The Iron Age of the Upper and Lower Shire Malawi, Ministry of Local Government, Department of Antiquities, 1973",NA,"Malawi","Collected",1949,460
+"SR-237","Matope Court",34.93,-15.37,1170,80,"Robinson, The Iron Age of the Upper and Lower Shire Malawi, Ministry of Local Government, Department of Antiquities, 1973",NA,"Malawi","Collected",1950,372
+"SR-236","Matope Court",34.93,-15.37,820,80,"Robinson, The Iron Age of the Upper and Lower Shire Malawi, Ministry of Local Government, Department of Antiquities, 1973",NA,"Malawi","Collected",1951,372
+"SR-232","Matope Court",34.93,-15.37,625,80,"Robinson, The Iron Age of the Upper and Lower Shire Malawi, Ministry of Local Government, Department of Antiquities, 1973",NA,"Malawi","Collected",1952,372
+"SR-230","Matope Court",34.93,-15.37,905,80,"Robinson, The Iron Age of the Upper and Lower Shire Malawi, Ministry of Local Government, Department of Antiquities, 1973",NA,"Malawi","Collected",1953,372
+"SR-235","Matope Court",34.93,-15.37,960,60,"Robinson, The Iron Age of the Upper and Lower Shire Malawi, Ministry of Local Government, Department of Antiquities, 1973",NA,"Malawi","Collected",1954,372
+"Pta-795","Matope Court",34.93,-15.37,1340,55,"Robinson, The Iron Age of the Upper and Lower Shire Malawi, Ministry of Local Government, Department of Antiquities, 1973",NA,"Malawi","Collected",1955,372
+"SR-242","Namichimba",34.91,-15.37,955,60,"Robinson, The Iron Age of the Upper and Lower Shire Malawi, Ministry of Local Government, Department of Antiquities, 1973",NA,"Malawi","Collected",1956,474
+"Pta-798","Phwadzi 1",34.33,-16.33,1450,50,"Robinson, The Iron Age of the Upper and Lower Shire Malawi, Ministry of Local Government, Department of Antiquities, 1973",NA,"Malawi","Collected",1957,581
+"SR-175","Nkope Hill",35.03,-14.2,1175,100,"Robinson, The Iron Age of the Upper and Lower Shire Malawi, Ministry of Local Government, Department of Antiquities, 1973","charcoal","Malawi","Collected",1958,518
+"SR-233","Mitongwe-Luwadzi",34.67,-14.58,390,80,"Robinson, The Iron Age of the Upper and Lower Shire Malawi, Ministry of Local Government, Department of Antiquities, 1973",NA,"Malawi","Collected",1959,413
+"SR-231","Kapeni Hill",34.72,-14.63,780,65,"Robinson, The Iron Age of the Upper and Lower Shire Malawi, Ministry of Local Government, Department of Antiquities, 1973",NA,"Malawi","Collected",1960,213
+"SR-221","Kapeni Hill",34.72,-14.63,715,75,"Robinson, The Iron Age of the Upper and Lower Shire Malawi, Ministry of Local Government, Department of Antiquities, 1973",NA,"Malawi","Collected",1961,213
+"SR-220","Nkhombwa Hill",34.02,-14.6,575,75,"Robinson, The Iron Age of the Upper and Lower Shire Malawi, Ministry of Local Government, Department of Antiquities, 1973",NA,"Malawi","Collected",1962,514
+"UCLA-1299","Vintukutu",33.92,-9.9,1100,80,"Berger, UCLA Radiocarbon dates VIII, Radiocarbon, 1968",NA,"Malawi","Collected",1963,669
+"UCLA-1289","Mwabulambo",33.75,-9.87,885,80,"Berger, UCLA Radiocarbon dates VIII, Radiocarbon, 1968",NA,"Malawi","Collected",1964,460
+"UCLA-1245","Mbande Court",33.8,-9.93,370,80,"Robinson, The Iron Age of the Upper and Lower Shire Malawi, Ministry of Local Government, Department of Antiquities, 1973",NA,"Malawi","Collected",1965,380
+"UCLA-1243","Mwamasapa",33.799,-9.949,760,80,"Robinson, The Iron Age of the Upper and Lower Shire Malawi, Ministry of Local Government, Department of Antiquities, 1973",NA,"Malawi","Collected",1966,461
+"UCLA-1239","Mwamasapa",33.799,-9.949,860,80,"Robinson, The Iron Age of the Upper and Lower Shire Malawi, Ministry of Local Government, Department of Antiquities, 1973",NA,"Malawi","Collected",1967,461
+"UCLA-1236","Mbande Hill",33.829,-9.954,540,80,"Robinson, The Iron Age of the Upper and Lower Shire Malawi, Ministry of Local Government, Department of Antiquities, 1973",NA,"Malawi","Collected",1968,381
+"UCLA-1246","Mbande Hill",33.829,-9.954,270,80,"Robinson, The Iron Age of the Upper and Lower Shire Malawi, Ministry of Local Government, Department of Antiquities, 1973",NA,"Malawi","Collected",1969,381
+"UCLA-1244","Mwenepera",33.823,-9.95,710,80,"Robinson, The Iron Age of the Upper and Lower Shire Malawi, Ministry of Local Government, Department of Antiquities, 1973",NA,"Malawi","Collected",1970,464
+"Pta-3754","Namaso Bay",34.983,-14.17,1160,50,"Davison, Namaso: A newly-defined cultural entity of the late first millennium AD, and its place in the Iron Age sequence of southern Malawi, Azania, 1991",NA,"Malawi","Collected",1971,472
+"Pta-3752","Namaso Bay",34.983,-14.17,1090,50,"Davison, Namaso: A newly-defined cultural entity of the late first millennium AD, and its place in the Iron Age sequence of southern Malawi, Azania, 1991",NA,"Malawi","Collected",1972,472
+"Pta-3750","Namaso Bay",34.983,-14.17,940,50,"Davison, Namaso: A newly-defined cultural entity of the late first millennium AD, and its place in the Iron Age sequence of southern Malawi, Azania, 1991",NA,"Malawi","Collected",1973,472
+"Pta-2744","Kambari",33.7,-11.75,1410,50,"Robinson, Iron Age of Northern Malawi, Malawi Government Ministry of Education and Culture, 1982",NA,"Malawi","Collected",1974,199
+"Pta-2743","Madede",33.68,-11.72,1680,50,"Robinson, Iron Age of Northern Malawi, Malawi Government Ministry of Education and Culture, 1982",NA,"Malawi","Collected",1975,333
+"Pta-3067","Lunjika Hill hut",33.7,-11.7,980,50,"Robinson, Iron Age of Northern Malawi, Malawi Government Ministry of Education and Culture, 1982","charcoal","Malawi","Collected",1976,326
+"Pta-3068","Njuyu Hill",33.5,-11.5,620,50,"Robinson, Iron Age of Northern Malawi, Malawi Government Ministry of Education and Culture, 1982","charcoal","Malawi","Collected",1977,508
+"Pta-1798","Nasiyaya Village",35.72,-15.72,980,50,"Robinson, Iron Age Occupation North and East of the Mulanje Plateau, Malawi, Government Ministry of Local Government, 1977","charcoal","Malawi","Collected",1978,480
+"Pta-1603","Mwananyani Hill",35.68,-15.72,590,40,"Robinson, Iron Age Occupation North and East of the Mulanje Plateau, Malawi, Government Ministry of Local Government, 1977","charcoal","Malawi","Collected",1979,463
+"Beta-2245","KM2",31.75,-1.48,1590,60,"Schmidt, Innovation and industry during the Early Iron Age in East Africa: the KM2 and KM3 sites of northwest Tanzania, African Archaeological Review, 1985","charcoal","Tanzania","Collected",1980,241
+"RL-1010","KM2",31.75,-1.48,1820,110,"Schmidt, Innovation and industry during the Early Iron Age in East Africa: the KM2 and KM3 sites of northwest Tanzania, African Archaeological Review, 1985","charcoal","Tanzania","Collected",1981,241
+"RL-1011","KM2",31.75,-1.48,1870,120,"Schmidt, Innovation and industry during the Early Iron Age in East Africa: the KM2 and KM3 sites of northwest Tanzania, African Archaeological Review, 1985","charcoal","Tanzania","Collected",1982,241
+"SMU-1436","KM2",31.75,-1.48,1826,42,"Schmidt, Innovation and industry during the Early Iron Age in East Africa: the KM2 and KM3 sites of northwest Tanzania, African Archaeological Review, 1985","charcoal","Tanzania","Collected",1983,241
+"Beta-10491","KM2",31.75,-1.48,1860,50,"Schmidt, Innovation and industry during the Early Iron Age in East Africa: the KM2 and KM3 sites of northwest Tanzania, African Archaeological Review, 1985","charcoal","Tanzania","Collected",1984,241
+"RL-1012","KM2",31.75,-1.48,1930,120,"Schmidt, Innovation and industry during the Early Iron Age in East Africa: the KM2 and KM3 sites of northwest Tanzania, African Archaeological Review, 1985","charcoal","Tanzania","Collected",1985,241
+"RL-1013","KM2",31.75,-1.48,2120,120,"Schmidt, Innovation and industry during the Early Iron Age in East Africa: the KM2 and KM3 sites of northwest Tanzania, African Archaeological Review, 1985","charcoal","Tanzania","Collected",1986,241
+"Beta-10492","KM2",31.75,-1.48,1410,60,"Schmidt, Innovation and industry during the Early Iron Age in East Africa: the KM2 and KM3 sites of northwest Tanzania, African Archaeological Review, 1985","charcoal","Tanzania","Collected",1987,241
+"Beta-2244","KM2",31.75,-1.48,1480,60,"Schmidt, Innovation and industry during the Early Iron Age in East Africa: the KM2 and KM3 sites of northwest Tanzania, African Archaeological Review, 1985","charcoal","Tanzania","Collected",1988,241
+"Beta-2247","KM2",31.75,-1.48,1620,60,"Schmidt, Innovation and industry during the Early Iron Age in East Africa: the KM2 and KM3 sites of northwest Tanzania, African Archaeological Review, 1985","charcoal","Tanzania","Collected",1989,241
+"RL-1014","KM2",31.75,-1.48,1440,110,"Schmidt, Innovation and industry during the Early Iron Age in East Africa: the KM2 and KM3 sites of northwest Tanzania, African Archaeological Review, 1985","charcoal","Tanzania","Collected",1990,241
+"Beta-2246","KM2",31.75,-1.48,1580,60,"Schmidt, Innovation and industry during the Early Iron Age in East Africa: the KM2 and KM3 sites of northwest Tanzania, African Archaeological Review, 1985","charcoal","Tanzania","Collected",1991,241
+"RL-1015","KM2",31.75,-1.48,1670,120,"Schmidt, Innovation and industry during the Early Iron Age in East Africa: the KM2 and KM3 sites of northwest Tanzania, African Archaeological Review, 1985","charcoal","Tanzania","Collected",1992,241
+"Beta-2243","KM3",31.74,-1.49,1660,70,"Schmidt, Innovation and industry during the Early Iron Age in East Africa: the KM2 and KM3 sites of northwest Tanzania, African Archaeological Review, 1985",NA,"Tanzania","Collected",1993,242
+"SMU-1433","KM3",31.74,-1.49,1717,37,"Schmidt, Innovation and industry during the Early Iron Age in East Africa: the KM2 and KM3 sites of northwest Tanzania, African Archaeological Review, 1985",NA,"Tanzania","Collected",1994,242
+"Beta-2241","KM3",31.74,-1.49,1560,80,"Schmidt, Innovation and industry during the Early Iron Age in East Africa: the KM2 and KM3 sites of northwest Tanzania, African Archaeological Review, 1985",NA,"Tanzania","Collected",1995,242
+"Beta-2242","KM3",31.74,-1.49,1620,70,"Schmidt, Innovation and industry during the Early Iron Age in East Africa: the KM2 and KM3 sites of northwest Tanzania, African Archaeological Review, 1985",NA,"Tanzania","Collected",1996,242
+"Beta-2239","KM3",31.74,-1.49,1830,100,"Schmidt, Innovation and industry during the Early Iron Age in East Africa: the KM2 and KM3 sites of northwest Tanzania, African Archaeological Review, 1985",NA,"Tanzania","Collected",1997,242
+"RL-1260","KM3",31.74,-1.49,1920,120,"Schmidt, Innovation and industry during the Early Iron Age in East Africa: the KM2 and KM3 sites of northwest Tanzania, African Archaeological Review, 1985",NA,"Tanzania","Collected",1998,242
+"Beta-2240","KM3",31.74,-1.49,1500,60,"Schmidt, Innovation and industry during the Early Iron Age in East Africa: the KM2 and KM3 sites of northwest Tanzania, African Archaeological Review, 1985",NA,"Tanzania","Collected",1999,242
+"SMU-1434","KM3",31.74,-1.49,1684,55,"Schmidt, Innovation and industry during the Early Iron Age in East Africa: the KM2 and KM3 sites of northwest Tanzania, African Archaeological Review, 1985",NA,"Tanzania","Collected",2000,242
+"Beta-10494","KM3",31.74,-1.49,1740,70,"Schmidt, Innovation and industry during the Early Iron Age in East Africa: the KM2 and KM3 sites of northwest Tanzania, African Archaeological Review, 1985",NA,"Tanzania","Collected",2001,242
+"GrN-7905","Kabuye",29.833,-2.6,1725,30,"Van Grunderbeek, L'Age du Fer Ancien au Rwanda et au Burundi, Journal des Africanistes, 1982","pollen spectra","Rwanda","Collected",2002,193
+"GrN-8219","Kabuye",29.833,-2.6,1550,30,"Van Grunderbeek, L'Age du Fer Ancien au Rwanda et au Burundi, Journal des Africanistes, 1982","pollen spectra","Rwanda","Collected",2003,193
+"GrN-7904","Kabuye",29.833,-2.6,1405,35,"Van Grunderbeek, L'Age du Fer Ancien au Rwanda et au Burundi, Journal des Africanistes, 1982","pollen spectra","Rwanda","Collected",2004,193
+"GrN-9665","Kabuye",29.833,-2.6,1665,50,"Van Grunderbeek, L'Age du Fer Ancien au Rwanda et au Burundi, Journal des Africanistes, 1982",NA,"Rwanda","Collected",2005,193
+"GrN-9667","Kabuye",29.833,-2.6,1490,55,"Van Grunderbeek, L'Age du Fer Ancien au Rwanda et au Burundi, Journal des Africanistes, 1982",NA,"Rwanda","Collected",2006,193
+"OxTL-547-I","Kabuye",29.833,-2.6,1755,145,"de Maret, New Survey of Archaeological Research and Dates for West-Central and North-Central Africa, Journal of African History, 1982",NA,"Rwanda","Collected",2007,193
+"OxTL-547-II","Kabuye",29.833,-2.6,1340,125,"de Maret, New Survey of Archaeological Research and Dates for West-Central and North-Central Africa, Journal of African History, 1982",NA,"Rwanda","Collected",2008,193
+"OxTL-547-III","Kabuye",29.833,-2.6,1685,160,"de Maret, New Survey of Archaeological Research and Dates for West-Central and North-Central Africa, Journal of African History, 1982",NA,"Rwanda","Collected",2009,193
+"GrN-8849","Gahondo",29.85,-2.63,1665,50,"Van Grunderbeek, L'Age du Fer Ancien au Rwanda et au Burundi, Journal des Africanistes, 1982",NA,"Rwanda","Collected",2010,144
+"GrN-8850","Gahondo",29.85,-2.63,1425,35,"Van Grunderbeek, L'Age du Fer Ancien au Rwanda et au Burundi, Journal des Africanistes, 1982",NA,"Rwanda","Collected",2011,144
+"GrN-9669","Cyamakuza",29.823,-2.585,1210,45,"Van Grunderbeek, L'Age du Fer Ancien au Rwanda et au Burundi, Journal des Africanistes, 1982",NA,"Rwanda","Collected",2012,94
+"GrN-9686","Ngoma",29.717,-2.6,1285,30,"Van Grunderbeek, L'Age du Fer Ancien au Rwanda et au Burundi, Journal des Africanistes, 1982",NA,"Rwanda","Collected",2013,498
+"GrN-9670","Nyaruhengeri",29.78,-2.67,1570,50,"Van Grunderbeek, L'Age du Fer Ancien au Rwanda et au Burundi, Journal des Africanistes, 1982",NA,"Rwanda","Collected",2014,531
+"GrN-9666","Gisagara",29.82,-2.58,1695,30,"Van Grunderbeek, L'Age du Fer Ancien au Rwanda et au Burundi, Journal des Africanistes, 1982",NA,"Rwanda","Collected",2015,151
+"GrN-9661","Gisagara",29.82,-2.58,925,30,"de Maret, New Survey of Archaeological Research and Dates for West-Central and North-Central Africa, Journal of African History, 1982",NA,"Rwanda","Collected",2016,151
+"GrN-9668","Dahwe",29.85,-2.62,1710,25,"Van Grunderbeek, L'Age du Fer Ancien au Rwanda et au Burundi, Journal des Africanistes, 1982",NA,"Rwanda","Collected",2017,95
+"GrN-9663","Remera",29.85,-2.65,1730,30,"Van Grunderbeek, L'Age du Fer Ancien au Rwanda et au Burundi, Journal des Africanistes, 1982",NA,"Rwanda","Collected",2018,594
+"GrN-9664","Remera",29.85,-2.65,1730,30,"Van Grunderbeek, L'Age du Fer Ancien au Rwanda et au Burundi, Journal des Africanistes, 1982",NA,"Rwanda","Collected",2019,594
+"GrN-9687","Mubuga",30.017,-3.4,1545,30,"Van Grunderbeek, L'Age du Fer Ancien au Rwanda et au Burundi, Journal des Africanistes, 1982","charcoal","Burundi","Collected",2020,451
+"GrN-8851","Nyirarubona",29.87,-2.6,895,25,"de Maret, New Survey of Archaeological Research and Dates for West-Central and North-Central Africa, Journal of African History, 1982",NA,"Rwanda","Collected",2021,532
+"OxTL-547-IV","Kabuye",29.833,-2.6,1335,120,"de Maret, New Survey of Archaeological Research and Dates for West-Central and North-Central Africa, Journal of African History, 1982",NA,"Rwanda","Collected",2022,193
