@@ -1,5 +1,4 @@
 # Load Libraries and Data ----
-library(maptools)
 library(sf)
 library(stringr)
 library(dplyr)
@@ -12,20 +11,20 @@ library(rnaturalearthdata)
 library(parallel)
 library(RColorBrewer)
 library(cowplot)
-library(rgeos)
 #library(RCDT) #constrained delaunay tesselation
 library(ggforce)
 library(deldir)
+library(igraph)
 
 # Load and prepare data ----
-load(here('data','c14.RData'))
+load(here('data','eastc14.RData'))
 
 
 #-------------------------------------------------------------------------------
 ## Data preparation ----
 
 #Convert to sf objects
-bantu_sites_sf <- sf::st_as_sf(siteInfo, 
+eastEIA_sites_sf <- sf::st_as_sf(siteInfo, 
                                coords = c("long", "lat"), 
                                remove = F, 
                                crs = 4326, 
@@ -35,9 +34,9 @@ bantu_sites_sf <- sf::st_as_sf(siteInfo,
 #-------------------------------------------------------------------------------
 ## Compute Great-Arc Distances in km between area centers ---
 #We take the center of each area k to be a point representing that whole area
-hex_area_centers <- hex_area_win$area_center %>% as('Spatial')
-proj4string(hex_area_centers)  <- "+proj=longlat +datum=WGS84 +no_defs +ellps=WGS84 +towgs84=0,0,0"
-hex_dist_mat <- spDists(hex_area_centers, longlat=TRUE) #Inter-area distance matrix: each area's distance from every other area.
+hex_area_centers <- st_as_sf(hex_area_win$area_center)
+st_crs(hex_area_centers)  <- 4326
+hex_dist_mat <- st_distance(hex_area_centers)/1000 #Inter-area distance matrix in km: each area's distance from every other area.
 
 
 ##Delaunay triangulation between hex centers
@@ -45,7 +44,7 @@ hex_dist_mat <- spDists(hex_area_centers, longlat=TRUE) #Inter-area distance mat
 #del <- deldir(center_coords, id=hex_area_win$area_ID) 
 #tiles <- tile.list(del)
 ##Selecting 3 triangles of interest -- TEST CASE
-center_coords <- hex_area_centers@coords[c(13, 14, 18), ]
+center_coords <- st_coordinates(hex_area_centers[c(13, 14, 18), ])
 del <- deldir(center_coords, id=c(1, 2, 3)) #Relabel ids for nimble (must be sequential from 1) 13 -> 1, 14 -> 2, 18 -> 3
 tiles <- tile.list(del)
 
@@ -54,7 +53,7 @@ constants$center_coords <- center_coords
 
 ##Plot delaunay triangulation
 ggplot(data = hex_area_win[c(13,14, 18),]) + #ggplot(data = hex_area_win) + #TODO: Uncomment
-  geom_sf(data = st_buffer(as(gUnaryUnion(sampling_win), 'sf'), 40000), aes(color = "grey50")) + #sampling window with coastal buffer
+  geom_sf(data = st_buffer(st_as_sf(sampling_win, crs = 4326), 40000), aes(color = "grey50")) + #sampling window with coastal buffer
   geom_sf() + #hex grid
   geom_sf_text(aes(label = c('1','2','3')), size=4, alpha=0.8) + #hex grid labels #aes(label = area_ID)
   geom_sf(data = hex_area_win$area_center, size=2, alpha=1, aes(color = "purple")) + #hex-origins
@@ -94,5 +93,13 @@ save(del,
      tiles, 
      constants,
      file=here('data','trig.RData'))
+
+
+#===============================================================================
+##Simple paths
+
+
+
+
 
 
