@@ -14,6 +14,7 @@ library(cowplot)
 #library(RCDT) #constrained delaunay tesselation
 library(ggforce)
 library(deldir)
+library(units)
 library(igraph)
 
 # Load and prepare data ----
@@ -36,26 +37,27 @@ eastEIA_sites_sf <- sf::st_as_sf(siteInfo,
 #We take the center of each area k to be a point representing that whole area
 hex_area_centers <- st_as_sf(hex_area_win$area_center)
 st_crs(hex_area_centers)  <- 4326
-hex_dist_mat <- st_distance(hex_area_centers)/1000 #Inter-area distance matrix in km: each area's distance from every other area.
+hex_dist_mat <- set_units(st_distance(hex_area_centers), 'km') #Inter-area distance matrix in km: each area's distance from every other area.
 
 
 ##Delaunay triangulation between hex centers
-#center_coords <- hex_area_centers@coords #TODO: Uncomment
-#del <- deldir(center_coords, id=hex_area_win$area_ID) 
-#tiles <- tile.list(del)
-##Selecting 3 triangles of interest -- TEST CASE
-center_coords <- st_coordinates(hex_area_centers[c(13, 14, 18), ])
-del <- deldir(center_coords, id=c(1, 2, 3)) #Relabel ids for nimble (must be sequential from 1) 13 -> 1, 14 -> 2, 18 -> 3
+center_coords <- st_coordinates(hex_area_centers) #TODO: Uncomment
+del <- deldir(center_coords, id=hex_area_win$area_ID)
 tiles <- tile.list(del)
+##Selecting 3 triangles of interest -- TEST CASE
+# center_coords <- st_coordinates(hex_area_centers[c(13, 18, 22), ])
+# del <- deldir(center_coords, id=c(1, 2, 3)) #Relabel ids for nimble (must be sequential from 1) 13 -> 1, 14 -> 2, 18 -> 3
+# tiles <- tile.list(del)
 
 # Add center_coords in constants
 constants$center_coords <- center_coords
 
 ##Plot delaunay triangulation
-ggplot(data = hex_area_win[c(13,14, 18),]) + #ggplot(data = hex_area_win) + #TODO: Uncomment
+#ggplot(data = hex_area_win[c(13, 18, 22),]) + 
+ggplot(data = hex_area_win) + #TODO: Uncomment
   geom_sf(data = st_buffer(st_as_sf(sampling_win, crs = 4326), 40000), aes(color = "grey50")) + #sampling window with coastal buffer
   geom_sf() + #hex grid
-  geom_sf_text(aes(label = c('1','2','3')), size=4, alpha=0.8) + #hex grid labels #aes(label = area_ID)
+  geom_sf_text(aes(label = area_ID), size=4, alpha=0.8) + #hex grid labels #aes(label =  c('1','2','3'))
   geom_sf(data = hex_area_win$area_center, size=2, alpha=1, aes(color = "purple")) + #hex-origins
   geom_delaunay_segment(aes(x=center_coords[,1], y=center_coords[,2]), 
                         alpha=0.5, 
@@ -97,6 +99,22 @@ save(del,
 
 #===============================================================================
 ##Simple paths
+
+relations <- transitions %>% 
+  dplyr::select(from = region1_id, to = region2_id) 
+
+
+vertices <- st_drop_geometry(hex_area_win) 
+
+#vertices <- vertices[c(13, 18, 22),] %>% 
+#  mutate(area_ID = case_when(area_ID == 13 ~ 1, area_ID == 18 ~ 2, area_ID == 22 ~ 3))  #test_case
+
+hex_centers_graph <- graph_from_data_frame(relations, directed=FALSE, vertices = NULL)
+plot(hex_centers_graph)
+
+create_paths <- all_simple_paths(hex_centers_graph, from = 25, mode = "out") #area_ID = 25 contains 'Katuruka' our putative origin
+
+
 
 
 

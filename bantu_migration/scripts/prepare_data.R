@@ -11,7 +11,8 @@ library(here)
 library(ggplot2)
 library(ggthemes)
 library(parallel)
-library(p3k14c)
+library(units)
+#library(p3k14c)
 
 rm(list = ls())
 
@@ -256,9 +257,9 @@ possible_origin_dat <- eastEIA_sites_df %>%
 ## Compute Great-Arc Distances in km ----
 sites <- st_as_sf(siteInfo, coords = c('long','lat'))
 st_crs(sites)  <- 4326 
-dist_mat  <- st_distance(sites)/1000 #inter-site distance matrix in km: each site's distance from every other site (i.e. with n sites, this matrix is n^2)
+dist_mat  <- set_units(st_distance(sites), 'km') #inter-site distance matrix in km: each site's distance from every other site (i.e. with n sites, this matrix is n^2)
 origin_point  <- sites %>% filter(siteName == possible_origin_dat$siteName)
-dist_org  <-  as.vector(st_distance(x=sites, y=origin_point)/1000) #distance from origin site
+dist_org  <-  as.vector(set_units(st_distance(x=sites, y=origin_point), 'km')) #distance from origin site
 
 #-------------------------------------------------------------------------------
 # Generate Spatial Window for Analyses: Sub-Saharan Africa ----
