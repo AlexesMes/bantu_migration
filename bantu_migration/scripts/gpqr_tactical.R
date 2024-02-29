@@ -97,7 +97,7 @@ runFun  <- function(seed, dat, theta_init, constants, niter, nburnin, thin)
   inits  <-  list()
   inits$theta  <- theta_init
   inits$beta0 <- rnorm(1, 3300, 200)
-  inits$beta1 <- rexp(1, rate=2)
+  inits$beta1 <- rexp(1, rate=1/3)
   inits$sigma  <- rexp(1, 0.01)
   inits$rho  <- rtgamma(1, shape=10, scale=(10-1)/200, min=1, max=4600)
   inits$etasq  <- rexp(1,20)
@@ -134,7 +134,7 @@ cl <- makeCluster(ncores)
 seeds <- c(12, 45, 67, 89, 21, 54, 76, 98)
 niter = 200000
 nburnin = 100000
-thin = 50
+thin = 100
 chain_output <- parLapply(cl = cl, X = seeds, fun = runFun, dat = dat, constants = constants, theta = theta_init, niter = niter, nburnin = nburnin,thin = thin)
 stopCluster(cl)
 

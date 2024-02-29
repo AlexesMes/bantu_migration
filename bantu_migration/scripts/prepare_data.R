@@ -311,3 +311,17 @@ constants$C14err  <- cbind(intcal20$C14Age.sigma, shcal20$C14Age.sigma)
 #-------------------------------------------------------------------------------
 ## Save everything on a R image file ----
 save(sites, constants, eastEIA_dat, siteInfo, dateInfo, sampling_win, hex_area_win, file=here('data','eastc14.RData'))
+
+
+#-------------------------------------------------------------------------------
+## Save sampling window specific information separately ----
+ 
+constants_sw <- list()
+constants_sw$countries <- subSahara_countries
+constants_sw$eastEIAcountries <- eastEIA_countries
+constants_sw$n_areas  <- constants$n_areas
+constants_sw$calBP <- constants$calBP
+constants_sw$C14BP  <- constants$C14BP 
+constants_sw$C14err  <- constants$C14err
+
+save(constants_sw, sampling_win, hex_area_win, file=here('data','sample_window.RData'))

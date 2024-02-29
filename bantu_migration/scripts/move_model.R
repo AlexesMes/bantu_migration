@@ -90,7 +90,7 @@ model <- nimbleCode({
     kappa[t] ~ dbinom(size=1,prob=eta[t]); #kappa is a binomial with probability eta[5] of being 1  
     eta[t] ~ dunif(0,1)
     lambda[t] ~ dexp(1) #possibly replace with gamma with hyperprior at later stage
-    delta[t] <- constants$transitions[t,7]/((-1 + 2 *kappa[t])*lambda[t]) #time = distance/speed, and transitions[t,'distance'] is the distance between the two areas #TODO: make speed regional -- add indices
+    delta[t] <- constants$transitions[t,7]/((-1 + 2 *kappa[t])*lambda[t]) #time = distance/speed, and transitions[t,'distance'] is the distance between the two areas #Normalised
   }
   # Hyperpriors
   # iota ~ dexp(1); #speed -- from pilot study estimate is between 3.5 and 4 km/year. speed is always positive

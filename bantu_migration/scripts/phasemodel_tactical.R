@@ -136,8 +136,6 @@ mcmc.samples2<- nimbleMCMC(code = model2,
 rhat2  <- gelman.diag(mcmc.samples2, multivariate = FALSE)
 ess2  <- effectiveSize(mcmc.samples2)
 
-
-
 #-------------------------------------------------------------------------------
 # Save output ----
 save(mcmc.samples1, rhat1, ess1, mcmc.samples2, rhat2, ess2, file=here('output','phasemodel_tactsim.RData'))

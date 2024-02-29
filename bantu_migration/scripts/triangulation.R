@@ -5,9 +5,6 @@ library(dplyr)
 library(here)
 library(ggplot2)
 library(ggthemes)
-library(ggsn) #for scale bar and north arrow
-library(rnaturalearth)
-library(rnaturalearthdata)
 library(parallel)
 library(RColorBrewer)
 library(cowplot)
@@ -54,21 +51,21 @@ constants$center_coords <- center_coords
 
 ##Plot delaunay triangulation
 #ggplot(data = hex_area_win[c(13, 18, 22),]) + 
-ggplot(data = hex_area_win) + #TODO: Uncomment
-  geom_sf(data = st_buffer(st_as_sf(sampling_win, crs = 4326), 40000), aes(color = "grey50")) + #sampling window with coastal buffer
-  geom_sf() + #hex grid
-  geom_sf_text(aes(label = area_ID), size=4, alpha=0.8) + #hex grid labels #aes(label =  c('1','2','3'))
-  geom_sf(data = hex_area_win$area_center, size=2, alpha=1, aes(color = "purple")) + #hex-origins
-  geom_delaunay_segment(aes(x=center_coords[,1], y=center_coords[,2]), 
-                        alpha=0.5, 
-                        colour='purple',
-                        size=0.8) +
-  labs(x = "Longitude", y = "Latitude") +
-  theme(panel.background = element_rect(fill = "lightblue",
-                                        colour = "lightblue",
-                                        size = 0.5,
-                                        linetype = "solid"),
-        legend.position = "none")
+# ggplot(data = hex_area_win) + #TODO: Uncomment
+#   geom_sf(data = st_buffer(st_as_sf(sampling_win, crs = 4326), 40000), aes(color = "grey50")) + #sampling window with coastal buffer
+#   geom_sf() + #hex grid
+#   geom_sf_text(aes(label = area_ID), size=4, alpha=0.8) + #hex grid labels #aes(label =  c('1','2','3'))
+#   geom_sf(data = hex_area_win$area_center, size=2, alpha=1, aes(color = "purple")) + #hex-origins
+#   geom_delaunay_segment(aes(x=center_coords[,1], y=center_coords[,2]), 
+#                         alpha=0.5, 
+#                         colour='purple',
+#                         size=0.8) +
+#   labs(x = "Longitude", y = "Latitude") +
+#   theme(panel.background = element_rect(fill = "lightblue",
+#                                         colour = "lightblue",
+#                                         size = 0.5,
+#                                         linetype = "solid"),
+#         legend.position = "none")
 
 #-------------------------------------------------------------------------------
 ##Transitions dataframe --
@@ -115,6 +112,9 @@ plot(hex_centers_graph)
 create_paths <- all_simple_paths(hex_centers_graph, from = 25, mode = "out") #area_ID = 25 contains 'Katuruka' our putative origin
 
 
+#-------------------------------------------------------------------------------
+## Save everything on a R image file ----
+save(create_paths, file=here('data','simplepaths.RData'))
 
 
 
