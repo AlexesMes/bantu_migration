@@ -4,82 +4,53 @@ library(dplyr)
 library(stringr)
 library(nimbleCarbon)
 library(rnaturalearth)
-library(sp)
-library(maptools)
 library(sf)
 library(ggplot2)
 library(viridis)
-library(rgeos)
 library(rcarbon)
 
-##SCRIPT TO SIMULATE DATA WITHOUT ERRORS 
+##SCRIPT TO SIMULATE DATA FOR GPQR WITHOUT ERRORS 
+
+# Load data (to access constants) ----
+load(here('data','eastc14.RData'))
 
 #-------------------------------------------------------------------------------
-## List of countries in sub-Saharan Africa ----
-subSahara_countries <- c("South Africa", 
-                         "Lesotho", 
-                         "eSwatini", 
-                         "Botswana",
-                         "Zimbabwe",
-                         "Namibia",
-                         "Angola",
-                         "Zambia",
-                         "Mozambique",
-                         "Malawi",
-                         "Madagascar",
-                         "Tanzania",
-                         "Rwanda",
-                         "Burundi",
-                         "Kenya",
-                         "Uganda",
-                         "Somalia",
-                         "Ethiopia",
-                         "Central African Republic",
-                         "Cameroon",
-                         "Democratic Republic of the Congo",
-                         "Republic of the Congo",
-                         "Gabon",
-                         "Cameroon",
-                         "Nigeria",
-                         "Equatorial Guinea",
-                         "Sudan",
-                         "South Sudan",
-                         "Chad")
+## List of countries ----
+subSahara_countries <- constants$countries #sub-Saharan Africa
+eastEIA_countries <- constants$eastEIAcountries #Eastern Sub-Saharan Africa 
+
 #-------------------------------------------------------------------------------
-# Generate Spatial Window for Analyses: Sub-Saharan Africa ----
-sf_subsah_africa <- ne_countries(continent = "Africa", returnclass = "sf") %>%
-  filter_all(., any_vars(str_detect(., "Sub-Saharan"))) %>% 
-  filter(name_en %in% subSahara_countries) %>%
-  filter(name_en != "Madagascar") #We focus on mainland sub-Saharan Africa
-
-sp_ss_africa <- sf_subsah_africa %>% as("Spatial") #convert sf to sp object
-
-sampling_win <- as(sp_ss_africa, "SpatialPolygons") |>  unionSpatialPolygons(IDs = rep(1, nrow(sp_ss_africa)))
-sampling_win <- disaggregate(sampling_win) #create new raster layer with higher resolution (smaller cells)
-sampling_win  <- sampling_win[order(raster::area(sampling_win), decreasing=TRUE)]
+# Generate Spatial Window for Analyses----
+sf::sf_use_s2(FALSE) #turn off spherical co-ordinates
+sampling_win <-  sampling_win %>%
+  st_make_valid() %>%
+  st_union()
+sf::sf_use_s2(TRUE) #turn on spherical co-ordinates
 
 #-------------------------------------------------------------------------------
 # Target Parameters ----
 true_param  <- list()
 true_param$n  <- 600 #number of sites & dates
-true_param$origin_point <- c(11.40, 5.48) #dispersal origin point -- approximately at Ngoume
+true_param$origin_point <- st_sfc(st_point(c(-1.45, 31.77))) #dispersal origin point -- approximately at Katuruka
 true_param$beta0 <- 3300 #approximate mean date at origin point
-true_param$beta1 <- 0.4 #reciprocal of dispersal rate 
+true_param$beta1 <- 0.3 #reciprocal of dispersal rate 
 true_param$sigma <- 100 
 true_param$etasq <- 0.02 #variability of dispersal rate
 true_param$rho <- 350 #range of spatial autocorrelation
 true_param$seed <- 1233 #random seed
 
+#Projection ----
+st_crs(sampling_win) <- 4326
+st_crs(true_param$origin_point) <- 4326
+
 # Simulate Data ----
 
 #Gaussian Process Quantile Regression Function
-gpqrSim_TOY  <- function(win, n=600, seed=123, beta0=3000, beta1=0.7, sigma=100, etasq=0.05, rho=100, origin.point=c(11.40,5.48))
+gpqrSim_TOY  <- function(win, n=600, seed=123, beta0=3000, beta1=0.7, sigma=100, etasq=0.05, rho=100, origin.point=st_sfc(st_point(c(-1.45, 31.77))))
 {
   require(nimbleCarbon)
   require(rcarbon)
   require(sf)
-  require(sp)
-  require(maptools)
   set.seed(seed)
   
   #Initialise objects for storing output and site information
@@ -89,9 +60,9 @@ gpqrSim_TOY  <- function(win, n=600, seed=123, beta0=3000, beta1=0.7, sigma=100,
   while (nrow(out_fin_df) < n) { #where n is the number of sites
     
     #Generate sites and calculate distances from origin ---
-    sites <- spsample(win, n = n, type = 'random') 
-    dist_mat  <- spDists(sites, longlat=TRUE)
-    dist_org  <-  spDistsN1(sites, origin.point, longlat=TRUE)
+    sites <- st_sample(win, size = n, type = 'random') 
+    dist_mat  <- st_distance(sites)/1000 #in km
+    dist_org  <-  as.vector(st_distance(sites, origin.point)/1000) #in km
     
     #Covariance matrix ---
     cov_ExpQ <- nimbleFunction(run = function(dists = double(2), rho = double(0), etasq = double(0), sigmasq = double(0)) 
@@ -162,13 +133,12 @@ gpqrSim_TOY  <- function(win, n=600, seed=123, beta0=3000, beta1=0.7, sigma=100,
   #Calibrate dates ---
   out.df$cra  <- round(out.df$theta)
   #Save as sf object ---
-  out  <- as(sites, 'SpatialPointsDataFrame')
-  out@data  <- out.df
-  out.sf  <- as(out, 'sf')
+  out.sf  <- st_as_sf(sites, 'sf')
   
   #Store Output ---
   return(out.sf)
 }
+
 sim_sites  <- gpqrSim_TOY(win = sampling_win,
                           n = true_param$n,
                           beta0 = true_param$beta0,

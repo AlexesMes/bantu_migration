@@ -1,5 +1,5 @@
 #Gaussian Process Quantile Regression Function
-gpqrSim  <- function(win, n=600, seed=123, beta0=3000, beta1=0.7, sigma=100, etasq=0.05, rho=100, origin.point=c(11.40,5.48))
+gpqrSim  <- function(win, n=600, seed=123, beta0=3000, beta1=0.7, sigma=100, etasq=0.05, rho=100, origin.point=st_sfc(st_point(c(-1.45, 31.77))))
 {
   require(nimbleCarbon)
   require(rcarbon)

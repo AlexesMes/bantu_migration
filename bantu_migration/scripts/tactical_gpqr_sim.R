@@ -11,45 +11,16 @@ library(rcarbon)
 
 source(here('src','gpqrSim.R'))
 
-#-------------------------------------------------------------------------------
-## List of countries in sub-Saharan Africa ----
-subSahara_countries <- c("South Africa", 
-                         "Lesotho", 
-                         "eSwatini", 
-                         "Botswana",
-                         "Zimbabwe",
-                         "Namibia",
-                         "Angola",
-                         "Zambia",
-                         "Mozambique",
-                         "Malawi",
-                         "Madagascar",
-                         "Tanzania",
-                         "Rwanda",
-                         "Burundi",
-                         "Kenya",
-                         "Uganda",
-                         "Somalia",
-                         "Ethiopia",
-                         "Central African Republic",
-                         "Cameroon",
-                         "Democratic Republic of the Congo",
-                         "Republic of the Congo",
-                         "Gabon",
-                         "Cameroon",
-                         "Nigeria",
-                         "Equatorial Guinea",
-                         "Sudan",
-                         "South Sudan",
-                         "Chad")
-#-------------------------------------------------------------------------------
+# Load data (to access constants) ----
+load(here('data','eastc14.RData'))
 
-# Generate Spatial Window for Analyses: Sub-Saharan Africa ----
-sampling_win <- ne_countries(continent = "Africa", returnclass = "sf") %>%
-  filter_all(., any_vars(str_detect(., "Sub-Saharan"))) %>% 
-  filter(name_en %in% subSahara_countries) %>%
-  filter(name_en != "Madagascar") #We focus on mainland sub-Saharan Africa
+#-------------------------------------------------------------------------------
+## List of countries ----
+subSahara_countries <- constants$countries #sub-Saharan Africa
+eastEIA_countries <- constants$eastEIAcountries #Eastern Sub-Saharan Africa 
 
+#-------------------------------------------------------------------------------
+# Generate Spatial Window for Analyses----
 sf::sf_use_s2(FALSE) #turn off spherical co-ordinates
 sampling_win <-  sampling_win %>%
   st_make_valid() %>%
@@ -59,7 +30,7 @@ sf::sf_use_s2(TRUE) #turn on spherical co-ordinates
 # Target Parameters ----
 true_param  <- list()
 true_param$n  <- 600 #number of sites & dates
-true_param$origin_point <- st_sfc(st_point(c(11.40, 5.48))) #dispersal origin point -- approximately at Ngoume
+true_param$origin_point <- st_sfc(st_point(c(-1.45, 31.77))) #dispersal origin point -- approximately at Katuruka
 true_param$beta0 <- 3300 #approximate mean date at origin point
 true_param$beta1 <- 0.3 #reciprocal of dispersal rate 
 true_param$sigma <- 100 
