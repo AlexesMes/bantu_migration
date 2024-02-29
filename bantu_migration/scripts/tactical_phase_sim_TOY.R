@@ -10,16 +10,17 @@ library(viridis)
 library(rcarbon)
 library(units)
 
+rm(list = ls())
 set.seed(123)
 
 ##SCRIPT TO SIMULATE DATA FOR PHASEMODEL WITHOUT ERRORS 
 
-# Load data (to access constants) ----
-load(here('data','eastc14.RData'))
+# Load sample window data ----
+load(here('data','sample_window.RData'))
 #-------------------------------------------------------------------------------
 ## List of countries ----
-subSahara_countries <- constants$countries #sub-Saharan Africa
-eastEIA_countries <- constants$eastEIAcountries #Eastern Sub-Saharan Africa 
+subSahara_countries <- constants_sw$countries #sub-Saharan Africa
+eastEIA_countries <- constants_sw$eastEIAcountries #Eastern Sub-Saharan Africa 
 
 #-------------------------------------------------------------------------------
 #Spatial Window for Analyses ----
@@ -34,10 +35,6 @@ sf::sf_use_s2(TRUE) #turn on spherical co-ordinates
 n_sites  <- 10
 n_dates  <- 30 
 origin_point <- st_sfc(st_point(c(-1.45, 31.77))) #dispersal origin point -- approximately at Katuruka
-# true_param$beta0 <- 3300 #approximate mean date at origin point
-# true_param$beta1 <- 0.4 #reciprocal of dispersal rate 
-# true_param$sigma <- 100 
-
 
 #-------------------------------------------------------------------------------
 #Simulate Data ----
@@ -71,9 +68,9 @@ for(i in 2:n_dates){
 }
 
 ##CHECK ---
-# site_freq  <- plyr::count(dates_sf, 'site_id') ##See how many observations at each site
-# table(id_sites)
-# area_freq  <- plyr::count(dates_sf, 'area_id') ##See how many observations in each hex area
+#site_freq  <- plyr::count(dates, 'site_id') ##See how many observations at each site
+#table(id_sites)
+#area_freq  <- plyr::count(dates, 'area_id') ##See how many observations in each hex area
 
 # #Check that this lines up visually with how many sites are in each hex area
 # ggplot(data = hex_area_win) +
@@ -125,5 +122,21 @@ cra = round(simModel$theta)
 sim_df <- list(cra = cra,
                site_id = id_sites)
 
+# Collect site level information ----
+sites <- sites %>% 
+  st_drop_geometry() %>% 
+  left_join(as.data.frame(sim_df), by='site_id')
+
+earliest_dates <- aggregate(cra ~ site_id, data = sites, FUN = max) #Earliest Date for Each Site 
+latest_dates <- aggregate(cra ~ site_id, data=sites, FUN=min) #Latest Date for Each Site
+n_dates <- aggregate(cra ~ site_id, data=sites, FUN=length) #Number of Dates for Each Site
+
+siteInfo <- data.frame(site_id = earliest_dates$site_id,
+                       area_id = sites$area_id,
+                       earliest = earliest_dates$cra,
+                       latest = latest_dates$cra,
+                       diff = earliest_dates$cra - latest_dates$cra,
+                       n_dates = n_dates$cra) %>% unique()
+
 #Store output ----
-save(sim_df, sim_constants, file=here('data','tactical_sim_phase_TOY.RData'))
+save(sites, siteInfo, sim_df, sim_constants, file=here('data','tactical_sim_phase_TOY.RData'))
