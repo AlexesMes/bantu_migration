@@ -8,54 +8,20 @@ library(sf)
 library(ggplot2)
 library(viridis)
 library(rcarbon)
+library(units)
 
 set.seed(123)
 
-source(here('src','hex_areas.R'))
+##SCRIPT TO SIMULATE DATA FOR PHASEMODEL WITHOUT ERRORS 
 
-##SCRIPT TO SIMULATE DATA WITHOUT ERRORS 
+# Load data (to access constants) ----
+load(here('data','eastc14.RData'))
+#-------------------------------------------------------------------------------
+## List of countries ----
+subSahara_countries <- constants$countries #sub-Saharan Africa
+eastEIA_countries <- constants$eastEIAcountries #Eastern Sub-Saharan Africa 
 
 #-------------------------------------------------------------------------------
-## List of countries in sub-Saharan Africa ----
-subSahara_countries <- c("South Africa", 
-                         "Lesotho", 
-                         "eSwatini", 
-                         "Botswana",
-                         "Zimbabwe",
-                         "Namibia",
-                         "Angola",
-                         "Zambia",
-                         "Mozambique",
-                         "Malawi",
-                         "Madagascar",
-                         "Tanzania",
-                         "Rwanda",
-                         "Burundi",
-                         "Kenya",
-                         "Uganda",
-                         "Somalia",
-                         "Ethiopia",
-                         "Central African Republic",
-                         "Cameroon",
-                         "Democratic Republic of the Congo",
-                         "Republic of the Congo",
-                         "Gabon",
-                         "Cameroon",
-                         "Nigeria",
-                         "Equatorial Guinea",
-                         "Sudan",
-                         "South Sudan",
-                         "Chad")
-#-------------------------------------------------------------------------------
-# Generate Spatial Window for Analyses: Sub-Saharan Africa ----
-sampling_win <- ne_countries(continent = "Africa", returnclass = "sf") %>%
-  filter_all(., any_vars(str_detect(., "Sub-Saharan"))) %>% 
-  filter(name_en %in% subSahara_countries) %>%
-  filter(name_en != "Madagascar") #We focus on mainland sub-Saharan Africa
-
-#Generate Hex Areas over Spatial Window ----
-hex_area_win <- hex_areas(sampling_win, cell_d = 7.5)
-
 #Spatial Window for Analyses ----
 sf::sf_use_s2(FALSE) #turn off spherical co-ordinates
 sampling_win <-  sampling_win %>%
@@ -67,7 +33,7 @@ sf::sf_use_s2(TRUE) #turn on spherical co-ordinates
 # Target Parameters ----
 n_sites  <- 10
 n_dates  <- 30 
-origin_point <- st_point(c(11.40, 5.48)) #dispersal origin point -- approximately at Ngoume
+origin_point <- st_sfc(st_point(c(-1.45, 31.77))) #dispersal origin point -- approximately at Katuruka
 # true_param$beta0 <- 3300 #approximate mean date at origin point
 # true_param$beta1 <- 0.4 #reciprocal of dispersal rate 
 # true_param$sigma <- 100 
@@ -79,8 +45,9 @@ origin_point <- st_point(c(11.40, 5.48)) #dispersal origin point -- approximatel
 #Generate sites and calculate distances from origin ---
 sites <- st_sample(sampling_win,  size = n_sites, type = 'random')
 st_crs(sites) <- 4326
-dist_mat  <- st_distance(sites)/1000
-#dist_org  <-  st_distance(x=sites, y=origin_point)/1000 
+st_crs(origin_point) <- 4326
+dist_mat  <- set_units(st_distance(sites), 'km')
+dist_org  <-  set_units(st_distance(x=sites, y=origin_point), 'km')
 
 
 #Assign hex area id to each site ----
@@ -142,11 +109,11 @@ sim_constants <- list()
 sim_constants$n_sites <- n_sites
 sim_constants$n_dates  <- n_dates
 sim_constants$id_sites  <- id_sites
-sim_constants$a <- 3500
-sim_constants$b <- 3000
+sim_constants$a <- 3700
+sim_constants$b <- 3200
 
 #Simulate ----
-set.seed(123)
+set.seed(1223)
 simModel <- nimbleModel(code = sim_model, constants = sim_constants)
 simModel$simulate('delta')
 simModel$simulate('alpha')
