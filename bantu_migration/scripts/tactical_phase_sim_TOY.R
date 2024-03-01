@@ -44,7 +44,7 @@ sites <- st_sample(sampling_win,  size = n_sites, type = 'random')
 st_crs(sites) <- 4326
 st_crs(origin_point) <- 4326
 dist_mat  <- set_units(st_distance(sites), 'km')
-dist_org  <-  set_units(st_distance(x=sites, y=origin_point), 'km')
+dist_org  <- as.vector(set_units(st_distance(x=sites, y=origin_point), 'km'))
 
 
 #Assign hex area id to each site ----
@@ -138,5 +138,11 @@ siteInfo <- data.frame(site_id = earliest_dates$site_id,
                        diff = earliest_dates$cra - latest_dates$cra,
                        n_dates = n_dates$cra) %>% unique()
 
+#Save constants ----
+constants <- list()
+constants$dist_mat  <- dist_mat
+constants$dist_org  <- dist_org
+constants$n_areas  <- nrow(hex_area_win)
+
 #Store output ----
-save(sites, siteInfo, sim_df, sim_constants, file=here('data','tactical_sim_phase_TOY.RData'))
+save(sites, siteInfo, sim_df, sim_constants, constants, sampling_win, hex_area_win, file=here('data','tactical_sim_phase_TOY.RData'))

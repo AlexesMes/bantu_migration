@@ -7,14 +7,11 @@ library(rcarbon)
 rm(list = ls())
 `%!in%` <- Negate(`%in%`)
 
-set.seed(seed)
+set.seed(123)
 
 #-------------------------------------------------------------------------------
 ## Data Setup ----
 load(here('data', 'tactical_sim_phase_TOY.RData'))
-
-# Load sample window data ----
-load(here('data','sample_window.RData'))
 
 #-------------------------------------------------------------------------------
 ## Initialise Parameters ----
@@ -28,7 +25,7 @@ init_b  <- aggregate(latest~area_id, FUN=min, data=siteInfo) #find latest date i
 
 #Initialise hex areas which do not contain sites
 init_empty_area <- function(init_df) {
-  for(i in 1:constants_sw$n_area){
+  for(i in 1:constants$n_area){
     
     area_ids <- init_df$area_id #List of hex areas ids with sites
     
@@ -84,12 +81,12 @@ model1 <- nimbleCode({
 })
 
 #Constants ----
-constants1 <- list(n_dates = sim_constants$n_dates,
-                   n_areas = constants_sw$n_areas,
-                   adj = nbInfo$adj,
-                   weights = nbInfo$weights,
-                   num = nbInfo$num,
-                   L = length(nbInfo$adj))
+constants$n_dates <- sim_constants$n_dates
+constants$n_areas <- constants$n_areas
+constants$adj <- nbInfo$adj
+constants$weights <- nbInfo$weights
+constants$num <- nbInfo$num
+constants$L <- length(nbInfo$adj)
 
 #Define initial values ---- 
 d1 <- list(cra=sim_df$cra, unif.const=1)
@@ -100,20 +97,20 @@ inits1 <- list(a=init_a,
                theta=theta.init,
                beta_0=rnorm(1,2500,200),
                beta_1=rexp(1,1),
-               s1 = rnorm(constants_sw$n_areas, sd=0.001),
+               s1 = rnorm(constants$n_areas, sd=0.001),
                sigma1=runif(1,0,100))
 
 
 #Run MCMC ----
-mcmc.samples1<- nimbleMCMC(code = model1,
-                           constants = constants1,
+mcmc.samples1 <- nimbleMCMC(code = model1,
+                           constants = constants,
                            data = d1,
-                           niter = 200, 
+                           niter = 20, 
                            nchains = 3, 
-                           thin=10, 
-                           nburnin = 100,
-                           monitors=c('a','b','theta'), 
-                           inits=inits1, 
+                           thin = 2, 
+                           nburnin = 10,
+                           monitors = c('a','b','theta'), 
+                           inits = inits1, 
                            samplesAsCodaMCMC=TRUE)
 
 #Diagnostics ----
