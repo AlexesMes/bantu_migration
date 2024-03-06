@@ -13,6 +13,7 @@ library(ggthemes)
 library(parallel)
 library(units)
 #library(p3k14c)
+library(geodata)
 
 rm(list = ls())
 
@@ -57,7 +58,7 @@ subSahara_countries <- c("South Africa",
 ## List of countries associated with eastern EIA stream ----
 eastEIA_countries <- c("South Africa", 
                          "Lesotho", 
-                         "eSwatini", "Swaziland", 
+                         "Eswatini", "Swaziland", 
                          "Botswana",
                          "Zimbabwe",
                          "Zambia",
@@ -325,3 +326,16 @@ constants_sw$C14BP  <- constants$C14BP
 constants_sw$C14err  <- constants$C14err
 
 save(constants_sw, sampling_win, hex_area_win, file=here('data','sample_window.RData'))
+
+#-------------------------------------------------------------------------------
+## Elevation Data
+
+country_codes <- country_codes() %>% filter(NAME %in% eastEIA_countries) #obtain country codes 
+
+SRTM90m <- elevation_30s(country_codes$ISO3[1], path=here('input'), mask=TRUE)
+for (i in 2:nrow(country_codes)){
+  SRTM90m <- merge(SRTM90m, elevation_30s(country_codes$ISO3[i], path=here('input'), mask=TRUE))
+}
+#plot(SRTM90m)
+
+save(SRTM90m, file=here('data','elevation.RData'))
