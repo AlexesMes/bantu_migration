@@ -14,6 +14,7 @@ library(parallel)
 library(units)
 #library(p3k14c)
 library(geodata)
+library(terra)
 
 rm(list = ls())
 
@@ -162,7 +163,10 @@ bantu_sites_df$siteID  <- as.numeric(factor(bantu_sites_df$siteName))
 
 ##-----------
 ##Filter for eastern EIA stream
-eastEIA_sites_df <- bantu_sites_df %>% filter(country %in% eastEIA_countries)
+eastEIA_sites_df <- bantu_sites_df %>% 
+  filter(country %in% eastEIA_countries) %>% 
+  mutate(ID = row_number()) %>%  #reassign ID for new dataset
+  mutate(siteID = as.numeric(factor(siteName))) #reassign site ID for new dataset
 
 ##-----------
 ##Save Output as csv
@@ -303,7 +307,7 @@ constants$id_sites <- dateInfo$siteID
 constants$id_area  <- siteInfo$area_id 
 constants$dist_mat  <- dist_mat
 constants$dist_org  <- dist_org
-constants$origin_point <- origin_point
+constants$origin_point <- st_coordinates(origin_point)
 #Calibration curves
 constants$calBP <- intcal20$CalBP #Same for intcal20 and shcal20 
 constants$C14BP  <- cbind(intcal20$C14Age, shcal20$C14Age) #Northern and southern hemisphere calibration curves
@@ -337,5 +341,10 @@ for (i in 2:nrow(country_codes)){
   SRTM90m <- merge(SRTM90m, elevation_30s(country_codes$ISO3[i], path=here('input'), mask=TRUE))
 }
 #plot(SRTM90m)
+#plot(hex_area_win$geometry, add = T)
 
-save(SRTM90m, file=here('data','elevation.RData'))
+mean_hex_elv <- terra::zonal(SRTM90m, terra::vect(hex_area_win), fun = "mean", na.rm = TRUE) #calculate mean elevation in each hexagon
+
+
+#Save elevation output
+save(mean_hex_elv, SRTM90m, file=here('data','elevation.RData'))
