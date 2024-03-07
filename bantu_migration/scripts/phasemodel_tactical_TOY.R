@@ -65,14 +65,11 @@ model1 <- nimbleCode({
   
   # Set Prior for Each Region
   for (k in 1:n_areas){
-    a[k] <- beta_0 - (beta_1 + s1[k])*dist_org[k]; #dist_org[k] can be replaced with some sort of cumulative friction c[k]
+    a[k] <- s1[k];
     b[k] ~ dunif(50,5000);
     constraint_uniform[k] ~ dconstraint(a[k]>b[k]) #In each area, start date of occupation, a_k, must be greater than the end date of occupation, b_k (note: BP dates in the positive direction)
   }
-  #Priors
-  beta_0 ~ dnorm(2500, sd=200); #beta_0 #Assume the first migration to be somewhere between 2300BP and 2700BP. Note: age of approximate origin, Katuruka, 2549BP
-  beta_1 ~ dexp(1) #beta_1 #If we were focused on the introduction of farming, a sensible prior can be based on known archaeological examples of farming dispersal rates
-  
+
   # ICAR Model Prior
   s1[1:n_areas] ~ dcar_normal(adj[1:L], weights[1:L], num[1:n_areas], tau1, zero_mean =0)
   tau1 <- 1/sigma1^2
@@ -95,8 +92,6 @@ theta.init = d1$cra
 inits1 <- list(a=init_a,
                b=init_b,
                theta=theta.init,
-               beta_0=rnorm(1,2500,200),
-               beta_1=rexp(1,1),
                s1 = rnorm(constants$n_areas, sd=0.001),
                sigma1=runif(1,0,100))
 
@@ -105,19 +100,20 @@ inits1 <- list(a=init_a,
 mcmc.samples1 <- nimbleMCMC(code = model1,
                            constants = constants,
                            data = d1,
-                           niter = 20, 
+                           niter = 20000, 
                            nchains = 3, 
-                           thin = 2, 
-                           nburnin = 10,
+                           thin = 100, 
+                           nburnin = 10000,
                            monitors = c('a','b','theta'), 
                            inits = inits1, 
                            samplesAsCodaMCMC=TRUE)
 
 #Diagnostics ----
-rhat1  <- gelman.diag(mcmc.samples1, multivariate = FALSE)
-ess1  <- effectiveSize(mcmc.samples1)
+#rhat1  <- gelman.diag(mcmc.samples1, multivariate = FALSE)
+#ess1  <- effectiveSize(mcmc.samples1)
 
 #-------------------------------------------------------------------------------
 # Save output ----
-save(mcmc.samples1, rhat1, ess1, file=here('output','phasemodel_tactsim_TOY.RData'))
+save(mcmc.samples1, file=here('output','phasemodel_tactsim_TOY.RData'))
+#rhat1, ess1
 

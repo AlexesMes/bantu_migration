@@ -32,8 +32,8 @@ sf::sf_use_s2(TRUE) #turn on spherical co-ordinates
 
 #-------------------------------------------------------------------------------
 # Target Parameters ----
-n_sites  <- 10
-n_dates  <- 30 
+n_sites  <- 100
+n_dates  <- 500 
 origin_point <- st_sfc(st_point(c(-1.45, 31.77))) #dispersal origin point -- approximately at Katuruka
 
 #-------------------------------------------------------------------------------
