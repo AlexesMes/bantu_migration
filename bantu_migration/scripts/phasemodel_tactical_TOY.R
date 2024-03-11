@@ -3,6 +3,7 @@ library(here)
 library(coda)
 library(nimbleCarbon)
 library(rcarbon)
+library(dplyr)
 
 rm(list = ls())
 `%!in%` <- Negate(`%in%`)
@@ -78,7 +79,7 @@ model1 <- nimbleCode({
 })
 
 #Constants ----
-constants$n_dates <- sim_constants$n_dates
+constants$n_dates <- sim_constants$n_dates 
 constants$n_areas <- constants$n_areas
 constants$adj <- nbInfo$adj
 constants$weights <- nbInfo$weights
@@ -100,10 +101,10 @@ inits1 <- list(a=init_a,
 mcmc.samples1 <- nimbleMCMC(code = model1,
                            constants = constants,
                            data = d1,
-                           niter = 20000, 
+                           niter = 200000, 
                            nchains = 3, 
                            thin = 100, 
-                           nburnin = 10000,
+                           nburnin = 100000,
                            monitors = c('a','b','theta'), 
                            inits = inits1, 
                            samplesAsCodaMCMC=TRUE)
@@ -117,3 +118,36 @@ mcmc.samples1 <- nimbleMCMC(code = model1,
 save(mcmc.samples1, file=here('output','phasemodel_tactsim_TOY.RData'))
 #rhat1, ess1
 
+
+#--------------------------
+##Plot ----
+#
+##Inputs
+# nsim  <- 1000
+# sigma1.prior  <- runif(nsim, 0, 100)
+# tau1.prior  <- 1/sigma1.prior^2
+# s1.mat = matrix(NA, nrow=nsim, ncol=length(0:1000))
+# for (i in 1:nsim)
+# {
+#   s1.mat[i,] = 
+#     #s1[1:n_areas] ~ dcar_normal(adj[1:L], weights[1:L], num[1:n_areas], tau1, zero_mean =0)
+# }
+# 
+# plot(NULL, xlab='Distance (km)', ylab='Covariance', xlim=c(0,1000), ylim=c(0,0.2))
+# polygon(c(0:1000, 1000:0), c(apply(tau1.mat, 2, quantile, 0.025), rev(apply(tau1.mat, 2, quantile,0.975))), border=NA, col=rgb(0.67,0.84,0.9,0.5))
+# 
+# plot(tau1.prior)
+
+
+## Traceplot of start and end of occupation (a, b) 
+#Load Data ----
+load(here("output", "phasemodel_tactsim_TOY.RData"))
+
+#par(mfrow=c(2,2))
+traceplot(mcmc.samples1[,'a[18]'], smooth=TRUE) #region area 18
+traceplot(mcmc.samples1[,'b[18]'], smooth=TRUE)
+
+#load(here("output", "phasemodel_tactsim.RData"))
+#traceplot(mcmc.samples2[,'a'], smooth=TRUE)
+#traceplot(mcmc.samples2[,'b'], smooth=TRUE)
+#-------------------------
