@@ -66,13 +66,12 @@ model1 <- nimbleCode({
   
   # Set Prior for Each Region
   for (k in 1:n_areas){
-    a[k] <- s1[k]; #(Minor)ISSUE: no point to copy s1. Just use directly s1 or rename line 75 to a.
     b[k] ~ dunif(50,5000);
     constraint_uniform[k] ~ dconstraint(a[k]>b[k]) #In each area, start date of occupation, a_k, must be greater than the end date of occupation, b_k (note: BP dates in the positive direction)
   }
 
   # ICAR Model Prior
-  s1[1:n_areas] ~ dcar_normal(adj[1:L], weights[1:L], num[1:n_areas], tau1, zero_mean =0)
+  a[1:n_areas] ~ dcar_normal(adj[1:L], weights[1:L], num[1:n_areas], tau1, zero_mean =0)
   tau1 <- 1/sigma1^2
   sigma1 ~ dunif(0,100)
   
@@ -85,29 +84,27 @@ constants$adj <- nbInfo$adj
 constants$weights <- nbInfo$weights
 constants$num <- nbInfo$num
 constants$L <- length(nbInfo$adj)
-#ISSUE constants should contain the a vector index called id_area
+constants$id_area <- sim_constants$id_areas
+constants$id_sites <- sim_constants$id_sites
 
 #Define initial values ---- 
-d1 <- list(cra=sim_df$cra, unif.const=1) #ISSUE: the observed data should have a vector named theta (see line 64)
-# ISSUE: d1 should include a vector of constraint_uniform of length of length n_area equal to 1. i.e. d1$constraint_uniform  <- rep(1,constants$n_area)
-theta.init = d1$cra
+d1 <- list(theta=sim_df$cra, 
+           constraint_uniform = rep(1, constants$n_areas)) 
+
 
 inits1 <- list(a=init_a,
                b=init_b,
-               theta=theta.init, #ISSUE: theta is no longer a parameter so should not be initialised
-               s1 = rnorm(constants$n_areas, sd=0.001), #ISSUE: why is s1 initialised this way? s1 is now equal to a, so you should use init_a here
                sigma1=runif(1,0,100))
-
 
 
 #Run MCMC ----
 mcmc.samples1 <- nimbleMCMC(code = model1,
                            constants = constants,
                            data = d1,
-                           niter = 200000, 
+                           niter = 200, 
                            nchains = 3, 
-                           thin = 100, 
-                           nburnin = 100000,
+                           thin = 5, 
+                           nburnin = 100,
                            monitors = c('a','b','theta'), 
                            inits = inits1, 
                            samplesAsCodaMCMC=TRUE)

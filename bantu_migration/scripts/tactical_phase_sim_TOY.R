@@ -105,7 +105,8 @@ sim_model <- nimbleCode({
 sim_constants <- list()
 sim_constants$n_sites <- n_sites
 sim_constants$n_dates  <- n_dates
-sim_constants$id_sites  <- id_sites
+sim_constants$id_sites  <- dates$site_id
+sim_constants$id_areas <- dates$area_id
 sim_constants$a <- 3700
 sim_constants$b <- 3200
 
