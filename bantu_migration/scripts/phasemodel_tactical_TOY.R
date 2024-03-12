@@ -66,7 +66,7 @@ model1 <- nimbleCode({
   
   # Set Prior for Each Region
   for (k in 1:n_areas){
-    a[k] <- s1[k];
+    a[k] <- s1[k]; #(Minor)ISSUE: no point to copy s1. Just use directly s1 or rename line 75 to a.
     b[k] ~ dunif(50,5000);
     constraint_uniform[k] ~ dconstraint(a[k]>b[k]) #In each area, start date of occupation, a_k, must be greater than the end date of occupation, b_k (note: BP dates in the positive direction)
   }
@@ -85,16 +85,19 @@ constants$adj <- nbInfo$adj
 constants$weights <- nbInfo$weights
 constants$num <- nbInfo$num
 constants$L <- length(nbInfo$adj)
+#ISSUE constants should contain the a vector index called id_area
 
 #Define initial values ---- 
-d1 <- list(cra=sim_df$cra, unif.const=1)
+d1 <- list(cra=sim_df$cra, unif.const=1) #ISSUE: the observed data should have a vector named theta (see line 64)
+# ISSUE: d1 should include a vector of constraint_uniform of length of length n_area equal to 1. i.e. d1$constraint_uniform  <- rep(1,constants$n_area)
 theta.init = d1$cra
 
 inits1 <- list(a=init_a,
                b=init_b,
-               theta=theta.init,
-               s1 = rnorm(constants$n_areas, sd=0.001),
+               theta=theta.init, #ISSUE: theta is no longer a parameter so should not be initialised
+               s1 = rnorm(constants$n_areas, sd=0.001), #ISSUE: why is s1 initialised this way? s1 is now equal to a, so you should use init_a here
                sigma1=runif(1,0,100))
+
 
 
 #Run MCMC ----
