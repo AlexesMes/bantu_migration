@@ -28,6 +28,14 @@ eastEIA_sites_sf <- sf::st_as_sf(siteInfo,
                                crs = 4326, 
                                na.fail = F)
 
+#Sampling window
+sampling_win <- st_as_sf(sampling_win, crs = 4326)
+#Sampling window without internal boundaries
+sf::sf_use_s2(FALSE) #turn off spherical co-ordinates
+sampling_win_ext <-  sampling_win %>%
+  st_make_valid() %>%
+  st_union() 
+sf::sf_use_s2(TRUE) #turn on spherical co-ordinates
 
 #-------------------------------------------------------------------------------
 ## Compute Great-Arc Distances in km between area centers ---
@@ -46,18 +54,33 @@ tiles <- tile.list(del)
 # del <- deldir(center_coords, id=c(1, 2, 3)) #Relabel ids for nimble (must be sequential from 1) 13 -> 1, 14 -> 2, 18 -> 3
 # tiles <- tile.list(del)
 
+##Remove external edges that are outside sampling window
+#Create edges as linestrings
+st_segment <- function(r){st_linestring(t(matrix(unlist(r), 2, 2)))}
+edges_coords <- del$delsgs[ , 1:4]
+edges_coords$geom <- st_sfc(sapply(1:nrow(edges_coords), 
+                           function(i){st_segment(edges_coords[i,])},simplify=FALSE))
+st_crs(edges_coords$geom)  <- 4326
+#Check if edges are external
+check_edges_ext <- st_within(edges_coords$geom, sampling_win_ext)
+ind_ext_edges <- which(is.na(as.numeric(check_edges_ext))) # indices of edges which are external -- to be removed if we aren't considering ocean movement
+##Check
+#internal_edges <- edges_coords[-ind_ext_edges, ]
+#plot(sampling_win_ext)
+#plot(internal_edges$geom, add=T) #compare to plot(edges_coords$geom, add=T)
+
 # Add center_coords in constants
 constants$center_coords <- center_coords
 
 ##Plot delaunay triangulation
-#ggplot(data = hex_area_win[c(13, 18, 22),]) + 
+# #ggplot(data = hex_area_win[c(13, 18, 22),]) +
 # ggplot(data = hex_area_win) + #TODO: Uncomment
-#   geom_sf(data = st_buffer(st_as_sf(sampling_win, crs = 4326), 40000), aes(color = "grey50")) + #sampling window with coastal buffer
+#   geom_sf(data = st_buffer(sampling_win, 40000), aes(color = "grey50")) + #sampling window with coastal buffer
 #   geom_sf() + #hex grid
 #   geom_sf_text(aes(label = area_ID), size=4, alpha=0.8) + #hex grid labels #aes(label =  c('1','2','3'))
 #   geom_sf(data = hex_area_win$area_center, size=2, alpha=1, aes(color = "purple")) + #hex-origins
-#   geom_delaunay_segment(aes(x=center_coords[,1], y=center_coords[,2]), 
-#                         alpha=0.5, 
+#   geom_delaunay_segment(aes(x=center_coords[,1], y=center_coords[,2]),
+#                         alpha=0.5,
 #                         colour='purple',
 #                         size=0.8) +
 #   labs(x = "Longitude", y = "Latitude") +
