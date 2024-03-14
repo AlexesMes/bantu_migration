@@ -83,11 +83,10 @@ model1 <- nimbleCode({
   }
   
   #For each edge transition
-  #for (t in 1:n_trans){
+  for (t in 1:n_trans){
     #nabla defines the gradient along the edge
-    #nabla[t] <- t
-      #abs(a[edge_id1[t]] - a[edge_id2[t]])/edge_dist[t] #edge t: select first area, m, and second area, n
-  #}
+    nabla[t] <- abs(a[edge_id1[t]] - a[edge_id2[t]])/edge_dist[t] #edge t: select first area, m, and second area, n
+  }
 
   # ICAR Model Prior
   a[1:n_areas] ~ dcar_normal(adj[1:L], weights[1:L], num[1:n_areas], tau1, zero_mean =0)
@@ -124,10 +123,10 @@ inits1 <- list(a=init_a,
 mcmc.samples1 <- nimbleMCMC(code = model1,
                            constants = constants,
                            data = d1,
-                           niter = 20, 
+                           niter = 2000000, 
                            nchains = 4, 
-                           thin=4, 
-                           nburnin = 10,
+                           thin=100, 
+                           nburnin = 1000000,
                            monitors = c('a', 'b', 'nabla', 'theta'),
                            inits = inits1, 
                            samplesAsCodaMCMC=TRUE)
@@ -142,10 +141,13 @@ ess1  <- effectiveSize(mcmc.samples1)
 save(mcmc.samples1, rhat1, ess1, file=here('output','phasemodel_tactsim_TOY.RData'))
 
 #===============================================================================
+#===============================================================================
 ##Plot ----
+library(graphics)
+library(latex2exp)
 
-## Traceplot of start and end of occupation (a, b) 
-#Load Data ----
+# ## Traceplot of start and end of occupation (a, b) 
+# #Load Data ----
 load(here("output", "phasemodel_tactsim_TOY.RData"))
 
 par(mfrow=c(2,2))
@@ -162,10 +164,12 @@ post.model.i  <- do.call(rbind, mcmc.samples1)[ , c(18, 59)] #area 18 (selecting
 dens.i.a  <- density(post.model.i[,1],bw = 5)
 dens.i.b  <- density(post.model.i[,2],bw=5)
 
-plot(NULL, xlim=c(4100,2700), ylim=c(0,0.022), xlab='Cal BP', ylab='Posterior Probability') 
+plot(NULL, xlim=c(4100,2700), ylim=c(0,0.022), xlab='Cal BP', ylab='Posterior Probability')
 polygon(c(dens.i.a$x, rev(dens.i.a$x)), c(rep(0,length(dens.i.a$x)), rev(dens.i.a$y)), border=NA, col=rgb(0,0.4,0,0.5))
 polygon(c(dens.i.b$x, rev(dens.i.b$x)), c(rep(0,length(dens.i.b$x)), rev(dens.i.b$y)), border=NA, col=rgb(0,0.4,0,0.5))
 abline(v=c(3700, 3200),lty=2)
 axis(3,at=c(3700, 3200),labels=c(TeX('$a$'),TeX('$b$')))
 legend('topright', legend=c('Non hierarchichal'), fill=c('darkgreen'))
+
+#-------------------------------------------------------------------------------
 
