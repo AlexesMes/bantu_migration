@@ -17,14 +17,15 @@ rm(list = ls())
 load(here('data','c14.RData'))
 load(here('data','trig.RData'))
 
+constants <- c(constants, constants_trig)
 
 ##General Setup ----
 
-#Filter for test case -- #TODO: remove when considering whole dataset
-siteInfo <- siteInfo %>% filter(area_id %in% c(13, 14, 18)) %>% mutate(area_id = case_when(area_id == 13 ~ 1, area_id == 14 ~ 2, area_id == 18 ~3))
-dateInfo <- dateInfo %>% filter(siteID %in% siteInfo$siteID)
-n_areas <- 3
-n_dates <- nrow(dateInfo)
+# #Filter for test case -- #TODO: remove when considering whole dataset
+# siteInfo <- siteInfo %>% filter(area_id %in% c(13, 14, 18)) %>% mutate(area_id = case_when(area_id == 13 ~ 1, area_id == 14 ~ 2, area_id == 18 ~3))
+# dateInfo <- dateInfo %>% filter(siteID %in% siteInfo$siteID)
+# n_areas <- 3
+# n_dates <- nrow(dateInfo)
 
 
 
@@ -32,8 +33,8 @@ n_dates <- nrow(dateInfo)
 #Data --
 dat <- list(cra = dateInfo$cra,
             cra_error = dateInfo$cra_error,
-            constraint_uniform = rep(1, n_areas),
-            cra_constraint = rep(1, n_dates)) # Set-up constraint for ignoring inference outside calibration range
+            constraint_uniform = rep(1, constants$n_areas),
+            cra_constraint = rep(1, constants$n_dates)) # Set-up constraint for ignoring inference outside calibration range
 
 #Calibration curve --
 constants$cc <- as.numeric(as.factor(dateInfo$calCurve)) #intcal20==1 and shcal20==2
@@ -51,6 +52,24 @@ theta_init <- dateInfo$median_dates
 #Initialise regional parameters
 #Initialise hex areas which contain sites
 init_a  <- aggregate(earliest~area_id, FUN=max, data=siteInfo) #parameter of earliest date in each region k
+
+#Initialise hex areas which do not contain sites
+init_empty_area <- function(init_df) {
+  for(i in 1:constants$n_area){
+    
+    area_ids <- init_df$area_id #List of hex areas ids with sites
+    
+    if (i %!in% area_ids){
+      empty_hex_id <- i #Id of empty hex
+      neighbour_hex <- which.min(abs(i - area_ids)) #Determine closest hex neighbor which has sites. If there are more than one neighbour hex with sites, it selects the first observation (i.e. hex with the smallest id, since ids are in ascending order). 
+      neighbour_hex_id <- area_ids[neighbour_hex] #Determine area id of closest hex neighbor
+      neighbour_date <- init_df[neighbour_hex , 2] #Select the date associated with the neighbour hex 
+      init_df <- rbind(init_df, c(i, neighbour_date)) #Assign this date to the empty hex
+    }
+  }
+  return(init_df)
+}
+init_a <- init_a %>% init_empty_area() %>%  arrange(area_id)
 
 #Duration parameter initialisation
 delta_init <- 0 

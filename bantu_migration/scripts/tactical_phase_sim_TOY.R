@@ -11,6 +11,7 @@ library(rcarbon)
 library(units)
 
 rm(list = ls())
+`%!in%` <- Negate(`%in%`)
 set.seed(123)
 
 ##SCRIPT TO SIMULATE DATA FOR PHASEMODEL WITHOUT ERRORS 
@@ -140,12 +141,10 @@ siteInfo <- data.frame(site_id = earliest_dates$site_id,
                        n_dates = n_dates_persite$cra) %>% unique()
 
 #Save constants ----
-constants <- list()
+constants <- sim_constants[names(sim_constants) %!in% c("a", "b")]
 constants$dist_mat  <- dist_mat
 constants$dist_org  <- dist_org
 constants$n_areas  <- nrow(hex_area_win)
-constants$n_dates  <- n_dates
-constants$n_sites  <- n_sites
 
 #Store output ----
-save(sites, siteInfo, sim_df, sim_constants, constants, sampling_win, hex_area_win, file=here('data','tactical_sim_phase_TOY.RData'))
+save(sites, siteInfo, sim_df, constants, sampling_win, hex_area_win, file=here('data','tactical_sim_phase_TOY.RData'))

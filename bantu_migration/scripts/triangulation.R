@@ -70,7 +70,8 @@ ind_ext_edges <- which(is.na(as.numeric(check_edges_ext))) # indices of edges wh
 #plot(internal_edges$geom, add=T) #compare to plot(edges_coords$geom, add=T)
 
 # Add center_coords in constants
-constants$center_coords <- center_coords
+constants_trig <- list()
+constants_trig$center_coords <- center_coords
 
 ##Plot delaunay triangulation
 # #ggplot(data = hex_area_win[c(13, 18, 22),]) +
@@ -79,8 +80,8 @@ constants$center_coords <- center_coords
 #   geom_sf() + #hex grid
 #   geom_sf_text(aes(label = area_ID), size=4, alpha=0.8) + #hex grid labels #aes(label =  c('1','2','3'))
 #   geom_sf(data = hex_area_win$area_center, size=2, alpha=1, aes(color = "purple")) + #hex-origins
-#   geom_delaunay_segment(aes(x=center_coords[,1], y=center_coords[,2]),
-#                         alpha=0.5,
+#   geom_delaunay_segment(aes(x=center_coords[,1], y=center_coords[,2]), 
+#                         alpha=0.5, 
 #                         colour='purple',
 #                         size=0.8) +
 #   labs(x = "Longitude", y = "Latitude") +
@@ -106,14 +107,14 @@ transitions <- del$delsgs %>%
 
 
 # Add transitions as matrix in constants
-constants$transitions  <- as.matrix(transitions)
-constants$n_trans <- nrow(transitions) #Number of transitions
+constants_trig$transitions  <- as.matrix(transitions)
+constants_trig$n_trans <- nrow(transitions) #Number of transitions
 
 #-------------------------------------------------------------------------------
 ## Save everything on a R image file ----
 save(del, 
      tiles, 
-     constants,
+     constants_trig,
      file=here('data','trig.RData'))
 
 

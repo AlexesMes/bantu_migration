@@ -13,7 +13,10 @@ set.seed(123)
 #-------------------------------------------------------------------------------
 ## Data Setup ----
 load(here('data', 'tactical_sim_phase_TOY.RData'))
+load(here('data','trig.RData')) #nodes and edges between hex area centroids
 
+#Combine constants
+constants <- c(constants, constants_trig)
 #-------------------------------------------------------------------------------
 ## Initialise Parameters ----
 
@@ -43,6 +46,15 @@ init_empty_area <- function(init_df) {
 init_a <- init_a %>% init_empty_area() %>%  arrange(area_id)
 init_b <- init_b %>% init_empty_area() %>%  arrange(area_id)
 
+#Gradient parameter initialisation
+init_nabla <- 0 
+for (t in 1:constants$n_trans){ 
+  m <- constants$transitions[[t,'region1_id']] #transition in row t, select first area
+  n <- constants$transitions[[t,'region2_id']] #transition in row t, select second area
+  
+  init_nabla[t] <- abs(init_a$earliest[init_a$area_id==m] - init_a$earliest[init_a$area_id==n])/constants$transitions[[t, 'distance']]
+}
+
 #Add buffer
 init_a  <- init_a[ ,2] + buffer
 init_b  <- init_b[ ,2] - buffer
@@ -61,14 +73,21 @@ nbInfo <- nb2WB(nb_areas) #transform into iCAR inputs: adjacent matrix, weights,
 
 model1 <- nimbleCode({
   for (i in 1:n_dates){
-    theta[i] ~ dunif(min = b[id_area[i]], max = a[id_area[i]]);
+    theta[i] ~ dunif(min = b[id_areas[i]], max = a[id_areas[i]]);
   }
   
-  # Set Prior for Each Region
+  #For Each Region
   for (k in 1:n_areas){
     b[k] ~ dunif(50,5000);
     constraint_uniform[k] ~ dconstraint(a[k]>b[k]) #In each area, start date of occupation, a_k, must be greater than the end date of occupation, b_k (note: BP dates in the positive direction)
   }
+  
+  #For each edge transition
+  #for (t in 1:n_trans){
+    #nabla defines the gradient along the edge
+    #nabla[t] <- t
+      #abs(a[edge_id1[t]] - a[edge_id2[t]])/edge_dist[t] #edge t: select first area, m, and second area, n
+  #}
 
   # ICAR Model Prior
   a[1:n_areas] ~ dcar_normal(adj[1:L], weights[1:L], num[1:n_areas], tau1, zero_mean =0)
@@ -78,14 +97,17 @@ model1 <- nimbleCode({
 })
 
 #Constants ----
-constants$n_dates <- sim_constants$n_dates 
-constants$n_areas <- constants$n_areas
 constants$adj <- nbInfo$adj
 constants$weights <- nbInfo$weights
 constants$num <- nbInfo$num
 constants$L <- length(nbInfo$adj)
-constants$id_area <- sim_constants$id_areas
-constants$id_sites <- sim_constants$id_sites
+constants <- constants[names(constants) %!in% c("dist_mat", "dist_org", "center_coords")] #remove constants which aren't used
+#transform transitions into usable format
+edge_info <- as.data.frame(constants$transitions)
+constants$edge_id1 <- edge_info$region1_id
+constants$edge_id2 <- edge_info$region2_id 
+constants$edge_dist <- edge_info$distance
+constants <- constants[names(constants) %!in% c("transitions")]
 
 #Define initial values ---- 
 d1 <- list(theta=sim_df$cra, 
@@ -94,6 +116,7 @@ d1 <- list(theta=sim_df$cra,
 
 inits1 <- list(a=init_a,
                b=init_b,
+               nabla=init_nabla,
                sigma1=runif(1,0,100))
 
 
@@ -101,11 +124,11 @@ inits1 <- list(a=init_a,
 mcmc.samples1 <- nimbleMCMC(code = model1,
                            constants = constants,
                            data = d1,
-                           niter = 2000000, 
+                           niter = 20, 
                            nchains = 4, 
-                           thin=100, 
-                           nburnin = 1000000,
-                           monitors = c('a','b','theta'), 
+                           thin=4, 
+                           nburnin = 10,
+                           monitors = c('a', 'b', 'nabla', 'theta'),
                            inits = inits1, 
                            samplesAsCodaMCMC=TRUE)
 
