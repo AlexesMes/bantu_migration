@@ -1132,6 +1132,9 @@ uncert = sapply(as.data.frame(tmp), prop_gthan_zero)
 edge_info <- edge_info %>% 
   mutate(mean_gradient = qta[4,], #50% quantile
          uncertainty = uncert) #% of distribution > zero
+#Remove extremely long edges which are 'artificially' created along the internal window boundary or require extreme coastal movement along external window boundary
+edge_info <- edge_info %>% 
+  filter(distance <= mean(distance)*1.3)
 
 #Create nodes
 nodes <- st_coordinates(hex_area_win$area_center)
