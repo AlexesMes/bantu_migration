@@ -281,6 +281,8 @@ hex_area_win <- hex_areas(sampling_win, cell_d = 5)
 
 #Assign hex area id to each site ----
 siteInfo$area_id <- as.integer(st_within(sites$geometry, hex_area_win$geometry))
+#Assign hex area id to each date ----
+dateInfo$area_id <- siteInfo$area_id[match(dateInfo$siteID, siteInfo$siteID)]
 
 # #CHECK ---
 area_freq  <- plyr::count(siteInfo, 'area_id') ##See how many sites fall in each hex area. Also make sure there are no 'NA' entries
@@ -304,7 +306,7 @@ constants$n_sites <- nrow(siteInfo)
 constants$n_dates  <- nrow(dateInfo)
 constants$n_areas  <- nrow(hex_area_win) #All areas (even empty ones) are included #Only occupied areas: length(unique(siteInfo$area_id))
 constants$id_sites <- dateInfo$siteID
-constants$id_area  <- siteInfo$area_id 
+constants$id_areas  <- dateInfo$area_id #TODO: change back -- siteInfo$area_id 
 constants$dist_mat  <- dist_mat
 constants$dist_org  <- dist_org
 constants$origin_point <- st_coordinates(origin_point)
