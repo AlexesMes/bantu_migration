@@ -21,7 +21,8 @@ library(gridBase)
 library(diagram)
 library(quantreg)
 library(coda)
-
+library(graphics)
+library(ggthemes)
 
 
 source(here('src','orderPPlot.R'))
@@ -1023,86 +1024,160 @@ dev.off()
 
 
 
+#===============================================================================
+#===============================================================================
+#Plot Tactical simulation of ICAR model
 
+##Load Data ----
+load(here("output", "phasemodel_tactsim_TOY.RData"))
+load(here('data', 'tactical_sim_phase_TOY.RData'))
+load(here('data','trig.RData')) #nodes and edges between hex area centroids
+#Combine constants
+constants <- c(constants, constants_trig)
 
+#-------------
+##Traceplot of start and end of occupation (a, b) 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+pdf(file=here('output', 'figures','figure30.pdf'), width=8, height=8)
+par(mfrow=c(2,2))
+traceplot(mcmc.samples1[,'a[18]'], main=TeX('$a[18]$'),smooth=TRUE) #region area 18, as an example
+traceplot(mcmc.samples1[,'b[18]'], main=TeX('$b[18]$'),smooth=TRUE)
+traceplot(mcmc.samples1[,'nabla[18]'], main=TeX('$nabla[18]$'), smooth=TRUE)
+dev.off()
 
 #-------------------------------------------------------------------------------
-## Plot HEX areas with median arrival times ---- FIGURE map_figure3
+## Tactical Simulation Posterior Predictive Check for a and b in a given region
 
-#Extract arrival times for model A
-out.comb.unif.modela  <- do.call(rbind, out_unif_model_a)
-post.nu.modela  <- out.comb.unif.modela[,paste0('a[',1:43,']')]  %>% round() 
-hpdi.modela  <- apply(post.nu.modela, 2, function(x){HPDinterval(as.mcmc(x), prob = .90)}) 
-med.modela  <- apply(post.nu.modela, 2, median)
-hi90_modA  <- hpdi.modela[1,]
-lo90_modA  <- hpdi.modela[2,]
+#For model (i) select parameters a and b (i.e. start and end date of occupation in the region)
+post.model.i  <- do.call(rbind, mcmc.samples1)[ , c(18, 59)] #area 18 (selecting a[18] and b[18])
 
-median_hex_dates_modA <- hex_area_win %>% 
-  filter(area_ID %in% 1:43) %>% 
-  mutate(median_date = med.modela,
-         hpdi_high = hi90_modA,
-         hpdi_low = lo90_modA,
-         contains_sites = as.factor(case_when(area_ID %in% Hex_with_sites ~ 1, area_ID %in% Hex_without_sites ~ 0))) %>% 
-  filter(area_ID %!in% c(1, 2, 3, 4, 7))
+dens.i.a  <- density(post.model.i[,1],bw = 5)
+dens.i.b  <- density(post.model.i[,2],bw=5)
 
-
-#Plot
-#-----MODEL A
-modA <- ggplot(data = median_hex_dates_modA) +
-  geom_sf(data = st_buffer(st_as_sf(sampling_win, crs = 4326), 40000), aes(color = "grey50")) + #sampling window with coastal buffer
-  geom_sf(aes(fill = median_date, alpha=contains_sites)) + #hex grid
-  scale_fill_viridis_c(option="F", direction=-1) +
-  scale_alpha_manual(values=c(0.45, 1)) +
-  theme(
-    panel.background = element_rect(fill = "transparent", colour = NA),
-    plot.background = element_rect(fill = "transparent", colour = NA),
-    legend.position = "none"
-  )
-  # theme(panel.background = element_rect(fill = "lightblue",
-  #                                       colour = "lightblue",
-  #                                       size = 0.5,
-  #                                       linetype = "solid"),
-  #       legend.position = "none")
-
-
-A <- cowplot::ggdraw() +  draw_plot(modA) 
-
-
-#Output
-pdf(file=here('output','figures','map_africa.pdf'), width=15, height=8)
-grid.arrange(A, ncol=1, padding=0)
+pdf(file=here('output', 'figures','figure31.pdf'), width=8, height=8)
+plot(NULL, xlim=c(4100,2700), ylim=c(0,0.022), xlab='Cal BP', ylab='Posterior Probability')
+polygon(c(dens.i.a$x, rev(dens.i.a$x)), c(rep(0,length(dens.i.a$x)), rev(dens.i.a$y)), border=NA, col=rgb(0,0.4,0,0.5))
+polygon(c(dens.i.b$x, rev(dens.i.b$x)), c(rep(0,length(dens.i.b$x)), rev(dens.i.b$y)), border=NA, col=rgb(0,0.4,0,0.5))
+abline(v=c(3700, 3200),lty=2)
+axis(3,at=c(3700, 3200),labels=c(TeX('$a$'),TeX('$b$')))
+legend('topright', legend=c('Non hierarchichal'), fill=c('darkgreen'))
 dev.off()
+
+#-------------------------------------------------------------------------------
+##Plot magnitude and direction of gradients
+
+##Setup Functions and Variables
+#Extract gradient distribution information
+extract_gradinfo <- function(x)
+{
+  tmp = do.call(rbind, x)
+  tmp2 = tmp[ , grep('^nabla\\[',colnames(tmp))]
+  return(tmp2)
+}
+
+#Determine proportion of distribution which is positive
+prop_gthan_zero <- function(data) {
+  # Count the number of elements greater than zero
+  count_positive <- sum(data > 0)
+  # Calculate the proportion
+  proportion <- count_positive / length(data)
+  return(proportion)
+}
+
+# Define a custom function to plot arrows
+plot_arrows <- function(edges, ...) {
+  for (i in 1:nrow(edges)) {
+    
+    ##Determine which is the start node and which is the end node
+    if(edges$mean_gradient[i] >= 0){
+      x_start = edges$region1_x[i]
+      y_start = edges$region1_y[i]
+      x_end = edges$region2_x[i]
+      y_end = edges$region2_y[i] } else {
+        x_start = edges$region2_x[i]
+        y_start = edges$region2_y[i]
+        x_end = edges$region1_x[i]
+        y_end = edges$region1_y[i]
+      }
+    
+    ##Determine the angle of the edge
+    #Calculate the differences in x and y coordinates
+    delta_x <- x_end - x_start
+    delta_y <- y_end - y_start
+    
+    # Calculate the angle in radians using the arctangent function (atan2)
+    angle_rad <- atan2(delta_y, delta_x)
+    
+    # Define the length of the arrow
+    arrow_length <- abs(edges$mean_gradient[i])*40 #TODO: relative magnitude of gradient is what is important, '40' is merely a scaling parameter
+    
+    # Calculate the coordinates of the arrow head
+    arrow_head_x <- x_end - arrow_length * cos(angle_rad)
+    arrow_head_y <- y_end - arrow_length * sin(angle_rad)
+    
+    # Define alpha transparency value (0 to 1) depending on uncertainty in gradient
+    alpha <- edges$uncertainty[i] #the proportion of the distribution in this direction
+    
+    arrows(x0 = x_start, y0 = y_start, x1 = arrow_head_x, y1 = arrow_head_y, col = rgb(0, 0, 1, alpha), ...)
+  }
+}
+
+#--------
+#Extract quantile information
+tmp = extract_gradinfo(mcmc.samples1) 
+qta = apply(tmp, 2, quantile, prob=c(0, 0.05, 0.25, 0.5, 0.75, 0.95, 1))
+#Extract uncertainty information
+uncert = sapply(as.data.frame(tmp), prop_gthan_zero)
+#Add info to edges dataframe
+edge_info <- edge_info %>% 
+  mutate(mean_gradient = qta[4,], #50% quantile
+         uncertainty = uncert) #% of distribution > zero
+
+#Create nodes
+nodes <- st_coordinates(hex_area_win$area_center)
+
+#--------
+#PLOT
+# Get the bounding box of the sample window
+sample_win_buff <- st_buffer(st_as_sf(sampling_win, crs = 4326), 40000)
+bbox <- sf::st_bbox(sample_win_buff)
+
+# Calculate the aspect ratio of the bounding box
+aspect_ratio <- diff(range(c(bbox["ymin"], bbox["ymax"]))) / diff(range(c(bbox["xmin"], bbox["xmax"])))
+gridsize <- 1 # Adjust the denominator to change grid density
+
+pdf(file=here('output', 'figures','figure32.pdf'), width=8, height=8)
+# Create an empty plot with the appropriate range
+plot(x = c(bbox["xmin"], bbox["xmax"]), y = c(bbox["ymin"], bbox["ymax"]), type = "n",
+     xlab = "Latitude", ylab = "Longitude", main = "Gradient surface of arrival times", asp = 1/aspect_ratio, axes = F)
+# Adding theme elements
+rect(bbox["xmin"], bbox["ymin"], bbox["xmax"], bbox["ymax"], col = "lightblue", border=NA) #a blue-colored bounding box
+# Add background grid
+abline(v = seq(ceiling(bbox["xmin"]), floor(bbox["xmax"]), by = gridsize), col = "white")
+abline(h = seq(ceiling(bbox["ymin"]), floor(bbox["ymax"]), by = gridsize), col = "white")
+# Add labeled axes for the background grid
+axis(side = 1, at = seq(ceiling(bbox["xmin"]), floor(bbox["xmax"]), by = gridsize*2),
+     labels = format(seq(ceiling(bbox["xmin"]), floor(bbox["xmax"]), by = gridsize*2), nsmall = 1))
+axis(side = 2, at = seq(ceiling(bbox["ymin"]), floor(bbox["ymax"]), by = gridsize*2),
+     labels = format(seq(ceiling(bbox["ymin"]), floor(bbox["ymax"]), by = gridsize*2), nsmall = 1), las = 1, add = T)
+# Add north arrow in the bottom right corner
+north_arrow_length <- 4
+north_arrow_x <- bbox["xmax"] - 0.05 * diff(c(bbox["xmin"], bbox["xmax"]))
+north_arrow_y <- bbox["ymin"] + 0.05 * diff(c(bbox["ymin"], bbox["ymax"]))
+arrows(x0 = north_arrow_x, y0 = north_arrow_y, x1 = north_arrow_x, y1 = north_arrow_y + north_arrow_length, 
+       length = 0.1, angle = 30, col = "black", lwd=2)
+# Plotting the sampling window with coastal buffer
+plot(sample_win_buff, col = "grey", border = rgb(0, 0, 0, 0.2), add = TRUE)
+# Plotting the hex grid
+plot(hex_area_win$geometry, add = TRUE, border = rgb(0, 0, 0, 0.2))
+# Plotting the hex origins
+points(nodes[,"X"], nodes[,"Y"], pch = 20, col = rgb(0, 0, 0, 0.8), cex = 2)
+# Plot gradient arrows using the custom function
+plot_arrows(edge_info, lwd=4, length = 0.1) #length parameter defines arrowhead size
+dev.off()
+
+
+
 
 
 
