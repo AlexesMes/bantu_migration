@@ -99,21 +99,27 @@ transitions <- del$delsgs %>%
                 region1_x = x1,
                 region1_y = y1,
                 region2_x = x2,
-                region2_y = y1) %>% 
+                region2_y = y2) %>% 
   mutate(region1_id = as.integer(region1_id), 
          region2_id = as.integer(region2_id)) %>% 
   rowwise() %>% 
   mutate(distance = hex_dist_mat[region1_id, region2_id]) #Great-arc distance between transitions in km
 
 
-# Add transitions as matrix in constants
-constants_trig$transitions  <- as.matrix(transitions)
+#Transform transitions into usable format to save in constants
+edge_info <- as.data.frame(transitions)
 constants_trig$n_trans <- nrow(transitions) #Number of transitions
+constants_trig$edge_id1 <- edge_info$region1_id
+constants_trig$edge_id2 <- edge_info$region2_id 
+constants_trig$edge_dist <- edge_info$distance
+
+
 
 #-------------------------------------------------------------------------------
 ## Save everything on a R image file ----
 save(del, 
-     tiles, 
+     tiles,
+     edge_info,
      constants_trig,
      file=here('data','trig.RData'))
 

@@ -125,6 +125,7 @@ sim_df <- list(cra = cra,
                site_id = id_sites)
 
 # Collect site level information ----
+sites_sf <- sites #save a copy
 sites <- sites %>% 
   st_drop_geometry() %>% 
   left_join(as.data.frame(sim_df), by='site_id')
@@ -134,11 +135,13 @@ latest_dates <- aggregate(cra ~ site_id, data=sites, FUN=min) #Latest Date for E
 n_dates_persite <- aggregate(cra ~ site_id, data=sites, FUN=length) #Number of Dates for Each Site
 
 siteInfo <- data.frame(site_id = earliest_dates$site_id,
-                       area_id = sites$area_id,
                        earliest = earliest_dates$cra,
                        latest = latest_dates$cra,
                        diff = earliest_dates$cra - latest_dates$cra,
                        n_dates = n_dates_persite$cra) %>% unique()
+
+#Assign hex area id to each site ----
+siteInfo$area_id <- as.integer(st_within(sites_sf$geometry, hex_area_win$geometry))
 
 #Save constants ----
 constants <- sim_constants[names(sim_constants) %!in% c("a", "b")]

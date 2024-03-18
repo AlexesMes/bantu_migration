@@ -49,10 +49,10 @@ init_b <- init_b %>% init_empty_area() %>%  arrange(area_id)
 #Gradient parameter initialisation
 init_nabla <- 0 
 for (t in 1:constants$n_trans){ 
-  m <- constants$transitions[[t,'region1_id']] #transition in row t, select first area
-  n <- constants$transitions[[t,'region2_id']] #transition in row t, select second area
+  m <- constants$edge_id1[t] #transition/edge t, select first area
+  n <- constants$edge_id2[t] #transition/edge t, select second area
   
-  init_nabla[t] <- abs(init_a$earliest[init_a$area_id==m] - init_a$earliest[init_a$area_id==n])/constants$transitions[[t, 'distance']]
+  init_nabla[t] <- (init_a$earliest[init_a$area_id==m] - init_a$earliest[init_a$area_id==n])/constants$edge_dist[t]
 }
 
 #Add buffer
@@ -85,7 +85,7 @@ model1 <- nimbleCode({
   #For each edge transition
   for (t in 1:n_trans){
     #nabla defines the gradient along the edge
-    nabla[t] <- abs(a[edge_id1[t]] - a[edge_id2[t]])/edge_dist[t] #edge t: select first area, m, and second area, n
+    nabla[t] <- (a[edge_id1[t]] - a[edge_id2[t]])/edge_dist[t] #edge t: select first area, m, and second area, n
   }
 
   # ICAR Model Prior
@@ -101,12 +101,6 @@ constants$weights <- nbInfo$weights
 constants$num <- nbInfo$num
 constants$L <- length(nbInfo$adj)
 constants <- constants[names(constants) %!in% c("dist_mat", "dist_org", "center_coords")] #remove constants which aren't used
-#transform transitions into usable format
-edge_info <- as.data.frame(constants$transitions)
-constants$edge_id1 <- edge_info$region1_id
-constants$edge_id2 <- edge_info$region2_id 
-constants$edge_dist <- edge_info$distance
-constants <- constants[names(constants) %!in% c("transitions")]
 
 #Define initial values ---- 
 d1 <- list(theta=sim_df$cra, 
@@ -125,7 +119,7 @@ mcmc.samples1 <- nimbleMCMC(code = model1,
                            data = d1,
                            niter = 2000000, 
                            nchains = 4, 
-                           thin=100, 
+                           thin= 100, 
                            nburnin = 1000000,
                            monitors = c('a', 'b', 'nabla', 'theta'),
                            inits = inits1, 
@@ -139,37 +133,3 @@ ess1  <- effectiveSize(mcmc.samples1)
 #-------------------------------------------------------------------------------
 # Save output ----
 save(mcmc.samples1, rhat1, ess1, file=here('output','phasemodel_tactsim_TOY.RData'))
-
-#===============================================================================
-#===============================================================================
-##Plot ----
-library(graphics)
-library(latex2exp)
-
-# ## Traceplot of start and end of occupation (a, b) 
-# #Load Data ----
-load(here("output", "phasemodel_tactsim_TOY.RData"))
-
-par(mfrow=c(2,2))
-traceplot(mcmc.samples1[,'a[18]'], smooth=TRUE) #region area 18
-traceplot(mcmc.samples1[,'b[18]'], smooth=TRUE)
-dev.off()
-
-#-------------------------------------------------------------------------------
-## Tactical Simulation Posterior Predictive Check for a and b in a given region
-
-#For model (i) select parameters a and b (i.e. start and end date of occupation in the region)
-post.model.i  <- do.call(rbind, mcmc.samples1)[ , c(18, 59)] #area 18 (selecting a[18] and b[18])
-
-dens.i.a  <- density(post.model.i[,1],bw = 5)
-dens.i.b  <- density(post.model.i[,2],bw=5)
-
-plot(NULL, xlim=c(4100,2700), ylim=c(0,0.022), xlab='Cal BP', ylab='Posterior Probability')
-polygon(c(dens.i.a$x, rev(dens.i.a$x)), c(rep(0,length(dens.i.a$x)), rev(dens.i.a$y)), border=NA, col=rgb(0,0.4,0,0.5))
-polygon(c(dens.i.b$x, rev(dens.i.b$x)), c(rep(0,length(dens.i.b$x)), rev(dens.i.b$y)), border=NA, col=rgb(0,0.4,0,0.5))
-abline(v=c(3700, 3200),lty=2)
-axis(3,at=c(3700, 3200),labels=c(TeX('$a$'),TeX('$b$')))
-legend('topright', legend=c('Non hierarchichal'), fill=c('darkgreen'))
-
-#-------------------------------------------------------------------------------
-
