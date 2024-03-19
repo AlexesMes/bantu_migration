@@ -1045,26 +1045,57 @@ traceplot(mcmc.samples1[,'b[18]'], main=TeX('$b[18]$'),smooth=TRUE)
 traceplot(mcmc.samples1[,'nabla[18]'], main=TeX('$nabla[18]$'), smooth=TRUE)
 dev.off()
 
-#-------------------------------------------------------------------------------
-## Tactical Simulation Posterior Predictive Check for a and b in a given region
-
-#For model (i) select parameters a and b (i.e. start and end date of occupation in the region)
-post.model.i  <- do.call(rbind, mcmc.samples1)[ , c(18, 59)] #area 18 (selecting a[18] and b[18])
-
-dens.i.a  <- density(post.model.i[,1],bw = 5)
-dens.i.b  <- density(post.model.i[,2],bw=5)
-
 pdf(file=here('output', 'figures','figure31.pdf'), width=8, height=8)
-plot(NULL, xlim=c(4100,2700), ylim=c(0,0.022), xlab='Cal BP', ylab='Posterior Probability')
-polygon(c(dens.i.a$x, rev(dens.i.a$x)), c(rep(0,length(dens.i.a$x)), rev(dens.i.a$y)), border=NA, col=rgb(0,0.4,0,0.5))
-polygon(c(dens.i.b$x, rev(dens.i.b$x)), c(rep(0,length(dens.i.b$x)), rev(dens.i.b$y)), border=NA, col=rgb(0,0.4,0,0.5))
-abline(v=c(3700, 3200),lty=2)
-axis(3,at=c(3700, 3200),labels=c(TeX('$a$'),TeX('$b$')))
-legend('topright', legend=c('Non hierarchichal'), fill=c('darkgreen'))
+par(mfrow=c(2,2))
+traceplot(mcmc.samples2[,'a[18]'], main=TeX('$a[18]$'),smooth=TRUE) #region area 18, as an example
+traceplot(mcmc.samples2[,'b[18]'], main=TeX('$b[18]$'),smooth=TRUE)
+traceplot(mcmc.samples2[,'nabla[18]'], main=TeX('$nabla[18]$'), smooth=TRUE)
 dev.off()
 
 #-------------------------------------------------------------------------------
-##Plot magnitude and direction of gradients
+## Tactical Simulation Posterior Predictive Check for a and b in a given region
+
+#For model (i) and (ii) select parameters a and b (i.e. start and end date of occupation in the region)
+post.model.i  <- do.call(rbind, mcmc.samples1)[ , c(18, 59)] #area 18 (selecting a[18] and b[18])
+post.model.ii  <- do.call(rbind, mcmc.samples2)[ , c(18, 159)] #area 18 (selecting a[18] and b[18]) #to find b[18] index: which(colnames(as.data.frame(mcmc.samples2$chain1)) == 'b[18]')
+
+dens.i.a  <- density(post.model.i[,1],bw = 5)
+dens.i.b  <- density(post.model.i[,2],bw=5)
+dens.ii.a  <- density(post.model.ii[,1],bw = 5)
+dens.ii.b  <- density(post.model.ii[,2],bw=5)
+
+pdf(file=here('output', 'figures','figure32.pdf'), width=8, height=8)
+plot(NULL, xlim=c(4000,2400), ylim=c(0,0.022), xlab='Cal BP', ylab='Posterior Probability')
+polygon(c(dens.i.a$x, rev(dens.i.a$x)), c(rep(0,length(dens.i.a$x)), rev(dens.i.a$y)), border=NA, col=rgb(0,0.4,0,0.5))
+polygon(c(dens.i.b$x, rev(dens.i.b$x)), c(rep(0,length(dens.i.b$x)), rev(dens.i.b$y)), border=NA, col=rgb(0,0.4,0,0.5))
+polygon(c(dens.ii.a$x, rev(dens.i.a$x)), c(rep(0,length(dens.ii.a$x)), rev(dens.ii.a$y)), border=NA, col=rgb(1,0.55,0,0.5))
+polygon(c(dens.ii.b$x, rev(dens.i.b$x)), c(rep(0,length(dens.ii.b$x)), rev(dens.ii.b$y)), border=NA, col=rgb(1,0.55,0,0.5))
+abline(v=c(3700, 3200),lty=2)
+axis(3,at=c(3700, 3200),labels=c(TeX('$a$'),TeX('$b$')))
+legend('topright', legend=c('Non hierarchichal','Hierarchichal'), fill=c('darkgreen','darkorange'))
+dev.off()
+
+
+#-------------------------------------------------------------------------------
+# ## Tactical Simulation Posterior Predictive Check for gradient in a given region
+ 
+# #For model (i) and (ii) select parameters a and b (i.e. start and end date of occupation in the region)
+# post.grad.model.i  <- do.call(rbind, mcmc.samples1)[ , 100] #area 18 (selecting nabla[18])
+# post.grad.model.ii  <- do.call(rbind, mcmc.samples2)[ , 300]
+# 
+# dens.i.nabla  <- density(post.grad.model.i,bw = 5)
+# dens.ii.nabla  <- density(post.grad.model.ii,bw = 5)
+# 
+# pdf(file=here('output', 'figures','figure34.pdf'), width=8, height=8)
+# plot(NULL, xlim=c(-20,20), ylim=c(0,0.1), xlab='Gradient', ylab='Posterior Probability')
+# polygon(c(dens.i.nabla$x, rev(dens.i.nabla$x)), c(rep(0,length(dens.i.nabla$x)), rev(dens.i.nabla$y)), border=NA, col=rgb(0,0.4,0,0.5))
+# polygon(c(dens.ii.nabla$x, rev(dens.ii.nabla$x)), c(rep(0,length(dens.ii.nabla$x)), rev(dens.ii.nabla$y)), border=NA, col=rgb(1,0.55,0,0.5))
+# legend('topright', legend=c('Non hierarchichal','Hierarchichal'), fill=c('darkgreen','darkorange'))
+# dev.off()
+
+
+#-------------------------------------------------------------------------------
+##Plot magnitude and direction of gradients for model (i)
 
 ##Setup Functions and Variables
 #Extract gradient distribution information
@@ -1123,11 +1154,14 @@ plot_arrows <- function(edges, ...) {
 }
 
 #--------
-#Extract quantile information
+#Extract quantile information for models
 tmp = extract_gradinfo(mcmc.samples1) 
+#tmp.ii = extract_gradinfo(mcmc.samples2) 
 qta = apply(tmp, 2, quantile, prob=c(0, 0.05, 0.25, 0.5, 0.75, 0.95, 1))
+
 #Extract uncertainty information
 uncert = sapply(as.data.frame(tmp), prop_gthan_zero)
+
 #Add info to edges dataframe
 edge_info <- edge_info %>% 
   mutate(mean_gradient = qta[4,], #50% quantile
@@ -1149,7 +1183,8 @@ bbox <- sf::st_bbox(sample_win_buff)
 aspect_ratio <- diff(range(c(bbox["ymin"], bbox["ymax"]))) / diff(range(c(bbox["xmin"], bbox["xmax"])))
 gridsize <- 1 # Adjust the denominator to change grid density
 
-pdf(file=here('output', 'figures','figure32.pdf'), width=8, height=8)
+
+pdf(file=here('output', 'figures','figure33.pdf'), width=8, height=8)
 # Create an empty plot with the appropriate range
 plot(x = c(bbox["xmin"], bbox["xmax"]), y = c(bbox["ymin"], bbox["ymax"]), type = "n",
      xlab = "Latitude", ylab = "Longitude", main = "Gradient surface of arrival times", asp = 1/aspect_ratio, axes = F)
