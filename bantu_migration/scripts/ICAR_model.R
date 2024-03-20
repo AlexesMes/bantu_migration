@@ -37,6 +37,8 @@ theta_init <- dateInfo$median_dates
 
 # Initialise regional parameters
 buffer <- 100
+delta_init <- siteInfo$diff + buffer
+alpha_init <- siteInfo$earliest + buffer/2
 
 # Initialise hex areas which contain sites
 init_a  <- aggregate(earliest~area_id, FUN=max, data=siteInfo) #find earliest date in each region k
@@ -113,6 +115,67 @@ icar_model  <- function(seed, d, theta_init, init_nabla, init_a, init_b, constan
       sd[i] <- (cra_error[i]^2 + sigmaCurve[i]^2)^(1/2);
       cra[i] ~ dnorm(mean=mu[i], sd=sd[i]);
     }
+
+    #For Each Region
+    for (k in 1:n_areas){
+      b[k] ~ dunif(50,5000);
+      constraint_uniform[k] ~ dconstraint(a[k]>b[k]) #In each area, start date of occupation, a_k, must be greater than the end date of occupation, b_k (note: BP dates in the positive direction)
+    }
+
+    #For each edge transition
+    for (t in 1:n_trans){
+      #nabla defines the gradient along the edge
+      nabla[t] <- (a[edge_id1[t]] - a[edge_id2[t]])/edge_dist[t] #edge t: select first area, m, and second area, n
+    }
+
+    # ICAR Model Prior
+    a[1:n_areas] ~ dcar_normal(adj[1:L], weights[1:L], num[1:n_areas], tau1, zero_mean =0)
+    tau1 <- 1/sigma1^2
+    sigma1 ~ dunif(0,100)
+  })
+
+  #Define initial values ----
+  inits <- list(theta=theta_init,
+                 a=init_a,
+                 b=init_b,
+                 nabla=init_nabla,
+                 sigma1=runif(1,0,100))
+
+  # Compile and Run model	----
+  model <- nimbleModel(model, constants=constants, data=d, inits=inits)
+  cModel <- compileNimble(model)
+  conf <- configureMCMC(model, control=list(adaptInterval=20000, adaptFactorExponent=0.1))
+  conf$addMonitors(c('a','b','nabla','theta'))
+  MCMC <- buildMCMC(conf)
+  cMCMC <- compileNimble(MCMC)
+  results <- runMCMC(cMCMC, niter = niter, thin = thin, nburnin = nburnin, samplesAsCodaMCMC = T, setSeed = seed)
+}
+
+#-------------------------------------------------------------------------------
+## Hierarchical ICAR Model assuming interdependence of samples ----
+icar_model_b  <- function(seed, d, theta_init, init_nabla, alpha_init, delta_init, init_a, init_b, constants, nburnin, thin, niter)
+{
+  #Load Library
+  library(nimbleCarbon)
+  #Define Core Model
+  model <- nimbleCode({
+    #For Each Date
+    for (j in 1:n_sites)
+    {
+      delta[j] ~ dgamma(gamma1, (gamma1-1)/gamma2)
+      alpha[j] ~ dunif(max = a[id_areas[j]], min = b[id_areas[j]]);
+    }
+    
+    #For Each Site
+    for (i in 1:n_dates){
+      theta[i] ~ dunif(min = (alpha[id_sites[i]] - (delta[id_sites[i]]+1)), max = alpha[id_sites[i]]);
+      #Calibration
+      mu[i] <- interpLin(z=theta[i], x=calBP[], y=C14BP[ , cc[i]]); #c14age #Index cc selects the correct calibration curve
+      cra_constraint[i] ~ dconstraint(mu[i] < 50193 & mu[i] > 95) #C14 age must be within the calibration range
+      sigmaCurve[i] <- interpLin(z=theta[i], x=calBP[], y=C14err[ , cc[i]]);
+      sd[i] <- (cra_error[i]^2 + sigmaCurve[i]^2)^(1/2);
+      cra[i] ~ dnorm(mean=mu[i], sd=sd[i]);
+    }
     
     #For Each Region
     for (k in 1:n_areas){
@@ -130,60 +193,103 @@ icar_model  <- function(seed, d, theta_init, init_nabla, init_a, init_b, constan
     a[1:n_areas] ~ dcar_normal(adj[1:L], weights[1:L], num[1:n_areas], tau1, zero_mean =0)
     tau1 <- 1/sigma1^2
     sigma1 ~ dunif(0,100)
+    
+    # Hyperprior for duration
+    gamma1 ~ dunif(1,20) #Hyperprior for rate
+    gamma2 ~ T(dnorm(mean=200,sd=100), 1, 500) #Hyperprior for mode
   })
   
   #Define initial values ---- 
   inits <- list(theta=theta_init,
-                 a=init_a,
-                 b=init_b,
-                 nabla=init_nabla,
-                 sigma1=runif(1,0,100))
+                a=init_a,
+                b=init_b,
+                alpha=alpha_init, 
+                delta=delta_init, 
+                nabla=init_nabla,
+                sigma1=runif(1,0,100),
+                gamma1=10,
+                gamma2=200)
   
   # Compile and Run model	----
   model <- nimbleModel(model, constants=constants, data=d, inits=inits)
   cModel <- compileNimble(model)
   conf <- configureMCMC(model, control=list(adaptInterval=20000, adaptFactorExponent=0.1))
-  conf$addMonitors(c('a','b','nabla','theta')) #conf$addMonitors(c('theta','delta','alpha'))
+  conf$addMonitors(c('a','b','nabla','theta','delta','alpha'))
   MCMC <- buildMCMC(conf)
   cMCMC <- compileNimble(MCMC)
   results <- runMCMC(cMCMC, niter = niter, thin = thin, nburnin = nburnin, samplesAsCodaMCMC = T, setSeed = seed) 
 }
 
+#-------------------------------------------------------------------------------
 ## Run MCMCs ----
 
 # MCMC Setup
 ncores  <-  4
 cl <- makeCluster(ncores)
 seeds <- c(12, 34, 56, 78)
-niter  <- 4 #2000000
-nburnin  <- 2 #1000000
-thin  <- 1 #100
+niter  <- 2000000
+nburnin  <- 1000000
+thin  <- 100
 
-out_icar_model  <-  parLapply(cl = cl, 
-                              X = seeds, 
-                              fun = icar_model, 
-                              d = dat, 
-                              constants = constants, 
-                              theta_init = theta_init, 
-                              init_a = init_a, 
-                              init_b = init_b, 
-                              init_nabla = init_nabla,
-                              niter = niter, 
-                              nburnin = nburnin,
-                              thin = thin)
+#Model A -- ICAR Model
+out_icar_model_a  <-  parLapply(cl = cl, 
+                                X = seeds, 
+                                fun = icar_model,
+                                d = dat, 
+                                constants = constants, 
+                                theta_init = theta_init, 
+                                init_a = init_a, 
+                                init_b = init_b, 
+                                init_nabla = init_nabla,
+                                niter = niter, 
+                                nburnin = nburnin,
+                                thin = thin)
+out_icar_model_a <- mcmc.list(out_icar_model_a)
 
-out_icar_model <- mcmc.list(out_icar_model)
-
+#Model B -- Hierarchical ICAR Model 
+out_icar_model_b  <-  parLapply(cl = cl, 
+                                X = seeds, 
+                                fun = icar_model_b, 
+                                d = dat, 
+                                constants = constants, 
+                                theta_init = theta_init, 
+                                init_a = init_a, 
+                                init_b = init_b, 
+                                init_nabla = init_nabla,
+                                alpha_init = alpha_init, #delete if icar_model
+                                delta_init = delta_init, #delete if icar_model
+                                niter = niter, 
+                                nburnin = nburnin,
+                                thin = thin)
+out_icar_model_b <- mcmc.list(out_icar_model_b)
 
 ## Diagnostics ----
-rhat_icar_model  <- gelman.diag(out_icar_model, multivariate = FALSE)
-ess_icar_model  <- effectiveSize(out_icar_model)
-agg_icar_model <- agreementIndex(dat$cra,
-                                 dat$cra_error,
-                                 calCurve = dateInfo$calCurve,
-                                 theta = out_icar_model[[1]][ , grep("theta", colnames(out_icar_model[[1]]))],
-                                 verbose = F)
+#Model A
+rhat_icar_model_a  <- gelman.diag(out_icar_model_a, multivariate = FALSE)
+ess_icar_mode_a  <- effectiveSize(out_icar_model_a)
+agg_icar_model_a <- agreementIndex(dat$cra,
+                                   dat$cra_error,
+                                   calCurve = dateInfo$calCurve,
+                                   theta = out_icar_model_a[[1]][ , grep("theta", colnames(out_icar_model_a[[1]]))],
+                                   verbose = F)
+#Model B
+rhat_icar_model_b  <- gelman.diag(out_icar_model_b, multivariate = FALSE)
+ess_icar_model_b  <- effectiveSize(out_icar_model_b)
+agg_icar_model_b <- agreementIndex(dat$cra,
+                                   dat$cra_error,
+                                   calCurve = dateInfo$calCurve,
+                                   theta = out_icar_model_b[[1]][ , grep("theta", colnames(out_icar_model_b[[1]]))],
+                                   verbose = F)
 
 #-------------------------------------------------------------------------------
 # Save output ----
-save(out_icar_model, rhat_icar_model, ess_icar_model, agg_icar_model, file=here('output','ICAR_model.RData'))
+save(out_icar_model_a, 
+     rhat_icar_model_a, 
+     ess_icar_model_a, 
+     agg_icar_model_a, 
+     file=here('output','ICAR_model_a.RData'))
+save(out_icar_model_b, 
+     rhat_icar_model_b, 
+     ess_icar_model_b, 
+     agg_icar_model_b, 
+     file=here('output','ICAR_model_b.RData'))
