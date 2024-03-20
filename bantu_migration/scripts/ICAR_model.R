@@ -4,11 +4,10 @@ library(coda)
 library(nimbleCarbon)
 library(rcarbon)
 library(dplyr)
+library(parallel)
 
 rm(list = ls())
 `%!in%` <- Negate(`%in%`)
-
-set.seed(123)
 
 #-------------------------------------------------------------------------------
 ## Data Setup ----
@@ -85,38 +84,6 @@ nb_areas <- poly2nb(as(hex_area_win, 'Spatial'), queen=FALSE, row.names = hex_ar
 nbInfo <- nb2WB(nb_areas) #transform into iCAR inputs: adjacent matrix, weights, number of neighbors (for WinBUGS)
 
 #-------------------------------------------------------------------------------
-## Model assuming independence of samples ----
-
-model1 <- nimbleCode({
-  for (i in 1:n_dates){
-    theta[i] ~ dunif(min = b[id_areas[i]], max = a[id_areas[i]]);
-    #Calibration
-    mu[i] <- interpLin(z=theta[i], x=calBP[], y=C14BP[ , cc[i]]); #c14age #Index cc selects the correct calibration curve
-    cra_constraint[i] ~ dconstraint(mu[i] < 50193 & mu[i] > 95) #C14 age must be within the calibration range
-    sigmaCurve[i] <- interpLin(z=theta[i], x=calBP[], y=C14err[ , cc[i]]);
-    sd[i] <- (cra_error[i]^2 + sigmaCurve[i]^2)^(1/2);
-    cra[i] ~ dnorm(mean=mu[i], sd=sd[i]);
-  }
-  
-  #For Each Region
-  for (k in 1:n_areas){
-    b[k] ~ dunif(50,5000);
-    constraint_uniform[k] ~ dconstraint(a[k]>b[k]) #In each area, start date of occupation, a_k, must be greater than the end date of occupation, b_k (note: BP dates in the positive direction)
-  }
-  
-  #For each edge transition
-  for (t in 1:n_trans){
-    #nabla defines the gradient along the edge
-    nabla[t] <- (a[edge_id1[t]] - a[edge_id2[t]])/edge_dist[t] #edge t: select first area, m, and second area, n
-  }
-  
-  # ICAR Model Prior
-  a[1:n_areas] ~ dcar_normal(adj[1:L], weights[1:L], num[1:n_areas], tau1, zero_mean =0)
-  tau1 <- 1/sigma1^2
-  sigma1 ~ dunif(0,100)
-  
-})
-
 #Constants ----
 constants$adj <- nbInfo$adj
 constants$weights <- nbInfo$weights
@@ -129,31 +96,94 @@ constants <- constants[names(constants) %!in% c("dist_mat",
                                                 "eastEIAcountries",
                                                 "origin_point")] #remove constants which aren't used
 
-#Define initial values ---- 
-inits1 <- list(theta=theta_init,
-               a=init_a,
-               b=init_b,
-               nabla=init_nabla,
-               sigma1=runif(1,0,100))
+#-------------------------------------------------------------------------------
+## ICAR Model assuming independence of samples ----
+icar_model  <- function(seed, d, theta_init, init_nabla, init_a, init_b, constants, nburnin, thin, niter)
+{
+  #Load Library
+  library(nimbleCarbon)
+  #Define Core Model
+  model <- nimbleCode({
+    for (i in 1:n_dates){
+      theta[i] ~ dunif(min = b[id_areas[i]], max = a[id_areas[i]]);
+      #Calibration
+      mu[i] <- interpLin(z=theta[i], x=calBP[], y=C14BP[ , cc[i]]); #c14age #Index cc selects the correct calibration curve
+      cra_constraint[i] ~ dconstraint(mu[i] < 50193 & mu[i] > 95) #C14 age must be within the calibration range
+      sigmaCurve[i] <- interpLin(z=theta[i], x=calBP[], y=C14err[ , cc[i]]);
+      sd[i] <- (cra_error[i]^2 + sigmaCurve[i]^2)^(1/2);
+      cra[i] ~ dnorm(mean=mu[i], sd=sd[i]);
+    }
+    
+    #For Each Region
+    for (k in 1:n_areas){
+      b[k] ~ dunif(50,5000);
+      constraint_uniform[k] ~ dconstraint(a[k]>b[k]) #In each area, start date of occupation, a_k, must be greater than the end date of occupation, b_k (note: BP dates in the positive direction)
+    }
+    
+    #For each edge transition
+    for (t in 1:n_trans){
+      #nabla defines the gradient along the edge
+      nabla[t] <- (a[edge_id1[t]] - a[edge_id2[t]])/edge_dist[t] #edge t: select first area, m, and second area, n
+    }
+    
+    # ICAR Model Prior
+    a[1:n_areas] ~ dcar_normal(adj[1:L], weights[1:L], num[1:n_areas], tau1, zero_mean =0)
+    tau1 <- 1/sigma1^2
+    sigma1 ~ dunif(0,100)
+  })
+  
+  #Define initial values ---- 
+  inits <- list(theta=theta_init,
+                 a=init_a,
+                 b=init_b,
+                 nabla=init_nabla,
+                 sigma1=runif(1,0,100))
+  
+  # Compile and Run model	----
+  model <- nimbleModel(model, constants=constants, data=d, inits=inits)
+  cModel <- compileNimble(model)
+  conf <- configureMCMC(model, control=list(adaptInterval=20000, adaptFactorExponent=0.1))
+  conf$addMonitors(c('a','b','nabla','theta')) #conf$addMonitors(c('theta','delta','alpha'))
+  MCMC <- buildMCMC(conf)
+  cMCMC <- compileNimble(MCMC)
+  results <- runMCMC(cMCMC, niter = niter, thin = thin, nburnin = nburnin, samplesAsCodaMCMC = T, setSeed = seed) 
+}
+
+## Run MCMCs ----
+
+# MCMC Setup
+ncores  <-  4
+cl <- makeCluster(ncores)
+seeds <- c(12, 34, 56, 78)
+niter  <- 4 #2000000
+nburnin  <- 2 #1000000
+thin  <- 1 #100
+
+out_icar_model  <-  parLapply(cl = cl, 
+                              X = seeds, 
+                              fun = icar_model, 
+                              d = dat, 
+                              constants = constants, 
+                              theta_init = theta_init, 
+                              init_a = init_a, 
+                              init_b = init_b, 
+                              init_nabla = init_nabla,
+                              niter = niter, 
+                              nburnin = nburnin,
+                              thin = thin)
+
+out_icar_model <- mcmc.list(out_icar_model)
 
 
-#Run MCMC ----
-mcmc.samples1 <- nimbleMCMC(code = model1,
-                            constants = constants,
-                            data = dat,
-                            niter = 2000000, 
-                            nchains = 4, 
-                            thin= 100, 
-                            nburnin = 1000000,
-                            monitors = c('a', 'b', 'nabla', 'theta'),
-                            inits = inits1, 
-                            samplesAsCodaMCMC=TRUE)
-
-#Diagnostics ----
-rhat1  <- gelman.diag(mcmc.samples1, multivariate = FALSE)
-ess1  <- effectiveSize(mcmc.samples1)
-
+## Diagnostics ----
+rhat_icar_model  <- gelman.diag(out_icar_model, multivariate = FALSE)
+ess_icar_model  <- effectiveSize(out_icar_model)
+agg_icar_model <- agreementIndex(dat$cra,
+                                 dat$cra_error,
+                                 calCurve = dateInfo$calCurve,
+                                 theta = out_icar_model[[1]][ , grep("theta", colnames(out_icar_model[[1]]))],
+                                 verbose = F)
 
 #-------------------------------------------------------------------------------
 # Save output ----
-save(mcmc.samples1, rhat1, ess1, file=here('output','ICAR_model.RData'))
+save(out_icar_model, rhat_icar_model, ess_icar_model, agg_icar_model, file=here('output','ICAR_model.RData'))
