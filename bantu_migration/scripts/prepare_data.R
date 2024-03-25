@@ -131,7 +131,8 @@ SARD_sum_df <- SARD_dat %>%
   rename(labCode=Lab.ID, siteName=X.Site, lat=DecdegS, long=DecdegE, c14date=Date, c14std=Uncertainty, reference=refcode, material=Material.dated, country=Country) %>%
   mutate(c14date = as.numeric(c14date), c14std=as.numeric(c14std), dataorigin="SARD")  %>%
   filter(!is.na(lat) & !is.na(long) & !is.na(c14std) & !is.na(c14date)) %>% 
-  filter(siteName !="Bambata Cave") #Designated pre-bantu (references given in Isern and Fort 2019, Suplementary Material S1, https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0215573) 
+  filter(siteName !="Bambata Cave") %>% #Bambata designated pre-bantu (references given in Isern and Fort 2019, Suplementary Material S1, https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0215573) 
+  filter(labCode != "Beta-11112") #Marine shell -- several centuries before EIA communities arrived in region
 
 Collected_sum_df <- Collected_EIA_dat %>%
   dplyr::select(LabID, Age, Error, Long, Lat, SiteName, Reference, Material, Country) %>%
