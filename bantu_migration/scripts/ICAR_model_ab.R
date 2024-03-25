@@ -256,8 +256,8 @@ out_icar_model_b  <-  parLapply(cl = cl,
                                 init_a = init_a, 
                                 init_b = init_b, 
                                 init_nabla = init_nabla,
-                                alpha_init = alpha_init, #delete if icar_model
-                                delta_init = delta_init, #delete if icar_model
+                                alpha_init = alpha_init, 
+                                delta_init = delta_init,
                                 niter = niter, 
                                 nburnin = nburnin,
                                 thin = thin)
@@ -266,7 +266,7 @@ out_icar_model_b <- mcmc.list(out_icar_model_b)
 ## Diagnostics ----
 #Model A
 rhat_icar_model_a  <- gelman.diag(out_icar_model_a, multivariate = FALSE)
-ess_icar_mode_a  <- effectiveSize(out_icar_model_a)
+ess_icar_model_a  <- effectiveSize(out_icar_model_a)
 agg_icar_model_a <- agreementIndex(dat$cra,
                                    dat$cra_error,
                                    calCurve = dateInfo$calCurve,

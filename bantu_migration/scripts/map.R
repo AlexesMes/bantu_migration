@@ -133,3 +133,19 @@ ggplot(data = hex_area_win) +
         legend.position = "none")
 
 dev.off()
+
+
+#Plotting country borders
+cntry_sampling_win <- ne_countries(continent = "Africa", country = eastEIA_countries, returnclass = "sf")
+
+ggplot(data = hex_area_win) +
+  geom_sf(data = st_buffer(st_as_sf(cntry_sampling_win, crs = 4326), 40000), aes(color = "grey50"), lwd=2) + #internal country borders
+  geom_sf(data = as(sites, 'sf'), size=2, alpha=0.5) + #sites
+  geom_sf(aes(alpha=0.01)) + #hex grid
+  geom_sf_label(aes(label = area_ID)) + #hex grid labels
+  geom_sf_text(data = cntry_sampling_win, aes(label = admin), color="darkred", size=4) + #country labels
+  theme(panel.background = element_rect(fill = "lightblue",
+                                        colour = "lightblue",
+                                        size = 0.5,
+                                        linetype = "solid"),
+        legend.position = "none")
