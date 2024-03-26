@@ -124,27 +124,27 @@ save(del,
      file=here('data','trig.RData'))
 
 
-#===============================================================================
-##Simple paths
-
-relations <- transitions %>% 
-  dplyr::select(from = region1_id, to = region2_id) 
-
-
-vertices <- st_drop_geometry(hex_area_win) 
-
-#vertices <- vertices[c(13, 18, 22),] %>% 
-#  mutate(area_ID = case_when(area_ID == 13 ~ 1, area_ID == 18 ~ 2, area_ID == 22 ~ 3))  #test_case
-
-hex_centers_graph <- graph_from_data_frame(relations, directed=FALSE, vertices = NULL)
-plot(hex_centers_graph)
-
-create_paths <- all_simple_paths(hex_centers_graph, from = 25, mode = "out") #area_ID = 25 contains 'Katuruka' our putative origin
-
-
-#-------------------------------------------------------------------------------
-## Save everything on a R image file ----
-save(create_paths, file=here('data','simplepaths.RData'))
+# #===============================================================================
+# ##Simple paths
+# 
+# relations <- transitions %>% 
+#   dplyr::select(from = region1_id, to = region2_id) 
+# 
+# 
+# vertices <- st_drop_geometry(hex_area_win) 
+# 
+# #vertices <- vertices[c(13, 18, 22),] %>% 
+# #  mutate(area_ID = case_when(area_ID == 13 ~ 1, area_ID == 18 ~ 2, area_ID == 22 ~ 3))  #test_case
+# 
+# hex_centers_graph <- graph_from_data_frame(relations, directed=FALSE, vertices = NULL)
+# plot(hex_centers_graph)
+# 
+# create_paths <- all_simple_paths(hex_centers_graph, from = 25, mode = "out") #area_ID = 25 contains 'Katuruka' our putative origin
+# 
+# 
+# #-------------------------------------------------------------------------------
+# ## Save everything on a R image file ----
+# save(create_paths, file=here('data','simplepaths.RData'))
 
 
 

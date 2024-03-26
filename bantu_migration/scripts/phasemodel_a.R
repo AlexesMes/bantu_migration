@@ -11,7 +11,7 @@ library(rcarbon)
 #-------------------------------------------------------------------------------
 ## Data Setup ----
 # Read 14C dates
-load(here('data','c14.RData'))
+load(here('data','eastc14.RData'))
 
 # General Setup ----
 # Data --
@@ -123,9 +123,9 @@ unif_model_a  <- function(seed, d, theta_init, alpha_init, delta_init, init_a, i
 ncores  <-  4
 cl <- makeCluster(ncores)
 seeds <- c(12, 34, 56, 78)
-niter  <- 6000000
-nburnin  <- 3000000
-thin  <- 300
+niter  <- 2000000
+nburnin  <- 1000000
+thin  <- 100
 
 out_unif_model_a  <-  parLapply(cl = cl, 
                                 X = seeds, 

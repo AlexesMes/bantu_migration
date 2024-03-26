@@ -29,10 +29,10 @@ sf::sf_use_s2(TRUE) #turn on spherical co-ordinates
 
 # Target Parameters ----
 true_param  <- list()
-true_param$n  <- 600 #number of sites & dates
+true_param$n  <- 400 #number of sites & dates
 true_param$origin_point <- st_sfc(st_point(c(-1.45, 31.77))) #dispersal origin point -- approximately at Katuruka
-true_param$beta0 <- 3300 #approximate mean date at origin point
-true_param$beta1 <- 0.3 #reciprocal of dispersal rate 
+true_param$beta0 <- 2500 #approximate mean date at origin point
+true_param$beta1 <- 1 #reciprocal of dispersal rate 
 true_param$sigma <- 100 
 true_param$etasq <- 0.02 #variability of dispersal rate
 true_param$rho <- 350 #range of spatial autocorrelation

@@ -5,6 +5,9 @@ library(dplyr)
 library(here)
 library(ggplot2)
 library(ggthemes)
+library(gridExtra)
+library(grid)
+library(gridBase)
 library(ggsn) #for scale bar and north arrow
 library(rnaturalearth)
 library(rnaturalearthdata)
@@ -19,22 +22,12 @@ load(here('data','eastc14.RData'))
 #-------------------------------------------------------------------------------
 ## Data preparation ----
 
-#Convert to sf objects
-bantu_sites_sf <- sf::st_as_sf(siteInfo, 
-                               coords = c("long", "lat"), 
-                               remove = F, 
-                               crs = 4326, 
-                               na.fail = F)
-
 #Sampling window without internal boundaries
-sf::sf_use_s2(FALSE) #turn off spherical co-ordinates
-sampling_win <-  sampling_win %>%
-  st_make_valid() %>%
-  st_union()
-sf::sf_use_s2(TRUE) #turn on spherical co-ordinates
+countries <- constants$eastEIAcountries
+cntry_sampling_win <- ne_countries(continent = "Africa", country = countries, returnclass = "sf")
 
 #-------------------------------------------------------------------------------
-## Plot Data  ---- FIGURE map_figure
+## Plot Data  ---- FIGURE figure_map
 
 world <- rnaturalearth::ne_countries(scale = "medium", returnclass = "sf")
 
@@ -78,14 +71,14 @@ basemap <- function(){
 
 #Ploting sites with basemap ----
 plt.main <- basemap() +
-  geom_sf(data = bantu_sites_sf,
+  geom_sf(data = sites,
           aes(colour=dataorigin),
           size = 2,
           alpha=0.5) +
   geom_point() +
-  geom_point(aes(x=st_coordinates(constants$origin_point)[1], y=st_coordinates(constants$origin_point)[2]), colour="purple", size=3) +
-  ggsn::north(data = bantu_sites_sf, location="bottomright", anchor = c(x = 43, y = -31)) + 
-  ggsn::scalebar(bantu_sites_sf,
+  geom_point(aes(x=constants$origin_point[1], y=constants$origin_point[2]), colour="purple", size=3) +
+  ggsn::north(data = sites, location="bottomright", anchor = c(x = 43, y = -31)) + 
+  ggsn::scalebar(sites,
                  location  = "bottomright",
                  anchor = c(x = 46, y = -33),
                  dist = 500, 
@@ -100,14 +93,14 @@ plt.main <- basemap() +
            ylim = c(-35, 6.5)) +
   scale_x_continuous(breaks = seq(8, 50, 2)) +
   labs(colour="Original dataset") +
-  scale_colour_discrete(labels = c("aDRAC", "Collected", "SARD")) +
+  scale_colour_discrete(labels = c("Collected", "SARD")) +
   theme_few() +
   theme(axis.title = element_blank(),
         plot.background = element_rect(color = NA,
                                        fill = NA))
 
 
-pdf(file=here('output','figures','map_figure_EAST.pdf'), width=8.5, height=7)
+pdf(file=here('output','figures','figure_map.pdf'), width=8.5, height=7)
 cowplot::ggdraw() +
   draw_plot(plt.main) +
   draw_plot(minimap, 
@@ -116,11 +109,9 @@ dev.off()
 
 
 #-------------------------------------------------------------------------------
-## Plot HEX areas  ---- FIGURE map_figure2
+## Plot HEX areas and country borders ---- FIGURE figure_map2
 
-pdf(file=here('output','figures','map_figure2_EAST.pdf'), width=8.5, height=7)
-
-ggplot(data = hex_area_win) +
+hex_area_plot <- ggplot(data = hex_area_win) +
   geom_sf(data = st_buffer(st_as_sf(sampling_win, crs = 4326), 40000), aes(color = "grey50")) + #sampling window with coastal buffer
   geom_sf() + #hex grid
   geom_sf(data = as(sites, 'sf'), size=2, alpha=0.5) + #sites
@@ -132,20 +123,29 @@ ggplot(data = hex_area_win) +
                                         linetype = "solid"),
         legend.position = "none")
 
-dev.off()
-
-
-#Plotting country borders
-cntry_sampling_win <- ne_countries(continent = "Africa", country = eastEIA_countries, returnclass = "sf")
-
-ggplot(data = hex_area_win) +
+cntry_plot <- ggplot(data = hex_area_win) +
   geom_sf(data = st_buffer(st_as_sf(cntry_sampling_win, crs = 4326), 40000), aes(color = "grey50"), lwd=2) + #internal country borders
   geom_sf(data = as(sites, 'sf'), size=2, alpha=0.5) + #sites
-  geom_sf(aes(alpha=0.01)) + #hex grid
-  geom_sf_label(aes(label = area_ID)) + #hex grid labels
-  geom_sf_text(data = cntry_sampling_win, aes(label = admin), color="darkred", size=4) + #country labels
+  geom_sf_label(data = cntry_sampling_win, aes(label = admin, alpha=0.6), color="darkred", size=4) + #country labels
   theme(panel.background = element_rect(fill = "lightblue",
                                         colour = "lightblue",
                                         size = 0.5,
                                         linetype = "solid"),
         legend.position = "none")
+
+pdf(file=here('output','figures','figure_map2.pdf'), width=8.5, height=7)
+grid.arrange(cntry_plot, hex_area_plot, nrow=1, ncol=2)
+dev.off()
+
+# #Both graphs overlaid -- helpful as a visual aid
+# ggplot(data = hex_area_win) +
+#   geom_sf(data = st_buffer(st_as_sf(cntry_sampling_win, crs = 4326), 40000), aes(color = "grey50"), lwd=2) + #internal country borders
+#   geom_sf(data = as(sites, 'sf'), size=2, alpha=0.5) + #sites
+#   geom_sf(aes(alpha=0.01)) + #hex grid
+#   geom_sf_label(aes(label = area_ID)) + #hex grid labels
+#   geom_sf_text(data = cntry_sampling_win, aes(label = admin), color="darkred", size=4) + #country labels
+#   theme(panel.background = element_rect(fill = "lightblue",
+#                                         colour = "lightblue",
+#                                         size = 0.5,
+#                                         linetype = "solid"),
+#         legend.position = "none")

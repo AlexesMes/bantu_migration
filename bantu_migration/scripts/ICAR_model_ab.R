@@ -107,7 +107,7 @@ icar_model  <- function(seed, d, theta_init, init_nabla, init_a, init_b, constan
   #Define Core Model
   model <- nimbleCode({
     for (i in 1:n_dates){
-      theta[i] ~ dunif(min = b[id_areas[i]], max = a[id_areas[i]]);
+      theta[i] ~ dunif(min = b[id_areas[i]], max = a[id_areas[i]]); #theta[i] ~ dunif(min = b[id_area[id_sites[i]]], max = a[id_area[id_sites[i]]]);
       #Calibration
       mu[i] <- interpLin(z=theta[i], x=calBP[], y=C14BP[ , cc[i]]); #c14age #Index cc selects the correct calibration curve
       cra_constraint[i] ~ dconstraint(mu[i] < 50193 & mu[i] > 95) #C14 age must be within the calibration range

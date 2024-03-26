@@ -12,7 +12,7 @@ set.seed(123)
 
 #-------------------------------------------------------------------------------
 ## Data Setup ----
-load(here('data', 'tactical_sim_phase_TOY.RData'))
+load(here('data', 'tactical_sim_ICAR.RData'))
 load(here('data','trig.RData')) #nodes and edges between hex area centroids
 
 #Combine constants
@@ -203,4 +203,4 @@ ess2  <- effectiveSize(mcmc.samples2)
 
 #-------------------------------------------------------------------------------
 # Save output ----
-save(mcmc.samples1, rhat1, ess1, mcmc.samples2, rhat2, ess2, file=here('output','phasemodel_tactsim_TOY.RData'))
+save(mcmc.samples1, rhat1, ess1, mcmc.samples2, rhat2, ess2, file=here('output','ICARmodel_tactsim.RData'))

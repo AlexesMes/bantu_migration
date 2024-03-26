@@ -6,7 +6,7 @@ library(quantreg)
 library(parallel)
 
 # Load and prepare data ----
-load(here('data','c14.RData'))
+load(here('data', 'eastc14.RData'))
 
 
 #===============================================================================
@@ -77,7 +77,7 @@ runFun <- function(seed, dat, theta_init, constants, nburnin, thin, niter)
       cra[i] ~ dnorm(mean=c14age[i],sd=sigmaDate[i]);
     }
     #priors 
-    alpha ~ dnorm(3300, sd=200); #beta_0 #Assume the first migration to be somewhere between 3100BP and 3500BP. Note: age of approximate origin, Ngoume, 3618 BP
+    alpha ~ dnorm(2500, sd=200); #beta_0 #Assume the first migration to be somewhere between 2400BP and 2600BP. Note: age of approximate origin, Katuruka, 2570 BP
     beta ~ dexp(1) #beta_1 #If we were focused on the introduction of farming, a sensible prior can be based on known archaeological examples of farming dispersal rates
     sigma ~ dexp(0.01) #lambda
   })
@@ -110,9 +110,9 @@ runFun <- function(seed, dat, theta_init, constants, nburnin, thin, niter)
 ncores  <-  4
 cl <- makeCluster(ncores)
 seeds  <-  c(12, 34, 56, 78)
-niter  <- 6000000 #Number of iterations #Working 1000000 and 500000
-nburnin  <- 3000000 #Burn-in iterations (after this assuming chain has reached a good approximation of stationary)
-thin  <- 300 #Parameters sampled every 300 steps
+niter  <- 2000000 #Number of iterations
+nburnin  <- 1000000 #Burn-in iterations (after this assuming chain has reached a good approximation of stationary)
+thin  <- 100 #Parameters sampled every 100 steps
 
 #Run the model in parallel
 chain_output = parLapply(cl = cl, X = seeds, fun = runFun, d = dat, constants = constants, theta = theta_init, niter = niter, nburnin = nburnin, thin = thin)

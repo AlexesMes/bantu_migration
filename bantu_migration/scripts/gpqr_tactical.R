@@ -25,6 +25,7 @@ constants$calBP <- intcal20$CalBP #Same for intcal20 and shcal20
 constants$C14BP  <- cbind(intcal20$C14Age, shcal20$C14Age) #Northern and southern hemisphere calibration curves
 constants$C14err  <- cbind(intcal20$C14Age.sigma, shcal20$C14Age.sigma)
 constants$cc <- as.numeric(as.factor(sim_sites$calCurve)) #intcal20==1 and shcal20==2
+
 # Dummy extension of the calibration curves -- 'bookend' values to ensure the regression algorithm never falls out of bounds
 constants$calBP <- c(1000000, constants$calBP, -1000000)
 constants$C14BP <- rbind(c(1000000,1000000), constants$C14BP, c(-1000000,-1000000))
@@ -82,7 +83,7 @@ runFun  <- function(seed, dat, theta_init, constants, niter, nburnin, thin)
       cra[i] ~ dnorm(mean=mu.date[i], sd=sd[i]);
     }
     #priors
-    beta0 ~ dnorm(3300, sd=200);
+    beta0 ~ dnorm(2500, sd=200);
     beta1 ~ dexp(1)
     sigma ~ dexp(0.01)
     etasq ~ dexp(20);
@@ -96,8 +97,8 @@ runFun  <- function(seed, dat, theta_init, constants, niter, nburnin, thin)
   set.seed(seed)
   inits  <-  list()
   inits$theta  <- theta_init
-  inits$beta0 <- rnorm(1, 3300, 200)
-  inits$beta1 <- rexp(1, rate=1/3)
+  inits$beta0 <- rnorm(1, 2500, 200)
+  inits$beta1 <- rexp(1, rate=1)
   inits$sigma  <- rexp(1, 0.01)
   inits$rho  <- rtgamma(1, shape=10, scale=(10-1)/200, min=1, max=4600)
   inits$etasq  <- rexp(1,20)
