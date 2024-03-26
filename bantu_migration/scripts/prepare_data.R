@@ -307,7 +307,7 @@ constants$n_sites <- nrow(siteInfo)
 constants$n_dates  <- nrow(dateInfo)
 constants$n_areas  <- nrow(hex_area_win) #All areas (even empty ones) are included #Only occupied areas: length(unique(siteInfo$area_id))
 constants$id_sites <- dateInfo$siteID
-constants$id_areas  <- dateInfo$area_id #TODO: change back -- siteInfo$area_id 
+constants$id_areas  <- siteInfo$area_id 
 constants$dist_mat  <- dist_mat
 constants$dist_org  <- dist_org
 constants$origin_point <- st_coordinates(origin_point)

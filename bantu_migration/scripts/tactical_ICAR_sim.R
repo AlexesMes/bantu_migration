@@ -60,7 +60,7 @@ id_sites <- c(1:n_sites,
               sample(1:n_sites,
                      size = n_dates-n_sites,
                      replace=TRUE,
-                     prob = dexp(1:n_sites,rate=1)/sum(dexp(1:n_sites,rate=1)))) #generate a site id for each date
+                     prob = dnorm(1:n_sites, mean = mean(1:n_sites), sd = sd(1:n_sites)) / sum(dnorm(1:n_sites, mean = mean(1:n_sites), sd = sd(1:n_sites))))) #generate a site id for each date
 
 dates <- sites[1, ] #initialise dates_sf 
 for(i in 2:n_dates){
@@ -69,9 +69,9 @@ for(i in 2:n_dates){
 }
 
 ##CHECK ---
-#site_freq  <- plyr::count(dates, 'site_id') ##See how many observations at each site
+site_freq  <- plyr::count(dates, 'site_id') ##See how many observations at each site
 #table(id_sites)
-#area_freq  <- plyr::count(dates, 'area_id') ##See how many observations in each hex area
+area_freq  <- plyr::count(dates, 'area_id') ##See how many observations in each hex area
 
 # #Check that this lines up visually with how many sites are in each hex area
 # ggplot(data = hex_area_win) +
@@ -107,9 +107,10 @@ sim_constants <- list()
 sim_constants$n_sites <- n_sites
 sim_constants$n_dates  <- n_dates
 sim_constants$id_sites  <- dates$site_id
-sim_constants$id_areas <- dates$area_id
+sim_constants$id_areas <- sites$area_id
 sim_constants$a <- 3700
 sim_constants$b <- 3200
+
 
 #Simulate ----
 set.seed(1223)

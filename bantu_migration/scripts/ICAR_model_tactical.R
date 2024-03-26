@@ -82,7 +82,7 @@ constants <- constants[names(constants) %!in% c("dist_mat", "dist_org", "center_
 ## Model assuming independence of samples ----
 model1 <- nimbleCode({
   for (i in 1:n_dates){
-    theta[i] ~ dunif(min = b[id_areas[i]], max = a[id_areas[i]]);
+    theta[i] ~ dunif(min = b[id_areas[id_sites[i]]], max = a[id_areas[id_sites[i]]]); 
   }
   
   #For Each Region
@@ -119,10 +119,10 @@ inits1 <- list(a=init_a,
 mcmc.samples1 <- nimbleMCMC(code = model1,
                            constants = constants,
                            data = d1,
-                           niter = 2000000, 
+                           niter = 4,#2000000, 
                            nchains = 4, 
-                           thin= 100, 
-                           nburnin = 1000000,
+                           thin= 1,#100, 
+                           nburnin = 2,#1000000,
                            monitors = c('a', 'b', 'nabla', 'theta'),
                            inits = inits1, 
                            samplesAsCodaMCMC=TRUE)
@@ -188,10 +188,10 @@ inits2 <- list(a=init_a,
 mcmc.samples2 <- nimbleMCMC(code = model2,
                             constants = constants,
                             data = d2,
-                            niter = 2000000, 
+                            niter = 4,#2000000, 
                             nchains = 4, 
-                            thin= 100, 
-                            nburnin = 1000000,
+                            thin= 1,#100, 
+                            nburnin = 2,#1000000,
                             monitors = c('a', 'b', 'nabla', 'theta', 'delta','alpha'),
                             inits = inits2, 
                             samplesAsCodaMCMC=TRUE)
