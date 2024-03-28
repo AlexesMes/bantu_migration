@@ -90,15 +90,23 @@ area_freq  <- plyr::count(dates, 'area_id') ##See how many observations in each 
 #-------------------------------------------------------------------------------
 #Model ----
 sim_model <- nimbleCode({
+  for (k in 1:n_areas){
+    a[k] ~ dunif(100,5000);
+    b[k] ~ dunif(100,5000);
+    constraint_uniform[k] ~ dconstraint(a[k]>b[k]);
+  }
+  
   for (j in 1:n_sites)
   {
-    delta[j] ~ dgamma(5,(5-1)/200); #Site duration parameter.
-    alpha[j] ~ dunif(max=a, min=b);
-    beta[j] <- alpha[j] - (delta[j] + 1); 
+    delta[j] ~ dgamma(5,(5-1)/100); #Site duration parameter.
+    alpha[j] ~ dunif(max=a[id_areas[j]], min=b[id_areas[j]]);
+    beta[j] <- alpha[j] - (delta[j] + 1); #The +1 ensures at a minimum where there are two dates at a site there will be 1 year between them.
+    constraint_duration[j] ~ dconstraint(alpha[j]>(delta[j]+1)); #Site can't have have a duration longer than its time of first arrival
   }
   
   for (i in 1:n_dates){
     theta[i] ~ dunif(min=beta[id_sites[i]], max=alpha[id_sites[i]]);
+    cra_constraint[i] ~ dconstraint(theta[i] > 0);
   }
 })
 
@@ -106,15 +114,23 @@ sim_model <- nimbleCode({
 sim_constants <- list()
 sim_constants$n_sites <- n_sites
 sim_constants$n_dates  <- n_dates
+sim_constants$n_areas  <- constants_sw$n_areas
 sim_constants$id_sites  <- dates$site_id
 sim_constants$id_areas <- sites$area_id
-sim_constants$a <- 3700
-sim_constants$b <- 3200
 
+#Define constraints, data, and initial values ----
+dat <- list(constraint_uniform = rep(1, sim_constants$n_areas),
+            constraint_duration = rep(1, n_sites),
+            cra_constraint = rep(1, n_dates))
+
+init_a <- runif(1:sim_constants$n_areas, min = 600, max = 3500)
+init_b <- init_a - runif(1:sim_constants$n_areas, min = 50, max = 600)
+inits <- list(a = init_a,
+              b = init_b)
 
 #Simulate ----
 set.seed(1223)
-simModel <- nimbleModel(code = sim_model, constants = sim_constants)
+simModel <- nimbleModel(code = sim_model, constants = sim_constants, data = dat, inits = inits)
 simModel$simulate('delta')
 simModel$simulate('alpha')
 simModel$simulate('beta')
