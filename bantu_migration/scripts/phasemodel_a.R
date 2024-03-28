@@ -74,7 +74,7 @@ unif_model_a  <- function(seed, d, theta_init, alpha_init, delta_init, init_a, i
     for (j in 1:n_sites)
     {
       delta[j] ~ dgamma(gamma1, (gamma1-1)/gamma2)
-      alpha[j] ~ dunif(max = a[id_area[j]], min = b[id_area[j]]);
+      alpha[j] ~ dunif(max = a[id_areas[j]], min = b[id_areas[j]]);
     }
     
     for (i in 1:n_dates){

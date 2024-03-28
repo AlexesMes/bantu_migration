@@ -18,11 +18,12 @@ prop_gthan_zero <- function(data) {
 }
 
 # Define a custom function to plot arrows
-plot_arrows <- function(edges, ...) {
+plot_arrows <- function(edges, scale_par=1, ...) {
   for (i in 1:nrow(edges)) {
     
     ##Determine which is the start node and which is the end node
-    if(edges$mean_gradient[i] >= 0){
+    mag_grad <- edges$mean_gradient[i] #Multiply by scaling parameter for plotting purposes -- relative magnitude of gradient is what is important
+    if(mag_grad >= 0){
       x_start = edges$region1_x[i]
       y_start = edges$region1_y[i]
       x_end = edges$region2_x[i]
@@ -42,11 +43,11 @@ plot_arrows <- function(edges, ...) {
     angle_rad <- atan2(delta_y, delta_x)
     
     # Define the length of the arrow
-    arrow_length <- abs(edges$mean_gradient[i])*40 #TODO: relative magnitude of gradient is what is important, '40' is merely a scaling parameter
+    arrow_length <- abs(mag_grad)*scale_par
     
     # Calculate the coordinates of the arrow head
-    arrow_head_x <- x_end - arrow_length * cos(angle_rad)
-    arrow_head_y <- y_end - arrow_length * sin(angle_rad)
+    arrow_head_x <- x_start + arrow_length * cos(angle_rad)
+    arrow_head_y <- y_start + arrow_length * sin(angle_rad)
     
     # Define alpha transparency value (0 to 1) depending on uncertainty in gradient
     alpha <- edges$uncertainty[i] #the proportion of the distribution in this direction
