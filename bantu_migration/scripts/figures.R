@@ -931,42 +931,6 @@ B.ii <- plot_grad(edge_info.ii, 35, sampling_win)
 grid.arrange(A.i, B.ii, ncol=2, padding=0)
 dev.off()
 
-
-
-
-arrow_length <- list()
-edges <- edge_info.i
-for (i in 1:nrow(edges)) {
-  
-  ##Determine which is the start node and which is the end node
-  m_grad <- edges$mean_gradient[i]*10
-  if(m_grad >= 0){
-    x_start = edges$region1_x[i]
-    y_start = edges$region1_y[i]
-    x_end = edges$region2_x[i]
-    y_end = edges$region2_y[i] } else {
-      x_start = edges$region2_x[i]
-      y_start = edges$region2_y[i]
-      x_end = edges$region1_x[i]
-      y_end = edges$region1_y[i]
-    }
-  
-  ##Determine the angle of the edge
-  #Calculate the differences in x and y coordinates
-  delta_x <- x_end - x_start
-  delta_y <- y_end - y_start
-  
-  # Calculate the angle in radians using the arctangent function (atan2)
-  angle_rad <- atan2(delta_y, delta_x)
-  
-  # Define the length of the arrow
-  alngth <- abs(m_grad)
-  arrow_length <- c(arrow_length, alngth)
-}
-
-
-
-
 # #-------------------------------------------------------------------------------
 # # Marginal posteriors of beta0, beta1, rho, etasq for tau = 0.9
 # 

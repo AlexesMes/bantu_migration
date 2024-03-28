@@ -20,8 +20,7 @@ fit_rq <- rq(earliest ~ dist_org, tau = 0.99, data=siteInfo, alpha=0.95)
 
 # Derive overall estimated rate of dispersal
 -1/summary(fit_rq)$coefficients[2,] 
-#Note: Between 2.83 to 18.67 km/year, with estimate at 3.32 km/year. 'Lower bd' and 'upper bd' represent the endpoints of confidence intervals for the model coefficients
-#Additional note: when removing Russell_EIA data and only including SARD and ADRAC we find a much smaller confidence interval: between 2.53 to 3.77 km/year with an estimate of 3.33 km/year
+#Note: Between 1.16 to 11.7 km/year, with estimate at 6.1 km/year. 'Lower bd' and 'upper bd' represent the endpoints of confidence intervals for the model coefficients
 
 #===============================================================================
 ## Bayesian Quantile Regression ----
