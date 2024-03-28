@@ -165,6 +165,8 @@ constants <- sim_constants[names(sim_constants) %!in% c("a", "b")]
 constants$dist_mat  <- dist_mat
 constants$dist_org  <- dist_org
 constants$n_areas  <- nrow(hex_area_win)
+constants$true_a <- init_a
+constants$true_b <- init_b
 
 #Store output ----
 save(sites, siteInfo, sim_df, constants, sampling_win, hex_area_win, file=here('data','tactical_sim_ICAR.RData'))

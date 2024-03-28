@@ -443,8 +443,10 @@ dev.off()
 
 #For model (i) and (ii) select parameters a and b (i.e. start and end date of occupation in the region)
 
-pdf(file=here('output', 'figures','figure14.pdf'), width=14, height=18)
+sim_a <- constants$true_a
+sim_b <- constants$true_b
 
+pdf(file=here('output', 'figures','figure14.pdf'), width=14, height=18)
 # Define the layout for the plots
 par(mfrow = c(6, 6))
 
@@ -459,13 +461,13 @@ for (k in c(5, 7:41)) #all hex areas
   dens.ii.b <- density(post.model.ii[,2],bw=5)
   
   # Plot
-  plot(NULL, xlim=c(4000,2400), ylim=c(0,0.022), xlab='Cal BP', ylab='Posterior Probability')
+  plot(NULL, xlim=c(sim_a[[k]]+300, sim_b[[k]]-300), ylim=c(0,0.022), xlab='Cal BP', ylab='Posterior Probability')
   polygon(c(dens.i.a$x, rev(dens.i.a$x)), c(rep(0,length(dens.i.a$x)), rev(dens.i.a$y)), border=NA, col=rgb(0,0.4,0,0.5))
   polygon(c(dens.i.b$x, rev(dens.i.b$x)), c(rep(0,length(dens.i.b$x)), rev(dens.i.b$y)), border=NA, col=rgb(0,0.4,0,0.5))
   polygon(c(dens.ii.a$x, rev(dens.i.a$x)), c(rep(0,length(dens.ii.a$x)), rev(dens.ii.a$y)), border=NA, col=rgb(1,0.55,0,0.5))
   polygon(c(dens.ii.b$x, rev(dens.i.b$x)), c(rep(0,length(dens.ii.b$x)), rev(dens.ii.b$y)), border=NA, col=rgb(1,0.55,0,0.5))
-  abline(v=c(3700, 3200),lty=2)
-  axis(3,at=c(3700, 3200),labels=c(TeX('$a$'),TeX('$b$')))
+  abline(v=c(sim_a[[k]], sim_b[[k]]),lty=2)
+  axis(3,at=c(sim_a[[k]], sim_b[[k]]),labels=c(TeX('$a$'),TeX('$b$')))
   legend('topright', legend=c('Non hierarchichal','Hierarchichal'), fill=c('darkgreen','darkorange'))
   title(main = paste("Area", k))
 }
@@ -929,6 +931,23 @@ pdf(file=here('output','figures','figure23.pdf'))
 A.i <- plot_grad(edge_info.i, 15, sampling_win)
 B.ii <- plot_grad(edge_info.ii, 35, sampling_win)
 grid.arrange(A.i, B.ii, ncol=2, padding=0)
+dev.off()
+
+#-------------------------------------------------------------------------------
+# Traceplot of start and end of occupation (a, b) ---- FIGURE 24
+
+pdf(file=here('output', 'figures','figure24.pdf'), width=8, height=8)
+par(mfrow=c(2,2))
+traceplot(out_icar_model_a[,'a[18]'], main=TeX('$a[18]$'),smooth=TRUE) #region area 18, as an example
+traceplot(out_icar_model_a[,'b[18]'], main=TeX('$b[18]$'),smooth=TRUE)
+traceplot(out_icar_model_a[,'nabla[18]'], main=TeX('$nabla[18]$'), smooth=TRUE)
+dev.off()
+
+pdf(file=here('output', 'figures','figure25.pdf'), width=8, height=8)
+par(mfrow=c(2,2))
+traceplot(out_icar_model_b[,'a[18]'], main=TeX('$a[18]$'),smooth=TRUE) #region area 18, as an example
+traceplot(out_icar_model_b[,'b[18]'], main=TeX('$b[18]$'),smooth=TRUE)
+traceplot(out_icar_model_b[,'nabla[18]'], main=TeX('$nabla[18]$'), smooth=TRUE)
 dev.off()
 
 # #-------------------------------------------------------------------------------
