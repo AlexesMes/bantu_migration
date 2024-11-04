@@ -156,6 +156,18 @@ text(x=2500, y=2150, label='5km/yr')
 legend('bottomright', legend=c('50% percentile range', '95% percentile range'), fill=c(rgb(0.67,0.84,0.9,0.5), rgb(0.25,0.41,0.88,0.5)))
 dev.off()
 
+#-------------------------------------------------------------------------------
+#Traceplots
+pdf(file=here('output', 'figures','figure4.1.pdf'), width=8, height=8)
+par(mfrow=c(2,2))
+traceplot(quantreg_sample[, "alpha"], main=TeX('$alpha$'),smooth=TRUE)
+traceplot(quantreg_sample[,'beta'], main=TeX('$beta$'),smooth=TRUE)
+traceplot(quantreg_sample[,'sigma'], main=TeX('$sigma$'), smooth=TRUE)
+traceplot(quantreg_sample[,'theta[14]'], main=TeX('$theta[14]$'), smooth=TRUE) #example theta
+dev.off()
+
+
+
 #===============================================================================
 ###Bayesian Hierarchical Phase Model
 #===============================================================================
@@ -448,9 +460,9 @@ sim_b <- constants$true_b
 
 pdf(file=here('output', 'figures','figure14.pdf'), width=14, height=18)
 # Define the layout for the plots
-par(mfrow = c(6, 6))
+par(mfrow = c(7, 6))
 
-for (k in c(5, 7:41)) #all hex areas
+for (k in 1:41) #all hex areas
 {
   post.model.i <- do.call(rbind, mcmc.samples1)[ , c(k, k+41)] #selecting a[k] and b[k]
   post.model.ii <- do.call(rbind, mcmc.samples2)[ , c(k, k+141)] #selecting a[k] and b[k] #e.g.to find b[18] index: which(colnames(as.data.frame(mcmc.samples2$chain1)) == 'b[18]')
@@ -464,8 +476,8 @@ for (k in c(5, 7:41)) #all hex areas
   plot(NULL, xlim=c(sim_a[[k]]+300, sim_b[[k]]-300), ylim=c(0,0.022), xlab='Cal BP', ylab='Posterior Probability')
   polygon(c(dens.i.a$x, rev(dens.i.a$x)), c(rep(0,length(dens.i.a$x)), rev(dens.i.a$y)), border=NA, col=rgb(0,0.4,0,0.5))
   polygon(c(dens.i.b$x, rev(dens.i.b$x)), c(rep(0,length(dens.i.b$x)), rev(dens.i.b$y)), border=NA, col=rgb(0,0.4,0,0.5))
-  polygon(c(dens.ii.a$x, rev(dens.i.a$x)), c(rep(0,length(dens.ii.a$x)), rev(dens.ii.a$y)), border=NA, col=rgb(1,0.55,0,0.5))
-  polygon(c(dens.ii.b$x, rev(dens.i.b$x)), c(rep(0,length(dens.ii.b$x)), rev(dens.ii.b$y)), border=NA, col=rgb(1,0.55,0,0.5))
+  polygon(c(dens.ii.a$x, rev(dens.ii.a$x)), c(rep(0,length(dens.ii.a$x)), rev(dens.ii.a$y)), border=NA, col=rgb(1,0.55,0,0.5))
+  polygon(c(dens.ii.b$x, rev(dens.ii.b$x)), c(rep(0,length(dens.ii.b$x)), rev(dens.ii.b$y)), border=NA, col=rgb(1,0.55,0,0.5))
   abline(v=c(sim_a[[k]], sim_b[[k]]),lty=2)
   axis(3,at=c(sim_a[[k]], sim_b[[k]]),labels=c(TeX('$a$'),TeX('$b$')))
   legend('topright', legend=c('Non hierarchichal','Hierarchichal'), fill=c('darkgreen','darkorange'))
@@ -474,6 +486,28 @@ for (k in c(5, 7:41)) #all hex areas
 
 dev.off()
 
+
+##Show alpha values are recovered at sites -- FIGURE 14.2
+sim_alpha <- constants$true_alpha
+
+pdf(file=here('output', 'figures','figure14.2.pdf'), width=14, height=18)
+# Define the layout for the plots
+par(mfrow = c(10, 10))
+
+for (j in 1:100){ #all sites
+  post.model.ii <- do.call(rbind, mcmc.samples2)[ , c(j+41)]
+  dens.ii.a <- density(post.model.ii,bw = 5)
+  
+  # Plot
+  plot(NULL, xlim=c(sim_alpha[[j]]+300, sim_alpha[[j]]-300), ylim=c(0,0.06), xlab='Cal BP', ylab='Posterior Probability')
+  polygon(c(dens.ii.a$x, rev(dens.ii.a$x)), c(rep(0,length(dens.ii.a$x)), rev(dens.ii.a$y)), border=NA, col=rgb(1,0.55,0,0.5))
+  abline(v=sim_alpha[[j]],lty=2)
+  axis(3,at=sim_alpha[[j]],labels=TeX('$alpha$'))
+  legend('topright', legend='Hierarchichal', fill='darkorange')
+  title(main = paste("Site", j))
+}
+
+dev.off()
 
 #-------------------------------------------------------------------------------
 # ## Tactical Simulation Posterior Predictive Check for gradient in a given region -- FIGURE 15
