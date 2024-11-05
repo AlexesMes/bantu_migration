@@ -50,12 +50,12 @@ init_empty_area <- function(init_df) {
 init_a <- init_a %>% init_empty_area() %>%  arrange(area_id)
 init_b <- init_b %>% init_empty_area() %>%  arrange(area_id)
 
-#Gradient parameter initialisation
-init_nabla <- 0 
-for (t in 1:constants$n_trans){ 
+# #Gradient parameter initialisation
+init_nabla <- 0
+for (t in 1:constants$n_trans){
   m <- constants$edge_id1[t] #transition/edge t, select first area
   n <- constants$edge_id2[t] #transition/edge t, select second area
-  
+
   init_nabla[t] <- (init_a$earliest[init_a$area_id==m] - init_a$earliest[init_a$area_id==n])/constants$edge_dist[t]
 }
 
@@ -80,9 +80,116 @@ constants$num <- nbInfo$num
 constants$L <- length(nbInfo$adj)
 constants <- constants[names(constants) %!in% c("dist_mat", "dist_org", "center_coords")] #remove constants which aren't used
 
+
 #-------------------------------------------------------------------------------
-## Model assuming independence of samples ----
+## Model 0: Phase model assuming independence of samples (i.e. no hierarchical structure) ----
+
+model0 <- nimbleCode({
+  #For Each Date
+  for (i in 1:n_dates){
+    theta[i] ~ dunif(min = b[id_areas[id_sites[i]]], max = a[id_areas[id_sites[i]]]); 
+  }
+  
+  #For Each Region
+  for (k in 1:n_areas){
+    a[k] ~ dunif(50,5000);
+    b[k] ~ dunif(50,5000);
+    constraint_uniform[k] ~ dconstraint(a[k]>b[k]) #In each area, start date of occupation, a_k, must be greater than the end date of occupation, b_k (note: BP dates in the positive direction)
+  }
+  
+  # Hyperprior for duration
+  gamma1 ~ dunif(1,20) #Hyperprior for rate
+  gamma2 ~ T(dnorm(mean=200,sd=100), 1, 500) #Hyperprior for mode
+})
+
+#Define initial values ---- 
+d0 <- list(theta=sim_df$cra, 
+           constraint_uniform = rep(1, constants$n_areas)) #unif.const=1
+
+
+inits0 <- list(a=init_a,
+               b=init_b,
+               #theta=sim_df$cra, ##QQ: I'm not sure if we need to initalise theta or provide it as data? 
+               gamma1=10,
+               gamma2=200) 
+
+#Run MCMC ----
+mcmc.samples0 <- nimbleMCMC(code = model0,
+                            constants = constants,
+                            data = d0,
+                            niter = 500000, #2000000, 
+                            nchains = 4, 
+                            thin= 50, #100, 
+                            nburnin = 100000, #1000000,
+                            monitors = c('a', 'b', 'theta', 'gamma1', 'gamma2'),
+                            inits = inits0, 
+                            samplesAsCodaMCMC=TRUE)
+
+#Diagnostics ----
+rhat0  <- gelman.diag(mcmc.samples0, multivariate = FALSE)
+ess0  <- effectiveSize(mcmc.samples0)
+
+
+#-------------------------------------------------------------------------------
+## Model 1: Phase model adding hierarchical structure ----
+
 model1 <- nimbleCode({
+  #For Each Site
+  for (j in 1:n_sites)
+  {
+    delta[j] ~ dgamma(gamma1, (gamma1-1)/gamma2)
+    alpha[j] ~ dunif(max = a[id_areas[j]], min = b[id_areas[j]]);
+  }
+  
+  #For Each Date
+  for (i in 1:n_dates){
+    theta[i] ~ dunif(min = (alpha[id_sites[i]] - (delta[id_sites[i]]+1)), max = alpha[id_sites[i]]);
+  }
+  
+  #For Each Region
+  for (k in 1:n_areas){
+    a[k] ~ dunif(50,5000);
+    b[k] ~ dunif(50,5000);
+    constraint_uniform[k] ~ dconstraint(a[k]>b[k]) #In each area, start date of occupation, a_k, must be greater than the end date of occupation, b_k (note: BP dates in the positive direction)
+  }
+  # Hyperprior for duration
+  gamma1 ~ dunif(1,20) #Hyperprior for rate
+  gamma2 ~ T(dnorm(mean=200,sd=100), 1, 500) #Hyperprior for mode
+})
+
+#Define initial values ---- 
+d1 <- list(theta=sim_df$cra, 
+  constraint_uniform = rep(1, constants$n_areas)) #unif.const=1
+
+
+inits1 <- list(a=init_a,
+               b=init_b,
+               #theta=sim_df$cra, ##QQ: I'm not sure if we need to initalise theta or provide it as data? 
+               alpha=alpha_init, 
+               delta=delta_init,
+               gamma1=10,
+               gamma2=200) 
+
+#Run MCMC ----
+mcmc.samples1 <- nimbleMCMC(code = model1,
+                            constants = constants,
+                            data = d1,
+                            niter = 500000, #2000000, 
+                            nchains = 4, 
+                            thin= 50, #100, 
+                            nburnin = 100000, #1000000,
+                            monitors = c('a', 'b', 'theta', 'gamma1', 'gamma2', 'delta', 'alpha'),
+                            inits = inits1, 
+                            samplesAsCodaMCMC=TRUE)
+
+#Diagnostics ----
+rhat1  <- gelman.diag(mcmc.samples1, multivariate = FALSE)
+ess1  <- effectiveSize(mcmc.samples1)
+
+#-------------------------------------------------------------------------------
+## Model 2: ICAR assuming independence of samples (i.e. no hierarchical structure) ----
+model2 <- nimbleCode({
+  #For Each Date
   for (i in 1:n_dates){
     theta[i] ~ dunif(min = b[id_areas[id_sites[i]]], max = a[id_areas[id_sites[i]]]); 
   }
@@ -107,36 +214,37 @@ model1 <- nimbleCode({
 })
 
 #Define initial values ---- 
-d1 <- list(theta=sim_df$cra, 
+d2 <- list(theta=sim_df$cra, 
            constraint_uniform = rep(1, constants$n_areas)) 
 
 
-inits1 <- list(a=init_a,
+inits2 <- list(a=init_a,
                b=init_b,
+               #theta=sim_df$cra, 
                nabla=init_nabla,
                sigma1=runif(1,0,100))
 
 
 #Run MCMC ----
-mcmc.samples1 <- nimbleMCMC(code = model1,
+mcmc.samples2 <- nimbleMCMC(code = model2,
                            constants = constants,
-                           data = d1,
-                           niter = 2000000, 
+                           data = d2,
+                           niter = 500000, #2000000, 
                            nchains = 4, 
-                           thin= 100, 
-                           nburnin = 1000000,
+                           thin= 50, #100, 
+                           nburnin = 100000, #1000000,
                            monitors = c('a', 'b', 'nabla', 'theta'),
-                           inits = inits1, 
+                           inits = inits2, 
                            samplesAsCodaMCMC=TRUE)
 
 #Diagnostics ----
-rhat1  <- gelman.diag(mcmc.samples1, multivariate = FALSE)
-ess1  <- effectiveSize(mcmc.samples1)
+rhat2  <- gelman.diag(mcmc.samples2, multivariate = FALSE)
+ess2  <- effectiveSize(mcmc.samples2)
 
 #-------------------------------------------------------------------------------
-# Model integrating sample interdependence, i.e. the addition of a hierarchical model ----
+# Model 3: ICAR integrating sample interdependence, i.e. the addition of a hierarchical model ----
 
-model2 <- nimbleCode({
+model3 <- nimbleCode({
   #For Each Site
   for (j in 1:n_sites)
   {
@@ -144,7 +252,7 @@ model2 <- nimbleCode({
     alpha[j] ~ dunif(max = a[id_areas[j]], min = b[id_areas[j]]);
   }
   
-  #For each date
+  #For Each Date
   for (i in 1:n_dates){
     theta[i] ~ dunif(min = (alpha[id_sites[i]] - (delta[id_sites[i]]+1)), max = alpha[id_sites[i]]);
   }
@@ -172,12 +280,13 @@ model2 <- nimbleCode({
 })
 
 #Define initial values ---- 
-d2 <- list(theta=sim_df$cra, 
+d3 <- list(theta=sim_df$cra, 
            constraint_uniform = rep(1, constants$n_areas)) 
 
 
-inits2 <- list(a=init_a,
+inits3 <- list(a=init_a,
                b=init_b,
+               #theta=sim_df$cra,
                alpha=alpha_init, 
                delta=delta_init,
                nabla=init_nabla,
@@ -187,22 +296,25 @@ inits2 <- list(a=init_a,
 
 
 #Run MCMC ----
-mcmc.samples2 <- nimbleMCMC(code = model2,
+mcmc.samples3 <- nimbleMCMC(code = model3,
                             constants = constants,
-                            data = d2,
-                            niter = 2000000, 
+                            data = d3,
+                            niter = 500000, #2000000, 
                             nchains = 4, 
-                            thin= 100, 
-                            nburnin = 1000000,
+                            thin= 50, #100, 
+                            nburnin = 100000, #1000000,
                             monitors = c('a', 'b', 'nabla', 'theta', 'delta','alpha'),
-                            inits = inits2, 
+                            inits = inits3, 
                             samplesAsCodaMCMC=TRUE)
 
 #Diagnostics ----
-rhat2  <- gelman.diag(mcmc.samples2, multivariate = FALSE)
-ess2  <- effectiveSize(mcmc.samples2)
-
+rhat3  <- gelman.diag(mcmc.samples3, multivariate = FALSE)
+ess3  <- effectiveSize(mcmc.samples3)
 
 #-------------------------------------------------------------------------------
 # Save output ----
-save(mcmc.samples1, rhat1, ess1, mcmc.samples2, rhat2, ess2, file=here('output','ICARmodel_tactsim.RData'))
+save(mcmc.samples0, rhat0, ess0,
+     mcmc.samples1, rhat1, ess1,
+     mcmc.samples2, rhat2, ess2, 
+     mcmc.samples3, rhat3, ess3,
+     file=here('output','ICARmodel_tactsim2.RData'))
