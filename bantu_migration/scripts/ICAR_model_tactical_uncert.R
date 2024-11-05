@@ -10,6 +10,8 @@ rm(list = ls())
 
 set.seed(123)
 
+##ICAR model tactical simulation with errors (i.e. using radiocarbon dates that have an associated error and need calibration)
+
 #-------------------------------------------------------------------------------
 ## Data Setup ----
 load(here('data', 'tactical_sim_ICAR_uncert.RData'))
@@ -90,10 +92,10 @@ model1 <- nimbleCode({
   for (i in 1:n_dates){
     theta[i] ~ dunif(min = b[id_areas[id_sites[i]]], max = a[id_areas[id_sites[i]]]); 
     # Calibration
-    #mu[i] <- interpLin(z=theta[i], x=calBP[], y=C14BP[]); #C14 age on the relevant calibration curve
-    #sigmaCurve[i] <- interpLin(z=theta[i], x=calBP[], y=C14err[]); #error on the calibration curve
-    #error[i] <- (cra_error[i]^2 + sigmaCurve[i]^2)^(1/2); #the samples' C14 error + error on calibration curve
-    #cra[i] ~ dnorm(mean=mu[i], sd=error[i]); #observed radiocarbon age of the sample
+    mu[i] <- interpLin(z=theta[i], x=calBP[], y=C14BP[]); #C14 age on the relevant calibration curve
+    sigmaCurve[i] <- interpLin(z=theta[i], x=calBP[], y=C14err[]); #error on the calibration curve
+    error[i] <- (cra_error[i]^2 + sigmaCurve[i]^2)^(1/2); #the samples' C14 error + error on calibration curve
+    cra[i] ~ dnorm(mean=mu[i], sd=error[i]); #observed radiocarbon age of the sample
   }
   
   #For Each Region

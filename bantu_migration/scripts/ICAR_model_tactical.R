@@ -10,6 +10,8 @@ rm(list = ls())
 
 set.seed(123)
 
+##ICAR model tactical simulation without errors (i.e. using dates that have no associated error and calibration)
+
 #-------------------------------------------------------------------------------
 ## Data Setup ----
 load(here('data', 'tactical_sim_ICAR.RData'))

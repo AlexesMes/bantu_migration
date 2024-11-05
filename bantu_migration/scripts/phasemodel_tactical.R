@@ -4,6 +4,8 @@ library(coda)
 library(nimbleCarbon)
 library(rcarbon)
 
+##Phase model tactical simulation with errors (i.e. using radiocarbon dates that have an associated error and need calibration)
+
 #-------------------------------------------------------------------------------
 ## Data Setup ----
 load(here('data', 'tactical_sim_phase.RData'))

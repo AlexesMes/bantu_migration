@@ -14,7 +14,7 @@ rm(list = ls())
 `%!in%` <- Negate(`%in%`)
 set.seed(123)
 
-##SCRIPT TO SIMULATE DATA FOR PHASEMODEL WITHOUT ERRORS 
+##SCRIPT TO SIMULATE DATA FOR ICAR MODEL WITHOUT ERRORS
 
 # Load sample window data ----
 load(here('data','sample_window.RData'))
@@ -136,7 +136,7 @@ simModel$simulate('alpha')
 simModel$simulate('beta')
 simModel$simulate('theta')
 
-# Combine data ----
+# Combine data ---- ##Note: no model uncertainty has yet been added in... generates dates, not uncalibrated radiocarbon dates with associated error (for this see tactical_ICAR_sim_uncert.R)
 cra = round(simModel$theta)
 sim_df <- list(cra = cra,
                site_id = id_sites)
@@ -167,6 +167,8 @@ constants$dist_org  <- dist_org
 constants$n_areas  <- nrow(hex_area_win)
 constants$true_a <- init_a
 constants$true_b <- init_b
+constants$true_alpha <- simModel$alpha
+constants$true_beta <- simModel$beta
 
 #Store output ----
 save(sites, siteInfo, sim_df, constants, sampling_win, hex_area_win, file=here('data','tactical_sim_ICAR.RData'))

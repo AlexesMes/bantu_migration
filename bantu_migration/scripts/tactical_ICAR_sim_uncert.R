@@ -14,7 +14,7 @@ rm(list = ls())
 `%!in%` <- Negate(`%in%`)
 set.seed(123)
 
-##SCRIPT TO SIMULATE DATA FOR PHASEMODEL WITHOUT ERRORS 
+##SCRIPT TO SIMULATE DATA FOR ICAR MODEL WITH ERRORS (i.e. uncalibrated radiocarbon dates with associated errors)
 
 # Load sample window data ----
 load(here('data','sample_window.RData'))

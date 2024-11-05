@@ -2,6 +2,8 @@ library(rcarbon)
 library(nimbleCarbon)
 library(here)
 
+##SCRIPT TO SIMULATE DATA FOR PHASEMODEL WITH ERRORS (i.e. uncalibrated radiocarbon dates with associated errors)
+
 set.seed(1223)
 Nsites <- 25
 Ndates <- 60

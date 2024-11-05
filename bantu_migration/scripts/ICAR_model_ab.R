@@ -84,7 +84,7 @@ nb_areas <- poly2nb(as(hex_area_win, 'Spatial'), queen=FALSE, row.names = hex_ar
 #nb_areas <- st_intersects(hex_area_win, hex_area_win, remove_self = TRUE) #neighboring areas using sf library
 
 nbInfo <- nb2WB(nb_areas) #transform into iCAR inputs: adjacent matrix, weights, number of neighbors (for WinBUGS)
-
+#help('CAR-Normal') for details of these parameters
 #-------------------------------------------------------------------------------
 #Constants ----
 constants$adj <- nbInfo$adj
