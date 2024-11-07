@@ -52,7 +52,7 @@ par(mfrow = c(7, 6))
 for (k in 1:41) #all hex areas
 {
   post.model.i <- do.call(rbind, mcmc.samples0)[ , c(k, k+41)] #selecting a[k] and b[k]
-  post.model.ii <- do.call(rbind, mcmc.samples1)[ , c(k, k+41)] #selecting a[k] and b[k]
+  post.model.ii <- do.call(rbind, mcmc.samples1)[ , c(k, k+141)] #selecting a[k] and b[k]
   post.model.iii <- do.call(rbind, mcmc.samples2)[ , c(k, k+41)] #selecting a[k] and b[k]
   post.model.iv <- do.call(rbind, mcmc.samples3)[ , c(k, k+141)] #selecting a[k] and b[k] #e.g.to find b[18] index: which(colnames(as.data.frame(mcmc.samples2$chain1)) == 'b[18]')
   
@@ -68,20 +68,21 @@ for (k in 1:41) #all hex areas
   # Plot
   plot(NULL, xlim=c(sim_a[[k]]+300, sim_b[[k]]-300), ylim=c(0,0.022), xlab='Cal BP', ylab='Posterior Probability')
   polygon(c(dens.i.a$x, rev(dens.i.a$x)), c(rep(0,length(dens.i.a$x)), rev(dens.i.a$y)), border=NA, col=rgb(0,0.4,0,0.5))
-  polygon(c(dens.i.b$x, rev(dens.i.b$x)), c(rep(0,length(dens.i.b$x)), rev(dens.i.b$y)), border=NA, col=rgb(0,0.4,0,0.5))
+  #polygon(c(dens.i.b$x, rev(dens.i.b$x)), c(rep(0,length(dens.i.b$x)), rev(dens.i.b$y)), border=NA, col=rgb(0,0.4,0,0.5))
   polygon(c(dens.ii.a$x, rev(dens.ii.a$x)), c(rep(0,length(dens.ii.a$x)), rev(dens.ii.a$y)), border=NA, col=rgb(1,0.55,0,0.5))
-  polygon(c(dens.ii.b$x, rev(dens.ii.b$x)), c(rep(0,length(dens.ii.b$x)), rev(dens.ii.b$y)), border=NA, col=rgb(1,0.55,0,0.5))
+  #polygon(c(dens.ii.b$x, rev(dens.ii.b$x)), c(rep(0,length(dens.ii.b$x)), rev(dens.ii.b$y)), border=NA, col=rgb(1,0.55,0,0.5))
   polygon(c(dens.iii.a$x, rev(dens.iii.a$x)), c(rep(0,length(dens.iii.a$x)), rev(dens.iii.a$y)), border=NA, col=rgb(0.82,0.086,0,0.5))
-  polygon(c(dens.iii.b$x, rev(dens.iii.b$x)), c(rep(0,length(dens.iii.b$x)), rev(dens.iii.b$y)), border=NA, col=rgb(0.82,0.086,0,0.5))
-  polygon(c(dens.iv.a$x, rev(dens.iv.a$x)), c(rep(0,length(dens.iv.a$x)), rev(dens.iv.a$y)), border=NA, col=rgb(0.004,0,0.82,0.5))
-  polygon(c(dens.iv.b$x, rev(dens.iv.b$x)), c(rep(0,length(dens.iv.b$x)), rev(dens.iv.b$y)), border=NA, col=rgb(0.004,0,0.82,0.5))
-  abline(v=c(sim_a[[k]], sim_b[[k]]),lty=2)
-  axis(3,at=c(sim_a[[k]], sim_b[[k]]),labels=c(TeX('$a$'),TeX('$b$')))
-  legend('topright', legend=c('Non hierarchichal Phase',
-                              'Hierarchichal Phase',
-                              'Non hierarchichal ICAR',
-                              'Hierarchichal ICAR'), 
-         fill=c('darkgreen','darkorange','darkred','darkblue'))
+  #polygon(c(dens.iii.b$x, rev(dens.iii.b$x)), c(rep(0,length(dens.iii.b$x)), rev(dens.iii.b$y)), border=NA, col=rgb(0.82,0.086,0,0.5))
+  #polygon(c(dens.iv.a$x, rev(dens.iv.a$x)), c(rep(0,length(dens.iv.a$x)), rev(dens.iv.a$y)), border=NA, col=rgb(0.004,0,0.82,0.5))
+  #polygon(c(dens.iv.b$x, rev(dens.iv.b$x)), c(rep(0,length(dens.iv.b$x)), rev(dens.iv.b$y)), border=NA, col=rgb(0.004,0,0.82,0.5))
+  abline(v=sim_a[[k]],lty=2) #abline(v=c(sim_a[[k]], sim_b[[k]]),lty=2)
+  axis(3,at=sim_a[[k]],labels=TeX('$a$')) #axis(3,at=c(sim_a[[k]], sim_b[[k]]),labels=c(TeX('$a$'),TeX('$b$')))
+  legend('topright', legend=c('Non-hierarchical Phase',
+                              'Hierarchical Phase',
+                              'Non-hierarchical ICAR'),
+                              #'Non-hierarchical ICAR',
+                              #'Hierarchical ICAR'), 
+         fill=c('darkgreen','darkorange','darkred')) #c('darkgreen','darkorange','darkred','darkblue'))
   title(main = paste("Area", k))
 }
 

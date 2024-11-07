@@ -72,6 +72,8 @@ for(i in 2:n_dates){
 site_freq  <- plyr::count(dates, 'site_id') ##See how many observations at each site
 #table(id_sites)
 area_freq  <- plyr::count(dates, 'area_id') ##See how many observations in each hex area
+#sites_in_area_freq <- as.data.frame(dates) %>% select(site_id, area_id) %>% group_by(area_id) %>% count(site_id) ##See how many sites in each hex area
+
 
 # #Check that this lines up visually with how many sites are in each hex area
 # ggplot(data = hex_area_win) +

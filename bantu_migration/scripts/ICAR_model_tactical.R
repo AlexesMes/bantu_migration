@@ -96,32 +96,25 @@ model0 <- nimbleCode({
     b[k] ~ dunif(50,5000);
     constraint_uniform[k] ~ dconstraint(a[k]>b[k]) #In each area, start date of occupation, a_k, must be greater than the end date of occupation, b_k (note: BP dates in the positive direction)
   }
-  
-  # Hyperprior for duration
-  gamma1 ~ dunif(1,20) #Hyperprior for rate
-  gamma2 ~ T(dnorm(mean=200,sd=100), 1, 500) #Hyperprior for mode
 })
 
 #Define initial values ---- 
-d0 <- list(theta=sim_df$cra, 
+d0 <- list(theta=sim_df$cra, ##Theta should be provided as data -- it should not be initalised (this changes when radiocarbon dates -- with associated error -- are used)
            constraint_uniform = rep(1, constants$n_areas)) #unif.const=1
 
 
 inits0 <- list(a=init_a,
-               b=init_b,
-               #theta=sim_df$cra, ##QQ: I'm not sure if we need to initalise theta or provide it as data? 
-               gamma1=10,
-               gamma2=200) 
+               b=init_b) 
 
 #Run MCMC ----
 mcmc.samples0 <- nimbleMCMC(code = model0,
                             constants = constants,
                             data = d0,
-                            niter = 500000, #2000000, 
+                            niter = 50000, #2000000, 
                             nchains = 4, 
                             thin= 50, #100, 
-                            nburnin = 100000, #1000000,
-                            monitors = c('a', 'b', 'theta', 'gamma1', 'gamma2'),
+                            nburnin = 10000, #1000000,
+                            monitors = c('a', 'b', 'theta'),
                             inits = inits0, 
                             samplesAsCodaMCMC=TRUE)
 
@@ -164,7 +157,6 @@ d1 <- list(theta=sim_df$cra,
 
 inits1 <- list(a=init_a,
                b=init_b,
-               #theta=sim_df$cra, ##QQ: I'm not sure if we need to initalise theta or provide it as data? 
                alpha=alpha_init, 
                delta=delta_init,
                gamma1=10,
@@ -174,10 +166,10 @@ inits1 <- list(a=init_a,
 mcmc.samples1 <- nimbleMCMC(code = model1,
                             constants = constants,
                             data = d1,
-                            niter = 500000, #2000000, 
+                            niter = 50000, #2000000, 
                             nchains = 4, 
                             thin= 50, #100, 
-                            nburnin = 100000, #1000000,
+                            nburnin = 10000, #1000000,
                             monitors = c('a', 'b', 'theta', 'gamma1', 'gamma2', 'delta', 'alpha'),
                             inits = inits1, 
                             samplesAsCodaMCMC=TRUE)
@@ -200,12 +192,6 @@ model2 <- nimbleCode({
     constraint_uniform[k] ~ dconstraint(a[k]>b[k]) #In each area, start date of occupation, a_k, must be greater than the end date of occupation, b_k (note: BP dates in the positive direction)
   }
   
-  #For each edge transition
-  for (t in 1:n_trans){
-    #nabla defines the gradient along the edge
-    nabla[t] <- (a[edge_id1[t]] - a[edge_id2[t]])/edge_dist[t] #edge t: select first area, m, and second area, n
-  }
-
   # ICAR Model Prior
   a[1:n_areas] ~ dcar_normal(adj[1:L], weights[1:L], num[1:n_areas], tau1, zero_mean =0)
   tau1 <- 1/sigma1^2
@@ -220,8 +206,6 @@ d2 <- list(theta=sim_df$cra,
 
 inits2 <- list(a=init_a,
                b=init_b,
-               #theta=sim_df$cra, 
-               nabla=init_nabla,
                sigma1=runif(1,0,100))
 
 
@@ -229,11 +213,11 @@ inits2 <- list(a=init_a,
 mcmc.samples2 <- nimbleMCMC(code = model2,
                            constants = constants,
                            data = d2,
-                           niter = 500000, #2000000, 
+                           niter = 50000, #2000000, 
                            nchains = 4, 
                            thin= 50, #100, 
-                           nburnin = 100000, #1000000,
-                           monitors = c('a', 'b', 'nabla', 'theta'),
+                           nburnin = 10000, #1000000,
+                           monitors = c('a', 'b', 'theta'),
                            inits = inits2, 
                            samplesAsCodaMCMC=TRUE)
 
@@ -263,12 +247,6 @@ model3 <- nimbleCode({
     constraint_uniform[k] ~ dconstraint(a[k]>b[k]) #In each area, start date of occupation, a_k, must be greater than the end date of occupation, b_k (note: BP dates in the positive direction)
   }
   
-  #For each edge transition
-  for (t in 1:n_trans){
-    #nabla defines the gradient along the edge
-    nabla[t] <- (a[edge_id1[t]] - a[edge_id2[t]])/edge_dist[t] #edge t: select first area, m, and second area, n
-  }
-  
   # ICAR Model Prior
   a[1:n_areas] ~ dcar_normal(adj[1:L], weights[1:L], num[1:n_areas], tau1, zero_mean =0)
   tau1 <- 1/sigma1^2
@@ -286,10 +264,8 @@ d3 <- list(theta=sim_df$cra,
 
 inits3 <- list(a=init_a,
                b=init_b,
-               #theta=sim_df$cra,
                alpha=alpha_init, 
                delta=delta_init,
-               nabla=init_nabla,
                sigma1=runif(1,0,100),
                gamma1=10,
                gamma2=200)
@@ -299,11 +275,11 @@ inits3 <- list(a=init_a,
 mcmc.samples3 <- nimbleMCMC(code = model3,
                             constants = constants,
                             data = d3,
-                            niter = 500000, #2000000, 
+                            niter = 50000, #2000000, 
                             nchains = 4, 
                             thin= 50, #100, 
-                            nburnin = 100000, #1000000,
-                            monitors = c('a', 'b', 'nabla', 'theta', 'delta','alpha'),
+                            nburnin = 10000, #1000000,
+                            monitors = c('a', 'b', 'theta', 'delta','alpha'),
                             inits = inits3, 
                             samplesAsCodaMCMC=TRUE)
 
