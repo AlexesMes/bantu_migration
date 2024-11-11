@@ -14,7 +14,7 @@ set.seed(123)
 
 #-------------------------------------------------------------------------------
 ## Data Setup ----
-load(here('data', 'tactical_sim_ICAR.RData'))
+load(here('data', 'tactical_sim_ICAR_spatial_auto.RData')) #'tactical_sim_ICAR.RData'
 load(here('data','trig.RData')) #nodes and edges between hex area centroids
 
 #Combine constants
@@ -194,8 +194,9 @@ model2 <- nimbleCode({
   
   # ICAR Model Prior
   a[1:n_areas] ~ dcar_normal(adj[1:L], weights[1:L], num[1:n_areas], tau1, zero_mean =0)
-  tau1 <- 1/sigma1^2
-  sigma1 ~ dunif(0,100)
+  tau1 ~ dunif(0,20) #dgamma(50, 50)
+  #tau1 <- 1/sigma1^2
+  #sigma1 ~ dexp(1) #dunif(0,100)
   
 })
 
@@ -206,7 +207,8 @@ d2 <- list(theta=sim_df$cra,
 
 inits2 <- list(a=init_a,
                b=init_b,
-               sigma1=runif(1,0,100))
+               #sigma1= rexp(1,1)) #runif(1,0,100))
+               tau1= rgamma(1, shape = 2, rate = 0.5)) #runif(1,0,20))
 
 
 #Run MCMC ----
@@ -249,8 +251,9 @@ model3 <- nimbleCode({
   
   # ICAR Model Prior
   a[1:n_areas] ~ dcar_normal(adj[1:L], weights[1:L], num[1:n_areas], tau1, zero_mean =0)
-  tau1 <- 1/sigma1^2
-  sigma1 ~ dunif(0,100)
+  tau1 ~ dgamma(2, 0.5) #dunif(0,20) 
+  #tau1 <- 1/sigma1^2
+  #sigma1 ~ dexp(1) #dunif(0,100)
   # Hyperprior for duration
   gamma1 ~ dunif(1,20) #Hyperprior for rate
   gamma2 ~ T(dnorm(mean=200, sd=100), 1, 500) #Hyperprior for mode
@@ -266,7 +269,8 @@ inits3 <- list(a=init_a,
                b=init_b,
                alpha=alpha_init, 
                delta=delta_init,
-               sigma1=runif(1,0,100),
+               tau1=rgamma(1, shape = 2, rate = 0.5), #runif(1,0,20)
+               #sigma1= rexp(1,1), #runif(1,0,100),
                gamma1=10,
                gamma2=200)
 
@@ -293,4 +297,4 @@ save(mcmc.samples0, rhat0, ess0,
      mcmc.samples1, rhat1, ess1,
      mcmc.samples2, rhat2, ess2, 
      mcmc.samples3, rhat3, ess3,
-     file=here('output','ICARmodel_tactsim2.RData'))
+     file=here('output','ICARmodel_tactsim.RData'))

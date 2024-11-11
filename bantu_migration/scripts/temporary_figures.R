@@ -31,8 +31,8 @@ library(ggthemes)
 #Tactical simulation of ICAR model 
 
 ##Load Data ----
-load(here("output", "ICARmodel_tactsim2.RData"))
-load(here('data', 'tactical_sim_ICAR.RData'))
+load(here("output", "ICARmodel_tactsim.RData"))
+load(here('data', 'tactical_sim_ICAR_spatial_auto.RData'))
 load(here('data','trig.RData')) #nodes and edges between hex area centroids
 
 #Combine constants
@@ -67,22 +67,21 @@ for (k in 1:41) #all hex areas
   
   # Plot
   plot(NULL, xlim=c(sim_a[[k]]+300, sim_b[[k]]-300), ylim=c(0,0.022), xlab='Cal BP', ylab='Posterior Probability')
-  polygon(c(dens.i.a$x, rev(dens.i.a$x)), c(rep(0,length(dens.i.a$x)), rev(dens.i.a$y)), border=NA, col=rgb(0,0.4,0,0.5))
+  #polygon(c(dens.i.a$x, rev(dens.i.a$x)), c(rep(0,length(dens.i.a$x)), rev(dens.i.a$y)), border=NA, col=rgb(0,0.4,0,0.5))
   #polygon(c(dens.i.b$x, rev(dens.i.b$x)), c(rep(0,length(dens.i.b$x)), rev(dens.i.b$y)), border=NA, col=rgb(0,0.4,0,0.5))
   polygon(c(dens.ii.a$x, rev(dens.ii.a$x)), c(rep(0,length(dens.ii.a$x)), rev(dens.ii.a$y)), border=NA, col=rgb(1,0.55,0,0.5))
   #polygon(c(dens.ii.b$x, rev(dens.ii.b$x)), c(rep(0,length(dens.ii.b$x)), rev(dens.ii.b$y)), border=NA, col=rgb(1,0.55,0,0.5))
-  polygon(c(dens.iii.a$x, rev(dens.iii.a$x)), c(rep(0,length(dens.iii.a$x)), rev(dens.iii.a$y)), border=NA, col=rgb(0.82,0.086,0,0.5))
+  #polygon(c(dens.iii.a$x, rev(dens.iii.a$x)), c(rep(0,length(dens.iii.a$x)), rev(dens.iii.a$y)), border=NA, col=rgb(0.82,0.086,0,0.5))
   #polygon(c(dens.iii.b$x, rev(dens.iii.b$x)), c(rep(0,length(dens.iii.b$x)), rev(dens.iii.b$y)), border=NA, col=rgb(0.82,0.086,0,0.5))
-  #polygon(c(dens.iv.a$x, rev(dens.iv.a$x)), c(rep(0,length(dens.iv.a$x)), rev(dens.iv.a$y)), border=NA, col=rgb(0.004,0,0.82,0.5))
+  polygon(c(dens.iv.a$x, rev(dens.iv.a$x)), c(rep(0,length(dens.iv.a$x)), rev(dens.iv.a$y)), border=NA, col=rgb(0.004,0,0.82,0.5))
   #polygon(c(dens.iv.b$x, rev(dens.iv.b$x)), c(rep(0,length(dens.iv.b$x)), rev(dens.iv.b$y)), border=NA, col=rgb(0.004,0,0.82,0.5))
   abline(v=sim_a[[k]],lty=2) #abline(v=c(sim_a[[k]], sim_b[[k]]),lty=2)
   axis(3,at=sim_a[[k]],labels=TeX('$a$')) #axis(3,at=c(sim_a[[k]], sim_b[[k]]),labels=c(TeX('$a$'),TeX('$b$')))
-  legend('topright', legend=c('Non-hierarchical Phase',
+  legend('topright', legend=c(#'Non-hierarchical Phase',
                               'Hierarchical Phase',
-                              'Non-hierarchical ICAR'),
                               #'Non-hierarchical ICAR',
-                              #'Hierarchical ICAR'), 
-         fill=c('darkgreen','darkorange','darkred')) #c('darkgreen','darkorange','darkred','darkblue'))
+                              'Hierarchical ICAR'), 
+         fill=c('darkorange','darkblue')) #c('darkgreen','darkorange','darkred','darkblue')
   title(main = paste("Area", k))
 }
 
@@ -110,3 +109,40 @@ dev.off()
 # }
 # 
 # dev.off()
+
+
+#-------------------------------------------------------------------------------
+#Plotting Priors for ICAR
+
+nsim  <- 5000
+
+set.seed(123)
+
+gamma1  <- runif(nsim, 2, 2) #runif(nsim, 0.01, 3) 
+gamma2  <- runif(nsim, 0.5, 0.55)  #runif(nsim, 0.1, 2) 
+tau.mat = matrix(NA, ncol=100, nrow=nsim) #Initialise
+
+for (i in 1:nsim) {
+  tau.mat[i,] = dgamma(1:100, shape = gamma1[i], rate = gamma2[i])
+}
+
+plot(NULL,xlab=TeX('$\\tau$ (ICAR precision parameter)'),ylab='Probability Density',xlim=c(1,15),ylim=c(0,0.5))
+polygon(x=c(1:100, 100:1), y=c(apply(tau.mat,2,quantile,prob=0.025), rev(apply(tau.mat,2,quantile,prob=0.975))), border=NA, col=rgb(0.67,0.84,0.9,0.5))
+polygon(x=c(1:100, 100:1), y=c(apply(tau.mat,2,quantile,prob=0.25), rev(apply(tau.mat,2,quantile,prob=0.75))), border=NA, col=rgb(0.25,0.41,0.88,0.5))
+legend('topright', legend=c('50% percentile range', '95% percentile range'), fill=c(rgb(0.67,0.84,0.9,0.5), rgb(0.25,0.41,0.88,0.5)))
+
+
+
+#gamma1  <- runif(nsim,1,20)
+# gamma2  <- rtruncnorm(nsim, mean=200, sd=100, 1, 500)
+# delta.mat = matrix(NA, ncol=1000, nrow=nsim) #Initialise
+# 
+# for (i in 1:nsim) {
+#   delta.mat[i,] = dgamma(1:1000, gamma1[i], (gamma1[i]-1)/gamma2[i])
+# }
+
+#tau1 <- 1/sigma1^2
+#sigma1 ~ dexp(1) #dunif(0,100)
+#sigma1= rexp(1,1)) #runif(1,0,100))
+
+#tau1 ~ dgamma(50, 50)
