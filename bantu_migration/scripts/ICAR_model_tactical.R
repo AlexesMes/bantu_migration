@@ -194,7 +194,7 @@ model2 <- nimbleCode({
   
   # ICAR Model Prior
   a[1:n_areas] ~ dcar_normal(adj[1:L], weights[1:L], num[1:n_areas], tau1, zero_mean =0)
-  tau1 ~ dunif(0,20) #dgamma(50, 50)
+  tau1 ~ dgamma(2, 0.5) #dgamma(50, 50)
   #tau1 <- 1/sigma1^2
   #sigma1 ~ dexp(1) #dunif(0,100)
   

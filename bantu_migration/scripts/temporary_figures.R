@@ -66,7 +66,7 @@ for (k in 1:41) #all hex areas
   dens.iv.b <- density(post.model.iv[,2],bw=5)
   
   # Plot
-  plot(NULL, xlim=c(sim_a[[k]]+300, sim_b[[k]]-300), ylim=c(0,0.022), xlab='Cal BP', ylab='Posterior Probability')
+  plot(NULL, xlim=c(sim_a[[k]]+1500, sim_b[[k]]-1500), ylim=c(0,0.022), xlab='Cal BP', ylab='Posterior Probability')
   #polygon(c(dens.i.a$x, rev(dens.i.a$x)), c(rep(0,length(dens.i.a$x)), rev(dens.i.a$y)), border=NA, col=rgb(0,0.4,0,0.5))
   #polygon(c(dens.i.b$x, rev(dens.i.b$x)), c(rep(0,length(dens.i.b$x)), rev(dens.i.b$y)), border=NA, col=rgb(0,0.4,0,0.5))
   polygon(c(dens.ii.a$x, rev(dens.ii.a$x)), c(rep(0,length(dens.ii.a$x)), rev(dens.ii.a$y)), border=NA, col=rgb(1,0.55,0,0.5))
