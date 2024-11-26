@@ -194,7 +194,7 @@ model2 <- nimbleCode({
   
   # ICAR Model Prior
   a[1:n_areas] ~ dcar_normal(adj[1:L], weights[1:L], num[1:n_areas], tau1, zero_mean =0)
-  tau1 ~ dgamma(2, 0.5) #dgamma(50, 50)
+  tau1 ~ dgamma(2, 0.5) #dunif(0.001, 10) #dgamma(50, 50)
   #tau1 <- 1/sigma1^2
   #sigma1 ~ dexp(1) #dunif(0,100)
   
@@ -208,7 +208,7 @@ d2 <- list(theta=sim_df$cra,
 inits2 <- list(a=init_a,
                b=init_b,
                #sigma1= rexp(1,1)) #runif(1,0,100))
-               tau1= rgamma(1, shape = 2, rate = 0.5)) #runif(1,0,20))
+               tau1=rgamma(1, shape = 2, rate = 0.5)) #runif(1,0,10))
 
 
 #Run MCMC ----
@@ -251,7 +251,7 @@ model3 <- nimbleCode({
   
   # ICAR Model Prior
   a[1:n_areas] ~ dcar_normal(adj[1:L], weights[1:L], num[1:n_areas], tau1, zero_mean =0)
-  tau1 ~ dgamma(2, 0.5) #dunif(0,20) 
+  tau1 ~ dgamma(2, 0.5) #dunif(0.001, 10)
   #tau1 <- 1/sigma1^2
   #sigma1 ~ dexp(1) #dunif(0,100)
   # Hyperprior for duration

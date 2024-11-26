@@ -45,7 +45,7 @@ constants <- c(constants, constants_trig)
 sim_a <- constants$true_a
 sim_b <- constants$true_b
 
-pdf(file=here('output', 'figures','figure14.3.pdf'), width=14, height=18)
+pdf(file=here('output', 'figures','fig_ICARsim_gamma.pdf'), width=14, height=18)
 # Define the layout for the plots
 par(mfrow = c(7, 6))
 
@@ -66,22 +66,22 @@ for (k in 1:41) #all hex areas
   dens.iv.b <- density(post.model.iv[,2],bw=5)
   
   # Plot
-  plot(NULL, xlim=c(sim_a[[k]]+1500, sim_b[[k]]-1500), ylim=c(0,0.022), xlab='Cal BP', ylab='Posterior Probability')
-  #polygon(c(dens.i.a$x, rev(dens.i.a$x)), c(rep(0,length(dens.i.a$x)), rev(dens.i.a$y)), border=NA, col=rgb(0,0.4,0,0.5))
+  plot(NULL, xlim=c(sim_a[[k]]+2000, sim_b[[k]]-2000), ylim=c(0,0.022), xlab='Cal BP', ylab='Posterior Probability')
+  polygon(c(dens.i.a$x, rev(dens.i.a$x)), c(rep(0,length(dens.i.a$x)), rev(dens.i.a$y)), border=NA, col=rgb(0,0.4,0,0.5))
   #polygon(c(dens.i.b$x, rev(dens.i.b$x)), c(rep(0,length(dens.i.b$x)), rev(dens.i.b$y)), border=NA, col=rgb(0,0.4,0,0.5))
   polygon(c(dens.ii.a$x, rev(dens.ii.a$x)), c(rep(0,length(dens.ii.a$x)), rev(dens.ii.a$y)), border=NA, col=rgb(1,0.55,0,0.5))
   #polygon(c(dens.ii.b$x, rev(dens.ii.b$x)), c(rep(0,length(dens.ii.b$x)), rev(dens.ii.b$y)), border=NA, col=rgb(1,0.55,0,0.5))
-  #polygon(c(dens.iii.a$x, rev(dens.iii.a$x)), c(rep(0,length(dens.iii.a$x)), rev(dens.iii.a$y)), border=NA, col=rgb(0.82,0.086,0,0.5))
+  polygon(c(dens.iii.a$x, rev(dens.iii.a$x)), c(rep(0,length(dens.iii.a$x)), rev(dens.iii.a$y)), border=NA, col=rgb(0.82,0.086,0,0.5))
   #polygon(c(dens.iii.b$x, rev(dens.iii.b$x)), c(rep(0,length(dens.iii.b$x)), rev(dens.iii.b$y)), border=NA, col=rgb(0.82,0.086,0,0.5))
   polygon(c(dens.iv.a$x, rev(dens.iv.a$x)), c(rep(0,length(dens.iv.a$x)), rev(dens.iv.a$y)), border=NA, col=rgb(0.004,0,0.82,0.5))
   #polygon(c(dens.iv.b$x, rev(dens.iv.b$x)), c(rep(0,length(dens.iv.b$x)), rev(dens.iv.b$y)), border=NA, col=rgb(0.004,0,0.82,0.5))
   abline(v=sim_a[[k]],lty=2) #abline(v=c(sim_a[[k]], sim_b[[k]]),lty=2)
   axis(3,at=sim_a[[k]],labels=TeX('$a$')) #axis(3,at=c(sim_a[[k]], sim_b[[k]]),labels=c(TeX('$a$'),TeX('$b$')))
-  legend('topright', legend=c(#'Non-hierarchical Phase',
+  legend('topright', legend=c('Non-hierarchical Phase',
                               'Hierarchical Phase',
-                              #'Non-hierarchical ICAR',
+                              'Non-hierarchical ICAR',
                               'Hierarchical ICAR'), 
-         fill=c('darkorange','darkblue')) #c('darkgreen','darkorange','darkred','darkblue')
+         fill= c('darkgreen','darkorange','darkred','darkblue')) #c('darkorange','darkblue'))
   title(main = paste("Area", k))
 }
 
@@ -118,7 +118,7 @@ nsim  <- 5000
 
 set.seed(123)
 
-gamma1  <- runif(nsim, 2, 2) #runif(nsim, 0.01, 3) 
+gamma1  <- runif(nsim, 0.5, 0.5) #runif(nsim, 0.01, 3) 
 gamma2  <- runif(nsim, 0.5, 0.55)  #runif(nsim, 0.1, 2) 
 tau.mat = matrix(NA, ncol=100, nrow=nsim) #Initialise
 
