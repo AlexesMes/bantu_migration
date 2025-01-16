@@ -14,7 +14,7 @@ set.seed(123)
 
 #-------------------------------------------------------------------------------
 ## Data Setup ----
-load(here('data', 'tactical_sim_ICAR_spatial_auto.RData')) #'tactical_sim_ICAR.RData'
+load(here('data', 'tactical_sim_ICAR.RData')) #'tactical_sim_ICAR.RData' 'tactical_sim_ICAR_spatial_auto.RData'
 load(here('data','trig.RData')) #nodes and edges between hex area centroids
 
 #Combine constants
@@ -110,10 +110,10 @@ inits0 <- list(a=init_a,
 mcmc.samples0 <- nimbleMCMC(code = model0,
                             constants = constants,
                             data = d0,
-                            niter = 50000, #2000000, 
+                            niter = 2000000, #50000, 
                             nchains = 4, 
-                            thin= 50, #100, 
-                            nburnin = 10000, #1000000,
+                            thin= 100, #50,  
+                            nburnin = 1000000, #10000,
                             monitors = c('a', 'b', 'theta'),
                             inits = inits0, 
                             samplesAsCodaMCMC=TRUE)
@@ -166,10 +166,10 @@ inits1 <- list(a=init_a,
 mcmc.samples1 <- nimbleMCMC(code = model1,
                             constants = constants,
                             data = d1,
-                            niter = 50000, #2000000, 
+                            niter = 2000000, 
                             nchains = 4, 
-                            thin= 50, #100, 
-                            nburnin = 10000, #1000000,
+                            thin= 100, 
+                            nburnin = 1000000,
                             monitors = c('a', 'b', 'theta', 'gamma1', 'gamma2', 'delta', 'alpha'),
                             inits = inits1, 
                             samplesAsCodaMCMC=TRUE)
@@ -215,10 +215,10 @@ inits2 <- list(a=init_a,
 mcmc.samples2 <- nimbleMCMC(code = model2,
                            constants = constants,
                            data = d2,
-                           niter = 50000, #2000000, 
+                           niter = 2000000, 
                            nchains = 4, 
-                           thin= 50, #100, 
-                           nburnin = 10000, #1000000,
+                           thin= 100, 
+                           nburnin = 1000000,
                            monitors = c('a', 'b', 'theta'),
                            inits = inits2, 
                            samplesAsCodaMCMC=TRUE)
@@ -251,7 +251,7 @@ model3 <- nimbleCode({
   
   # ICAR Model Prior
   a[1:n_areas] ~ dcar_normal(adj[1:L], weights[1:L], num[1:n_areas], tau1, zero_mean =0)
-  tau1 ~ dgamma(2, 0.5) #dunif(0.001, 10)
+  tau1 ~ dgamma(1, 0.1)  #dgamma(2, 0.5) 
   #tau1 <- 1/sigma1^2
   #sigma1 ~ dexp(1) #dunif(0,100)
   # Hyperprior for duration
@@ -269,7 +269,7 @@ inits3 <- list(a=init_a,
                b=init_b,
                alpha=alpha_init, 
                delta=delta_init,
-               tau1=rgamma(1, shape = 2, rate = 0.5), #runif(1,0,20)
+               tau1=rgamma(1, shape = 1, rate = 0.1), #runif(1,0,20)
                #sigma1= rexp(1,1), #runif(1,0,100),
                gamma1=10,
                gamma2=200)
@@ -279,10 +279,10 @@ inits3 <- list(a=init_a,
 mcmc.samples3 <- nimbleMCMC(code = model3,
                             constants = constants,
                             data = d3,
-                            niter = 50000, #2000000, 
+                            niter = 2000000, 
                             nchains = 4, 
-                            thin= 50, #100, 
-                            nburnin = 10000, #1000000,
+                            thin= 100, 
+                            nburnin = 1000000,
                             monitors = c('a', 'b', 'theta', 'delta','alpha'),
                             inits = inits3, 
                             samplesAsCodaMCMC=TRUE)
