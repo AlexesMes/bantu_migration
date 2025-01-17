@@ -14,7 +14,7 @@ set.seed(123)
 
 #-------------------------------------------------------------------------------
 ## Data Setup ----
-load(here('data', 'tactical_sim_ICAR.RData')) #'tactical_sim_ICAR.RData' 'tactical_sim_ICAR_spatial_auto.RData'
+load(here('data', 'tactical_sim_ICAR.RData'))
 load(here('data','trig.RData')) #nodes and edges between hex area centroids
 
 #Combine constants

@@ -14,10 +14,12 @@ rm(list = ls())
 `%!in%` <- Negate(`%in%`)
 set.seed(123)
 
-##SCRIPT TO SIMULATE DATA FOR ICAR MODEL WITHOUT ERRORS
+##SCRIPT TO SIMULATE DATA (WITH UNDERLYING SPATIAL AUTOCORRELATED STRUCTURE) FOR ICAR MODEL WITHOUT ERRORS
 
 # Load sample window data ----
 load(here('data','sample_window.RData'))
+load(here('data','trig.RData')) #nodes and edges between hex area centroids
+
 #-------------------------------------------------------------------------------
 ## List of countries ----
 subSahara_countries <- constants_sw$countries #sub-Saharan Africa
@@ -38,6 +40,34 @@ n_dates  <- 500
 origin_point <- st_sfc(st_point(c(-1.45, 31.77))) #dispersal origin point -- approximately at Katuruka
 
 #-------------------------------------------------------------------------------
+#Spatial data ----
+library(spdep)
+nb_areas <- poly2nb(as(hex_area_win, 'Spatial'), queen=FALSE, row.names = hex_area_win$area_ID) #neighboring areas using sp library 
+nbInfo <- nb2WB(nb_areas) #transform into iCAR inputs: adjacent matrix, weights, number of neighbors (for WinBUGS)
+
+adj <- nbInfo$adj
+weights <- nbInfo$weights
+num <- nbInfo$num
+L <- length(nbInfo$adj)
+
+#-------
+#Define full adjacent matrix from sparse representation 
+n_areas <- length(num) #number of regions. Alternatively, nrow(adj_mat)
+#adj_mat <- nb2mat(nb_areas, style="B") #generate adjacency matrix with binary weights, no standardisation (style=B)
+
+#-------------------------------------------------------------------------------
+#Constants ----
+#Combine constants
+constants <- constants_trig
+
+constants$adj <- adj
+constants$adj_mat <- adj_mat
+constants$n_areas <- n_areas
+constants$weights <- weights
+constants$num <- num
+constants$L <- L
+
+#-------------------------------------------------------------------------------
 #Simulate Data ----
 
 #Generate sites and calculate distances from origin ---
@@ -47,13 +77,10 @@ st_crs(origin_point) <- 4326
 dist_mat  <- set_units(st_distance(sites), 'km')
 dist_org  <- as.vector(set_units(st_distance(x=sites, y=origin_point), 'km'))
 
-
 #Assign hex area id to each site ----
 sites <- st_as_sf(sites) %>% rename(geometry = x)
 sites$site_id <- row_number(sites)
 sites$area_id <- as.integer(st_within(sites$geometry, hex_area_win$geometry))
-#sites$area_origin <- hex_area_win$area_center[sites$area_id]
-
 
 #Simulate multiple observations at each site ----
 id_sites <- c(1:n_sites, 
@@ -70,33 +97,17 @@ for(i in 2:n_dates){
 
 ##CHECK ---
 site_freq  <- plyr::count(dates, 'site_id') ##See how many observations at each site
-#table(id_sites)
 area_freq  <- plyr::count(dates, 'area_id') ##See how many observations in each hex area
-#sites_in_area_freq <- as.data.frame(dates) %>% select(site_id, area_id) %>% group_by(area_id) %>% count(site_id) ##See how many sites in each hex area
-
-
-# #Check that this lines up visually with how many sites are in each hex area
-# ggplot(data = hex_area_win) +
-#   geom_sf(data = st_buffer(st_as_sf(sampling_win, crs = 4326), 40000), aes(color = "grey50")) + #sampling window with coastal buffer
-#   geom_sf() + #hex grid
-#   geom_sf_label(aes(label = area_ID)) +
-#   geom_sf(data = sites, size=2, alpha=0.5) + #sites
-#   #geom_sf(data = hex_area_win$area_center, size=2, alpha=1, aes(color = "purple")) + #hex-origins
-#   theme(panel.background = element_rect(fill = "lightblue",
-#                                         colour = "lightblue",
-#                                         size = 0.5,
-#                                         linetype = "solid"),
-#         legend.position = "none")
-
 
 #-------------------------------------------------------------------------------
-#Model ----
+##MODEL ---
+
 sim_model <- nimbleCode({
-  for (k in 1:n_areas){
-    a[k] ~ dunif(100,5000);
-    b[k] ~ dunif(100,5000);
-    constraint_uniform[k] ~ dconstraint(a[k]>b[k]);
-  }
+  # Simulate spatially correlated data for all k in 1:n_areas
+  a[1:n_areas] ~ dcar_proper(mu = mu[1:n_areas], adj=adj[1:L], num=num[1:n_areas], tau=tau, gamma=gamma)
+  d[1:n_areas] ~ dcar_proper(mu = mu2[1:n_areas], adj=adj[1:L], num=num[1:n_areas], tau=tau, gamma=gamma)
+  b[1:n_areas] <- a[1:n_areas] - d[1:n_areas]
+  #tau ~ dgamma(2, 0.5)
   
   for (j in 1:n_sites)
   {
@@ -113,12 +124,16 @@ sim_model <- nimbleCode({
 })
 
 #Define constants ----
-sim_constants <- list()
+sim_constants <- constants
 sim_constants$n_sites <- n_sites
 sim_constants$n_dates  <- n_dates
 sim_constants$n_areas  <- constants_sw$n_areas
 sim_constants$id_sites  <- dates$site_id
 sim_constants$id_areas <- sites$area_id
+sim_constants$mu <- rep(2000, n_areas) #runif(1:sim_constants$n_areas, min = 600, max = 3500) #rep(0, n_areas)
+sim_constants$mu2 <- rep(500, n_areas) #runif(1:sim_constants$n_areas, min = 50, max = 600)
+sim_constants$tau <- 0.000005
+sim_constants$gamma <- 0.99
 
 #Define constraints, data, and initial values ----
 dat <- list(constraint_uniform = rep(1, sim_constants$n_areas),
@@ -129,14 +144,40 @@ init_a <- runif(1:sim_constants$n_areas, min = 600, max = 3500)
 init_b <- init_a - runif(1:sim_constants$n_areas, min = 50, max = 600)
 inits <- list(a = init_a,
               b = init_b)
+#              tau = 2)
 
 #Simulate ----
 set.seed(1223)
 simModel <- nimbleModel(code = sim_model, constants = sim_constants, data = dat, inits = inits)
-simModel$simulate('delta')
-simModel$simulate('alpha')
-simModel$simulate('beta')
-simModel$simulate('theta')
+
+nodesToSim <- simModel$getDependencies(c("a", "d", "b", "delta", "alpha", "beta", "theta"), self = T, downstream = T)
+nodesToSim
+
+simModel$simulate(nodesToSim)
+#simModel$a #check variables
+#simModel$b
+#simModel$theta
+
+
+##Check spatial autocorrelation with Moran's statistic
+# nbw <- nb2listw(nb_areas)
+# map <- as(hex_area_win, 'Spatial')
+# map$a <- simModel$a
+# gmoran <- moran.test(map$a, nbw, alternative = "greater")
+
+##Bounds on gamma
+# carMinBound(
+#   C= CAR_calcC(adj, num), 
+#   adj = adj, 
+#   num = num, 
+#   M = rep(2000, 41))
+# 
+# carMaxBound(
+#   C= CAR_calcC(adj, num), 
+#   adj = adj, 
+#   num = num, 
+#   M = rep(2000, 41))
+
 
 # Combine data ---- ##Note: no model uncertainty has yet been added in... generates dates, not uncalibrated radiocarbon dates with associated error (for this see tactical_ICAR_sim_uncert.R)
 cra = round(simModel$theta)
@@ -167,10 +208,11 @@ constants <- sim_constants[names(sim_constants) %!in% c("a", "b")]
 constants$dist_mat  <- dist_mat
 constants$dist_org  <- dist_org
 constants$n_areas  <- nrow(hex_area_win)
-constants$true_a <- init_a
-constants$true_b <- init_b
+constants$true_a <- simModel$a
+constants$true_b <- simModel$b
 constants$true_alpha <- simModel$alpha
 constants$true_beta <- simModel$beta
 
 #Store output ----
 save(sites, siteInfo, sim_df, constants, sampling_win, hex_area_win, file=here('data','tactical_sim_ICAR.RData'))
+
