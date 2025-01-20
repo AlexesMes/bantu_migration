@@ -130,8 +130,7 @@ icar_model  <- function(seed, d, theta_init, init_nabla, init_a, init_b, constan
 
     # ICAR Model Prior
     a[1:n_areas] ~ dcar_normal(adj[1:L], weights[1:L], num[1:n_areas], tau1, zero_mean =0)
-    tau1 <- 1/sigma1^2
-    sigma1 ~ dunif(0,100)
+    tau ~ dgamma(1, 0.1)
   })
 
   #Define initial values ----
@@ -139,7 +138,7 @@ icar_model  <- function(seed, d, theta_init, init_nabla, init_a, init_b, constan
                  a=init_a,
                  b=init_b,
                  nabla=init_nabla,
-                 sigma1=runif(1,0,100))
+                 tau=rgamma(1, shape = 1, rate = 0.1))
 
   # Compile and Run model	----
   model <- nimbleModel(model, constants=constants, data=d, inits=inits)
@@ -191,8 +190,7 @@ icar_model_b  <- function(seed, d, theta_init, init_nabla, alpha_init, delta_ini
     
     # ICAR Model Prior
     a[1:n_areas] ~ dcar_normal(adj[1:L], weights[1:L], num[1:n_areas], tau1, zero_mean =0)
-    tau1 <- 1/sigma1^2
-    sigma1 ~ dunif(0,100)
+    tau ~ dgamma(1, 0.1)
     
     # Hyperprior for duration
     gamma1 ~ dunif(1,20) #Hyperprior for rate
@@ -206,7 +204,7 @@ icar_model_b  <- function(seed, d, theta_init, init_nabla, alpha_init, delta_ini
                 alpha=alpha_init, 
                 delta=delta_init, 
                 nabla=init_nabla,
-                sigma1=runif(1,0,100),
+                tau=rgamma(1, shape = 1, rate = 0.1),
                 gamma1=10,
                 gamma2=200)
   
