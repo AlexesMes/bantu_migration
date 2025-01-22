@@ -17,6 +17,15 @@ prop_gthan_zero <- function(data) {
   return(proportion)
 }
 
+#Determine proportion of distribution which is above a specified time threshold
+prop_gthan_threshold <- function(data, threshold) {
+  # Count the number of elements greater than zero
+  count_positive <- sum(data > threshold)
+  # Calculate the proportion
+  proportion <- count_positive / length(data)
+  return(proportion)
+}
+
 # Define a custom function to plot arrows
 plot_arrows <- function(edges, scale_par=1, ...) {
   for (i in 1:nrow(edges)) {

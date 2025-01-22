@@ -23,10 +23,13 @@ library(diagram)
 library(coda)
 library(graphics)
 library(ggthemes)
+library(gganimate) #animate ggplot
+library(gifski) #save output as gif
 
 
 source(here('src','orderPPlot.R'))
 source(here('src','gpqrSim.R'))
+source(here('src', 'grad_funcs.R'))
 
 `%!in%` <- Negate(`%in%`)
 
@@ -167,7 +170,6 @@ traceplot(quantreg_sample[,'theta[14]'], main=TeX('$theta[14]$'), smooth=TRUE) #
 dev.off()
 
 
-
 #===============================================================================
 ###Bayesian Hierarchical Phase Model
 #===============================================================================
@@ -216,7 +218,6 @@ dev.off()
 #===============================================================================
 ##Bayesian Hierarchical Phase Models without constraints
 
-#Hex areas with and without out sites
 #Hex areas with and without out sites
 Hex_with_sites <- unique(siteInfo$area_id)
 Hex_without_sites <- which(rep(1:41) %!in% Hex_with_sites)
@@ -487,10 +488,6 @@ legend('topright', legend=c('50% percentile range', '95% percentile range'), fil
 ## Tactical Simulation Posterior Predictive Check for a and b in a given region -- FIGURE 14
 
 #For model (i) and (ii) select parameters a and b (i.e. start and end date of occupation in the region)
-
-#Combine constants
-constants <- c(constants, constants_trig)
-
 sim_a <- constants$true_a
 sim_b <- constants$true_b
 
@@ -561,26 +558,22 @@ dev.off()
 
 #-------------------------------------------------------------------------------
 ## Tactical Simulation Posterior Predictive Check for gradient in a given region -- FIGURE 15
+## For hierarchical ICAR model
 
 #For model (i) and (ii) select parameters a and b (i.e. start and end date of occupation in the region)
 pdf(file=here('output', 'figures','figure15.pdf'), width=14, height=18)
-
 # Define the layout for the plots
 par(mfrow = c(6, 6))
 
 for (k in c(5, 7:41)) #all hex areas
 {
-  post.grad.model.i <- do.call(rbind, mcmc.samples1)[ , k+83] #selecting nabla[k]
-  post.grad.model.ii <- do.call(rbind, mcmc.samples2)[ , k+283] #selecting nabla[k] #e.g.to find nabla[18] index: which(colnames(as.data.frame(mcmc.samples2$chain1)) == 'b[18]')
-
-  dens.i.nabla  <- density(post.grad.model.i, bw = 5)
-  dens.ii.nabla  <- density(post.grad.model.ii, bw = 5)
+  post.grad.model.iii <- do.call(rbind, mcmc.samples3)[ , k+282] #selecting nabla[k] #selecting nabla[k] #e.g.to find nabla[18] index: which(colnames(as.data.frame(mcmc.samples3$chain1)) == 'nabla[18]')
+  dens.iii.nabla  <- density(post.grad.model.iii, bw = 5)
 
   # Plot
   plot(NULL, xlim=c(-20,20), ylim=c(0,0.1), xlab='Gradient', ylab='Posterior Probability')
-  polygon(c(dens.i.nabla$x, rev(dens.i.nabla$x)), c(rep(0,length(dens.i.nabla$x)), rev(dens.i.nabla$y)), border=NA, col=rgb(0,0.4,0,0.5))
-  polygon(c(dens.ii.nabla$x, rev(dens.ii.nabla$x)), c(rep(0,length(dens.ii.nabla$x)), rev(dens.ii.nabla$y)), border=NA, col=rgb(1,0.55,0,0.5))
-  legend('topright', legend=c('Non hierarchichal','Hierarchichal'), fill=c('darkgreen','darkorange'))
+  polygon(c(dens.iii.nabla$x, rev(dens.iii.nabla$x)), c(rep(0,length(dens.iii.nabla$x)), rev(dens.iii.nabla$y)), border=NA, col=rgb(0,0.4,0,0.5))
+  legend('topright', legend=c('Hierarchichal ICAR'), fill=c('darkgreen'))
   title(main = paste("Area", k))
 }
 
@@ -589,13 +582,10 @@ dev.off()
 
 #-------------------------------------------------------------------------------
 ##Plot magnitude and direction of gradients for model (i) -- FIGURE 16
-
-##Load relevant functions
-source(here('src', 'grad_funcs.R'))
+## For hierarchical ICAR model
 
 #Extract quantile information for models
-tmp = extract_gradinfo(mcmc.samples1) 
-#tmp.ii = extract_gradinfo(mcmc.samples2) 
+tmp = extract_gradinfo(mcmc.samples3) 
 qta = apply(tmp, 2, quantile, prob=c(0, 0.05, 0.25, 0.5, 0.75, 0.95, 1))
 
 #Extract uncertainty information
@@ -621,7 +611,6 @@ bbox <- sf::st_bbox(sample_win_buff)
 # Calculate the aspect ratio of the bounding box
 aspect_ratio <- diff(range(c(bbox["ymin"], bbox["ymax"]))) / diff(range(c(bbox["xmin"], bbox["xmax"])))
 gridsize <- 1 # Adjust the denominator to change grid density
-
 
 pdf(file=here('output', 'figures','figure16.pdf'), width=8, height=8)
 # Create an empty plot with the appropriate range
@@ -650,9 +639,131 @@ plot(hex_area_win$geometry, add = TRUE, border = rgb(0, 0, 0, 0.2))
 # Plotting the hex origins
 points(nodes[,"X"], nodes[,"Y"], pch = 20, col = rgb(0, 0, 0, 0.8), cex = 2)
 # Plot gradient arrows using the custom function
-plot_arrows(edge_info, lwd=4, length = 0.1) #length parameter defines arrowhead size
+plot_arrows(edge_info, lwd=4, scale_par=8, length = 0.1) #length parameter defines arrowhead size
 dev.off()
 
+#-------------------------------------------------------------------------------
+##Display proportion of distribution before specified time slices -- FIGURE 25
+
+#With the tactical simulation data from hierarchical ICAR model
+out.comb.tac_icar.model  <- do.call(rbind, mcmc.samples3)
+post.model.tac_icar  <- out.comb.tac_icar.model[,paste0('a[',1:41,']')]  %>% round()
+
+#Extract arrival times for tactical icar model
+med.model.tac_icar  <- apply(post.model.tac_icar, 2, median)
+
+time_slices <- seq(3200, 1400, -200)
+
+#Extract proportion of MCMC samples occurring before the specified time threshold
+prop_model_tac_icar  <- lapply(time_slices,
+                               function(t) data.frame(x = 1:41,
+                                                      y = sapply(as.data.frame(post.model.tac_icar), 
+                                                                 prop_gthan_threshold, 
+                                                                 threshold = t)))
+
+#Save figure for each time slice
+plot_list <- list() #Create a list to store the plots
+
+for (k in 1:length(time_slices)) #all time slices
+{
+  #Save in data structure
+  prop_threshold_tac_icar <- hex_area_win %>%
+    filter(area_ID %in% 1:41) %>%
+    mutate(median_date = med.model.tac_icar,
+           prop_threshold = prop_model_tac_icar[[k]]$y,
+           contains_sites = as.factor(case_when(area_ID %in% Hex_with_sites ~ 1, area_ID %in% Hex_without_sites ~ 0))) %>%
+    filter(area_ID %!in% c(1, 2, 3, 4, 6)) #The Bantu hadn't settled in this area by the time the dutch arrived in the Cape (~1600AD). To back this up there are no EIA sites in these regions.
+  
+  #Plot
+  p <- ggplot(data = prop_threshold_tac_icar) +
+    geom_sf(data = st_buffer(st_as_sf(sampling_win, crs = 4326), 40000), aes(color = "grey50")) + #sampling window with coastal buffer
+    geom_sf(aes(fill = median_date, alpha=prop_threshold)) + #hex grid #alpha=contains_sites
+    scale_fill_viridis_c(option="F", direction=-1) +
+    scale_alpha_continuous(range = c(0, 1)) +  # Use for continuous alpha values
+    xlab('Longitude') +
+    ylab('Latitude') +
+    ggtitle(paste0('t = ', time_slices[k], ' BP')) +
+    #geom_sf_label(aes(label = paste0(median_date, "BP")), label.size  = NA, alpha = 0.4, size=3.5) + #hex grid labels #label = ifelse(contains_sites==0, NA, paste0(median_date, "BP")))
+    theme(panel.background = element_rect(fill = "lightblue",
+                                          colour = "lightblue",
+                                          size = 0.5,
+                                          linetype = "solid"),
+          legend.position = "none")
+  
+  plot_list[[k]] <- p
+}
+
+#Output
+pdf(file=here('output','figures','figure25.pdf'), width=15, height=8)
+grid.arrange(grobs=plot_list, ncol=5, nrow=2, padding=0) # Define the layout for the plots
+dev.off()
+
+#-------------------------------------------------------------------------------
+##Animate through time slices to display proportion of distribution before specified time -- FIGURE 25_animate
+
+#Extract proportion of MCMC samples occurring before the specified time threshold (note more time divisions for animation)
+time_slices2 <- seq(4000, 1000, -50) 
+
+prop_model_tac_icar2  <- lapply(time_slices2, 
+                            function(t) data.frame(x = 1:41, 
+                                                   y = sapply(as.data.frame(post.model.tac_icar), 
+                                                            prop_gthan_threshold, 
+                                                            threshold = t)))
+
+# Combine all time slices into one dataset
+all_data <- lapply(seq_along(time_slices2), function(k) {
+  hex_area_win %>%
+    filter(area_ID %in% 1:41) %>%
+    mutate(median_date = med.model.tac_icar,
+           prop_threshold = prop_model_tac_icar2[[k]]$y,
+           time_slice = -time_slices2[k]) %>% #minus sign ensures animation time proceeds in the correct direction
+    filter(area_ID %!in% c(1, 2, 3, 4, 6)) %>% # Exclude specific areas
+    st_as_sf()})
+
+# Verify that all elements are sf objects
+if (!all(sapply(all_data, inherits, "sf"))) {
+  stop("One or more elements of all_data are not sf objects!")
+}
+
+# Combine all sf objects safely
+all_data <- do.call(rbind, all_data)
+
+#co-ordinates of area centroids used for label positions
+label_data <- st_coordinates(all_data$area_center)
+
+# Animated ggplot
+p <- ggplot(data = all_data) +
+  geom_sf(data = st_buffer(st_as_sf(sampling_win, crs = 4326), 40000), aes(color = "grey50")) +
+  geom_sf(aes(fill = median_date, alpha = prop_threshold)) +
+  scale_fill_viridis_c(option = "F", direction = -1) +
+  scale_alpha_continuous(range = c(0, 1)) +
+  xlab('Longitude') +
+  ylab('Latitude') +
+  geom_text(data = label_data,
+            aes(x = X, y = Y, label = paste0(all_data$median_date, " BP")),
+            size = 3.5, alpha = 0.4) +  #Use geom_text instead of geom_sf_label
+  theme(
+    panel.background = element_rect(
+      fill = "lightblue",
+      colour = "lightblue",
+      size = 0.5,
+      linetype = "solid"
+    ),
+    legend.position = "none",
+    plot.title = element_text(size = 20, face = "bold"),
+    axis.title.x = element_text(size = 15, face = "bold"),  # X-axis label
+    axis.title.y = element_text(size = 15, face = "bold")   # Y-axis label
+  ) +
+  labs(title = "Time Slice: {closest_state} BP") #Note: use '{closest_state}' with 'transition_states()' and '{frame_time}' with 'transition_time()'
+
+anim <- p +
+  transition_states(time_slice, transition_length = 2, state_length = 1) +
+  enter_fade() +
+  exit_fade()
+
+#Save the animation
+anim_save("figure25_animation.gif",
+          animation = animate(anim, width = 1200, height = 900, fps = 10))
 
 #===============================================================================
 ##Bayesian ICAR Models
@@ -660,7 +771,6 @@ dev.off()
 #Load Data ----
 load(here("output", "ICAR_model_a.RData")) #model (i) -- no sample interdependence
 load(here("output","ICAR_model_b.RData")) #model (ii) -- hierarchical structure
-
 
 #-------------------------------------------------------------------------------
 # Marginal Posterior Distribution of a[k], model i ---- FIGURE 17
@@ -671,7 +781,8 @@ model.i.long  <- data.frame(value = as.numeric(post.a.model.i),
                             area = rep(c(5,7:41), each=nrow(post.a.model.i)))
 
 model.i.long  <- model.i.long %>%
-  mutate(area = factor(area, levels=paste0(c(5,7:41)), ordered=TRUE)) 
+  mutate(area = factor(area, levels=paste0(c(5,7:41)), ordered=TRUE))
+
 #Plot
 pdf(file=here('output','figures','figure17.pdf'), height=10, width=8)
 ggplot(model.i.long, aes(x = value, y = area, fill='orange')) + 
@@ -934,9 +1045,6 @@ dev.off()
 
 #-------------------------------------------------------------------------------
 ##Plot magnitude and direction of gradients for model (i) and (ii) -- FIGURE 23
-
-##Load relevant functions
-source(here('src', 'grad_funcs.R'))
 
 #Extract quantile information for models
 tmp.i = extract_gradinfo(out_icar_model_a) 
