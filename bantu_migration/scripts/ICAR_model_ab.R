@@ -5,6 +5,7 @@ library(nimbleCarbon)
 library(rcarbon)
 library(dplyr)
 library(parallel)
+library(spdep)
 
 rm(list = ls())
 `%!in%` <- Negate(`%in%`)
@@ -78,8 +79,6 @@ init_b  <- init_b[ ,2] - buffer
 
 #-------------------------------------------------------------------------------
 #Spatial data
-
-library(spdep)
 nb_areas <- poly2nb(as(hex_area_win, 'Spatial'), queen=FALSE, row.names = hex_area_win$area_ID) #neighboring areas using sp library 
 #nb_areas <- st_intersects(hex_area_win, hex_area_win, remove_self = TRUE) #neighboring areas using sf library
 
@@ -129,7 +128,7 @@ icar_model  <- function(seed, d, theta_init, init_nabla, init_a, init_b, constan
     }
 
     # ICAR Model Prior
-    a[1:n_areas] ~ dcar_normal(adj[1:L], weights[1:L], num[1:n_areas], tau1, zero_mean =0)
+    a[1:n_areas] ~ dcar_normal(adj[1:L], weights[1:L], num[1:n_areas], tau, zero_mean =0)
     tau ~ dgamma(1, 0.1)
   })
 
@@ -189,7 +188,7 @@ icar_model_b  <- function(seed, d, theta_init, init_nabla, alpha_init, delta_ini
     }
     
     # ICAR Model Prior
-    a[1:n_areas] ~ dcar_normal(adj[1:L], weights[1:L], num[1:n_areas], tau1, zero_mean =0)
+    a[1:n_areas] ~ dcar_normal(adj[1:L], weights[1:L], num[1:n_areas], tau, zero_mean =0)
     tau ~ dgamma(1, 0.1)
     
     # Hyperprior for duration
@@ -225,8 +224,8 @@ icar_model_b  <- function(seed, d, theta_init, init_nabla, alpha_init, delta_ini
 ncores  <-  4
 cl <- makeCluster(ncores)
 seeds <- c(12, 34, 56, 78)
-niter  <- 2000000
-nburnin  <- 1000000
+niter  <- 1000000
+nburnin  <- 500000
 thin  <- 100
 
 #Model A -- ICAR Model

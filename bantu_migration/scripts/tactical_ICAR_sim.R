@@ -61,7 +61,7 @@ n_areas <- length(num) #number of regions. Alternatively, nrow(adj_mat)
 constants <- constants_trig
 
 constants$adj <- adj
-constants$adj_mat <- adj_mat
+#constants$adj_mat <- adj_mat
 constants$n_areas <- n_areas
 constants$weights <- weights
 constants$num <- num
