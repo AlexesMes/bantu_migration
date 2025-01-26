@@ -741,7 +741,7 @@ p <- ggplot(data = all_data) +
   ylab('Latitude') +
   geom_text(data = label_data,
             aes(x = X, y = Y, label = paste0(all_data$median_date, " BP")),
-            size = 3.5, alpha = 0.4) +  #Use geom_text instead of geom_sf_label
+            size = 4.5, alpha = 0.4) +  #Use geom_text instead of geom_sf_label
   theme(
     panel.background = element_rect(
       fill = "lightblue",
@@ -787,7 +787,7 @@ model.i.long  <- model.i.long %>%
 pdf(file=here('output','figures','figure17.pdf'), height=10, width=8)
 ggplot(model.i.long, aes(x = value, y = area, fill='orange')) + 
   geom_density_ridges() +
-  scale_x_reverse(limits=c(2670, 1200), breaks=BCADtoBP(c(-700, -500, -300, -100, 100, 300, 500, 700)), labels=c('700BC', '500BC', '300BC', '100BC', '100AD', '300AD', '500AD', '700AD')) +
+  scale_x_reverse(limits=c(3470, 1000), breaks=BCADtoBP(c(-1500, -1300, -1100, -900, -700, -500, -300, -100, 100, 300, 500, 700, 900)), labels=c('1500BC','1300BC', '1100BC','900BC','700BC', '500BC', '300BC', '100BC', '100AD', '300AD', '500AD', '700AD', '900AD')) +
   scale_fill_manual(values='orange') +
   xlab(paste('Arrival time,', TeX('$a_k$'))) +
   ylab(paste('Area,', TeX('$k$'))) +
@@ -809,7 +809,7 @@ model.ii.long  <- model.ii.long %>%
 pdf(file=here('output','figures','figure18.pdf'), height=10, width=8)
 ggplot(model.ii.long, aes(x = value, y = area, fill='orange')) + 
   geom_density_ridges() +
-  scale_x_reverse(limits=c(2670, 1200), breaks=BCADtoBP(c(-700, -500, -300, -100, 100, 300, 500, 700)), labels=c('700BC', '500BC', '300BC', '100BC', '100AD', '300AD', '500AD', '700AD')) +
+  scale_x_reverse(limits=c(3470, 1000), breaks=BCADtoBP(c(-1500, -1300, -1100, -900, -700, -500, -300, -100, 100, 300, 500, 700, 900)), labels=c('1500BC','1300BC', '1100BC','900BC','700BC', '500BC', '300BC', '100BC', '100AD', '300AD', '500AD', '700AD', '900AD')) +
   scale_fill_manual(values='orange') +
   xlab(paste('Arrival time,', TeX('$a_k$'))) +
   ylab(paste('Area,', TeX('$k$'))) +
@@ -850,7 +850,7 @@ post.bar <- function(x, i, h, col)
 
 # Posterior Arrival Times
 pdf(file=here('output','figures','figure21.pdf'), width=10, height=18, pointsize=4)
-plot(NULL, xlim=c(2670, 1200), ylim=c(3,105), xlab=paste('Arrival time,', TeX('$a_k$')), ylab=paste('Area,', TeX('$k$')), cex.lab = 2, axes=F)
+plot(NULL, xlim=c(3470, 1000), ylim=c(3,105), xlab=paste('Arrival time,', TeX('$a_k$')), ylab=paste('Area,', TeX('$k$')), cex.lab = 2, axes=F)
 tmp.a = extract(out_icar_model_a)
 tmp.b = extract(out_icar_model_b)
 iseq.a = seq(2,by=3,length.out=36)
@@ -867,22 +867,22 @@ for (i in c(5,7:41)) #all relevant hex areas
 }
 
 axis(2, at=iseq.a+0.5, labels = paste0(c(5,7:41)), las=2, cex.axis=1.7)
-axis(1, at = BCADtoBP(c(-700, -500, -300, -100, 100, 300, 500, 700)), labels=c('700BC', '500BC', '300BC', '100BC', '100AD', '300AD', '500AD', '700AD'), tck=-0.01, cex.axis=1.7)
-axis(3, at = seq(2700, 1200, -200), labels=paste0(seq(2700, 1200, -200),'BP'), tck=-0.01, cex.axis=1.7)
+axis(1, at = BCADtoBP(c(-1500, -1300, -1100, -900, -700, -500, -300, -100, 100, 300, 500, 700, 900)), labels=c('1500BC','1300BC', '1100BC','900BC','700BC', '500BC', '300BC', '100BC', '100AD', '300AD', '500AD', '700AD', '900AD'), tck=-0.01, cex.axis=1.7)
+axis(3, at = seq(3400, 1000, -200), labels=paste0(seq(3400, 1000, -200),'BP'), tck=-0.01, cex.axis=1.7)
 axis(1, at = BCADtoBP(c(-600, -400, -200, 1, 200, 400, 600)), labels=NA, tck=-0.01) #Minor tick marks
-axis(3, at = seq(2700, 1200, -100), labels=NA, tck=-0.01) #Minor tick marks
+axis(3, at = seq(3400, 1000, -100), labels=NA, tck=-0.01) #Minor tick marks
 box()
 
-post.bar(c(800,700,600,500,400,300,200), i=1.5, h=0.9, col='lightgrey')
-arrows(x0=700, x1=300, y0=0.3, y1=0.3, angle = 90, code = 3, length = 0.01)
-arrows(x0=600, x1=400, y0=0.8, y1=0.8, angle = 90, code = 3, length = 0.01)
-text(x=785, y=0.9, "50% HPDI", cex=1.5)
-text(x=875, y=0.07,"90% HPDI", cex=1.5)
-text(x=820, y=2.3, "Median Posterior", cex=1.5)
-lines(x=c(550,500), y=c(2.35, 2.28))
-text(x=5000, y=2, 'Model A', cex=1.5)
-text(x=5000, y=1, 'Model B', cex=1.5)
-theme(legend.position = "none")
+# post.bar(c(800,700,600,500,400,300,200), i=1.5, h=0.9, col='lightgrey')
+# arrows(x0=700, x1=300, y0=0.3, y1=0.3, angle = 90, code = 3, length = 0.01)
+# arrows(x0=600, x1=400, y0=0.8, y1=0.8, angle = 90, code = 3, length = 0.01)
+# text(x=1085, y=0.9, "50% HPDI", cex=1.5)
+# text(x=1275, y=0.07,"90% HPDI", cex=1.5)
+# text(x=1100, y=2.3, "Median Posterior", cex=1.5)
+# lines(x=c(550,500), y=c(2.35, 2.28))
+# text(x=4000, y=2, 'Model A', cex=1.5)
+# text(x=4000, y=1, 'Model B', cex=1.5)
+# theme(legend.position = "none")
 dev.off()
 
 #-------------------------------------------------------------------------------
@@ -1120,8 +1120,8 @@ plot_grad <- function(edges_info, scale_par, sampling_window){
 
 #Output
 pdf(file=here('output','figures','figure23.pdf'))
-A.i <- plot_grad(edge_info.i, 15, sampling_win)
-B.ii <- plot_grad(edge_info.ii, 35, sampling_win)
+A.i <- plot_grad(edge_info.i, 3, sampling_win)
+B.ii <- plot_grad(edge_info.ii, 3, sampling_win)
 grid.arrange(A.i, B.ii, ncol=2, padding=0)
 dev.off()
 
@@ -1135,12 +1135,136 @@ traceplot(out_icar_model_a[,'b[18]'], main=TeX('$b[18]$'),smooth=TRUE)
 traceplot(out_icar_model_a[,'nabla[18]'], main=TeX('$nabla[18]$'), smooth=TRUE)
 dev.off()
 
-pdf(file=here('output', 'figures','figure25.pdf'), width=8, height=8)
+pdf(file=here('output', 'figures','figure26.pdf'), width=8, height=8)
 par(mfrow=c(2,2))
 traceplot(out_icar_model_b[,'a[18]'], main=TeX('$a[18]$'),smooth=TRUE) #region area 18, as an example
 traceplot(out_icar_model_b[,'b[18]'], main=TeX('$b[18]$'),smooth=TRUE)
 traceplot(out_icar_model_b[,'nabla[18]'], main=TeX('$nabla[18]$'), smooth=TRUE)
 dev.off()
+
+#-------------------------------------------------------------------------------
+##Display proportion of distribution before specified time slices -- FIGURE 27
+
+#Hierarchical ICAR model
+out.comb.icar.modelb  <- do.call(rbind, out_icar_model_b)
+post.modelb.icar  <- out.comb.icar.modelb[,paste0('a[',1:41,']')]  %>% round()
+
+#Extract arrival times for tactical icar model
+med.modelb.icar  <- apply(post.modelb.icar, 2, median)
+
+time_slices <- seq(3200, 1400, -200)
+
+#Extract proportion of MCMC samples occurring before the specified time threshold
+prop_modelb_icar  <- lapply(time_slices,
+                            function(t) data.frame(x = 1:41,
+                                                   y = sapply(as.data.frame(post.modelb.icar), 
+                                                              prop_gthan_threshold, 
+                                                              threshold = t)))
+
+#Save figure for each time slice
+plot_list <- list() #Create a list to store the plots
+
+for (k in 1:length(time_slices)) #all time slices
+{
+  #Save in data structure
+  prop_thresholdb_icar <- hex_area_win %>%
+    filter(area_ID %in% 1:41) %>%
+    mutate(median_date = med.modelb.icar,
+           prop_threshold = prop_modelb_icar[[k]]$y,
+           contains_sites = as.factor(case_when(area_ID %in% Hex_with_sites ~ 1, area_ID %in% Hex_without_sites ~ 0))) %>%
+    filter(area_ID %!in% c(1, 2, 3, 4, 6)) #The Bantu hadn't settled in this area by the time the dutch arrived in the Cape (~1600AD). To back this up there are no EIA sites in these regions.
+  
+  #Plot
+  p <- ggplot(data = prop_thresholdb_icar) +
+    geom_sf(data = st_buffer(st_as_sf(sampling_win, crs = 4326), 40000), aes(colour = "grey50"), color=NA) + #sampling window with coastal buffer
+    geom_sf(aes(fill = median_date, alpha=prop_threshold)) + #hex grid #alpha=contains_sites
+    scale_fill_viridis_c(option="F", direction=-1) +
+    scale_alpha_continuous(range = c(0, 1)) +  # Use for continuous alpha values
+    xlab('Longitude') +
+    ylab('Latitude') +
+    ggtitle(paste0('t = ', time_slices[k], ' BP')) +
+    #geom_sf_label(aes(label = paste0(median_date, "BP")), label.size  = NA, alpha = 0.4, size=3.5) + #hex grid labels #label = ifelse(contains_sites==0, NA, paste0(median_date, "BP")))
+    theme(panel.background = element_rect(fill = "lightblue",
+                                          colour = "lightblue",
+                                          size = 0.5,
+                                          linetype = "solid"),
+          legend.position = "none")
+  
+  plot_list[[k]] <- p
+}
+
+#Output
+pdf(file=here('output','figures','figure27.pdf'), width=15, height=8)
+grid.arrange(grobs=plot_list, ncol=5, nrow=2, padding=0) # Define the layout for the plots
+dev.off()
+
+#-------------------------------------------------------------------------------
+##Animate through time slices to display proportion of distribution before specified time -- FIGURE 27_animate
+
+#Extract proportion of MCMC samples occurring before the specified time threshold (note more time divisions for animation)
+time_slices2 <- seq(4000, 1000, -50) 
+
+prop_modelb_icar2  <- lapply(time_slices2, 
+                             function(t) data.frame(x = 1:41, 
+                                                    y = sapply(as.data.frame(post.modelb.icar), 
+                                                               prop_gthan_threshold, 
+                                                               threshold = t)))
+
+# Combine all time slices into one dataset
+all_data <- lapply(seq_along(time_slices2), function(k) {
+  hex_area_win %>%
+    filter(area_ID %in% 1:41) %>%
+    mutate(median_date = med.modelb.icar,
+           prop_threshold = prop_modelb_icar2[[k]]$y,
+           time_slice = -time_slices2[k]) %>% #minus sign ensures animation time proceeds in the correct direction
+    filter(area_ID %!in% c(1, 2, 3, 4, 6)) %>% # Exclude specific areas
+    st_as_sf()})
+
+# Verify that all elements are sf objects
+if (!all(sapply(all_data, inherits, "sf"))) {
+  stop("One or more elements of all_data are not sf objects!")
+}
+
+# Combine all sf objects safely
+all_data <- do.call(rbind, all_data)
+
+#co-ordinates of area centroids used for label positions
+label_data <- st_coordinates(all_data$area_center)
+
+# Animated ggplot
+p <- ggplot(data = all_data) +
+  geom_sf(data = st_buffer(st_as_sf(sampling_win, crs = 4326), 40000), aes(color = "grey50"), color=NA) +
+  geom_sf(aes(fill = median_date, alpha = prop_threshold)) +
+  scale_fill_viridis_c(option = "F", direction = -1) +
+  scale_alpha_continuous(range = c(0, 1)) +
+  xlab('Longitude') +
+  ylab('Latitude') +
+  geom_text(data = label_data,
+            aes(x = X, y = Y, label = paste0(all_data$median_date, " BP")),
+            size = 4.5, alpha = 0.4) +  #Use geom_text instead of geom_sf_label
+  theme(
+    panel.background = element_rect(
+      fill = "lightblue",
+      colour = "lightblue",
+      size = 0.5,
+      linetype = "solid"
+    ),
+    legend.position = "none",
+    plot.title = element_text(size = 20, face = "bold"),
+    axis.title.x = element_text(size = 15, face = "bold"),  # X-axis label
+    axis.title.y = element_text(size = 15, face = "bold")   # Y-axis label
+  ) +
+  labs(title = "Time Slice: {closest_state} BP") #Note: use '{closest_state}' with 'transition_states()' and '{frame_time}' with 'transition_time()'
+
+anim <- p +
+  transition_states(time_slice, transition_length = 2, state_length = 1) +
+  enter_fade() +
+  exit_fade()
+
+#Save the animation
+anim_save("figure27_animation.gif",
+          animation = animate(anim, width = 1200, height = 900, fps = 10))
+
 
 # #-------------------------------------------------------------------------------
 # # Marginal posteriors of beta0, beta1, rho, etasq for tau = 0.9
