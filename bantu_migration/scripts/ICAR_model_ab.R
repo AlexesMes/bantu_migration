@@ -12,8 +12,10 @@ rm(list = ls())
 
 #-------------------------------------------------------------------------------
 ## Data Setup ----
-load(here('data', 'eastc14.RData'))
-load(here('data','trig.RData')) #nodes and edges between hex area centroids
+#load(here('data', 'eastc14.RData')) #East and Southern Africa
+#load(here('data','trig.RData')) #nodes and edges between hex area centroids
+load(here('data', 'c14.RData')) #sub-Saharan Africa
+load(here('data','trig_cont.RData'))
 
 #Combine constants
 constants <- c(constants, constants_trig)
@@ -94,7 +96,7 @@ constants <- constants[names(constants) %!in% c("dist_mat",
                                                 "dist_org", 
                                                 "center_coords",
                                                 "countries",
-                                                "eastEIAcountries",
+                                                #"eastEIAcountries",
                                                 "origin_point")] #remove constants which aren't used
 
 #-------------------------------------------------------------------------------
@@ -284,9 +286,9 @@ save(out_icar_model_a,
      rhat_icar_model_a, 
      ess_icar_model_a, 
      agg_icar_model_a, 
-     file=here('output','ICAR_model_a.RData'))
+     file=here('output','ICAR_model_a_cont.RData')) #'ICAR_model_a.RData'
 save(out_icar_model_b, 
      rhat_icar_model_b, 
      ess_icar_model_b, 
      agg_icar_model_b, 
-     file=here('output','ICAR_model_b.RData'))
+     file=here('output','ICAR_model_b_cont.RData')) #'ICAR_model_b.RData'

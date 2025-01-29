@@ -15,8 +15,8 @@ library(units)
 library(igraph)
 
 # Load and prepare data ----
-load(here('data','eastc14.RData'))
-
+load(here('data','eastc14.RData')) #East and Southern Africa
+#load(here('data','c14.RData')) #sub-Saharan Africa
 
 #-------------------------------------------------------------------------------
 ## Data preparation ----
@@ -80,8 +80,8 @@ constants_trig$center_coords <- center_coords
 #   geom_sf() + #hex grid
 #   geom_sf_text(aes(label = area_ID), size=4, alpha=0.8) + #hex grid labels #aes(label =  c('1','2','3'))
 #   geom_sf(data = hex_area_win$area_center, size=2, alpha=1, aes(color = "purple")) + #hex-origins
-#   geom_delaunay_segment(aes(x=center_coords[,1], y=center_coords[,2]), 
-#                         alpha=0.5, 
+#   geom_delaunay_segment(aes(x=center_coords[,1], y=center_coords[,2]),
+#                         alpha=0.5,
 #                         colour='purple',
 #                         size=0.8) +
 #   labs(x = "Longitude", y = "Latitude") +
@@ -121,7 +121,7 @@ save(del,
      tiles,
      edge_info,
      constants_trig,
-     file=here('data','trig.RData'))
+     file=here('data','trig.RData')) #'trig_cont.RData'
 
 
 # #===============================================================================
@@ -145,9 +145,3 @@ save(del,
 # #-------------------------------------------------------------------------------
 # ## Save everything on a R image file ----
 # save(create_paths, file=here('data','simplepaths.RData'))
-
-
-
-
-
-

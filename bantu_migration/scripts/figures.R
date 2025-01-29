@@ -37,10 +37,12 @@ source(here('src', 'grad_funcs.R'))
 ## Load Data
 
 # Load Observed Data
-load(here('data','eastc14.RData'))
+load(here('data','eastc14.RData')) #East and Southern Africa
+#load(here('data','c14.RData')) #sub-Saharan Africa
 
 #Load nodes and edges between hex area centroids
 load(here('data','trig.RData'))
+#load(here('data','trig_cont.RData'))
 
 # Load quantile regression results
 load(here('output','quantreg_res.RData'))
@@ -768,10 +770,10 @@ anim_save("figure25_animation.gif",
 #===============================================================================
 ##Bayesian ICAR Models
 
-#Load Data ----
+`#Load Data ----
 load(here("output", "ICAR_model_a.RData")) #model (i) -- no sample interdependence
 load(here("output","ICAR_model_b.RData")) #model (ii) -- hierarchical structure
-
+`
 #-------------------------------------------------------------------------------
 # Marginal Posterior Distribution of a[k], model i ---- FIGURE 17
 
