@@ -65,16 +65,16 @@ st_crs(edges_coords$geom)  <- 4326
 check_edges_ext <- st_within(edges_coords$geom, sampling_win_ext)
 ind_ext_edges <- which(is.na(as.numeric(check_edges_ext))) # indices of edges which are external -- to be removed if we aren't considering ocean movement
 ##Check
-#internal_edges <- edges_coords[-ind_ext_edges, ]
-#plot(sampling_win_ext)
-#plot(internal_edges$geom, add=T) #compare to plot(edges_coords$geom, add=T)
+# internal_edges <- edges_coords[-ind_ext_edges, ]
+# plot(sampling_win_ext)
+# plot(internal_edges$geom, add=T) #compare to plot(edges_coords$geom, add=T)
 
 # Add center_coords in constants
 constants_trig <- list()
 constants_trig$center_coords <- center_coords
 
 ##Plot delaunay triangulation
-# #ggplot(data = hex_area_win[c(13, 18, 22),]) +
+#ggplot(data = hex_area_win[c(13, 18, 22),]) +
 # ggplot(data = hex_area_win) + #TODO: Uncomment
 #   geom_sf(data = st_buffer(sampling_win, 40000), aes(color = "grey50")) + #sampling window with coastal buffer
 #   geom_sf() + #hex grid
@@ -105,6 +105,9 @@ transitions <- del$delsgs %>%
   rowwise() %>% 
   mutate(distance = hex_dist_mat[region1_id, region2_id]) #Great-arc distance between transitions in km
 
+# #Remove boundary transitions
+# average_trans <- mean(transitions$distance)
+# transitions <- transitions %>% filter(distance < average_trans)
 
 #Transform transitions into usable format to save in constants
 edge_info <- as.data.frame(transitions)
@@ -123,6 +126,9 @@ save(del,
      constants_trig,
      file=here('data','trig.RData')) #'trig_cont.RData'
 
+# save(edge_info,
+#      constants_trig,
+#      file=here('data','boundary_edges.RData'))
 
 # #===============================================================================
 # ##Simple paths

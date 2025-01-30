@@ -19,9 +19,9 @@ load(here('data','trig.RData'))
 load(here('data','sample_window.RData'))
 #download_dataset(dataset = "Krapp2021") #download pastclim data
 
-#get_downloaded_datasets()
-#get_vars_for_dataset(dataset = "Krapp2021", details= TRUE)
-#get_time_bp_steps(dataset = "Krapp2021")
+# get_downloaded_datasets()
+# get_vars_for_dataset(dataset = "Krapp2021", details= TRUE)
+# get_time_bp_steps(dataset = "Krapp2021")
 
 #List of environmental variables
 enviro_vars <- get_vars_for_dataset(dataset = "Krapp2021") 
@@ -58,11 +58,11 @@ dev.off()
 ##HEX SAMPLING REGDIONS ----
 
 #Apply the function to convert sfc_GEOMETRY to SpatVector to each row's geometry
-remove_areaID <- c(1, 2, 3, 4, 6) #The Bantu hadn't settled in this area by the time the dutch arrived in the Cape (~1600AD). To back this up there are no EIA sites in these regions.
-new_areaID <- setdiff(1:41, remove_areaID)
-  
-hex_area_win <- hex_area_win %>% 
-  filter(area_ID %in% new_areaID) 
+# remove_areaID <- c(1, 2, 3, 4, 6) #The Bantu hadn't settled in this area by the time the dutch arrived in the Cape (~1600AD). To back this up there are no EIA sites in these regions.
+# new_areaID <- setdiff(1:41, remove_areaID)
+#   
+# hex_area_win <- hex_area_win %>% 
+#   filter(area_ID %in% new_areaID) 
 
 hex_area_win_sv <- lapply(hex_area_win$geometry, function(sfc){
   return(vect(sfc))
@@ -89,6 +89,13 @@ mean_hex_clim_list <- lapply(hex_area_clim_2k, function(env_in_hex){
 
 #Combine into a single dataframe
 mean_hex_clim_df <- do.call(rbind, mean_hex_clim_list) 
+
+mean_hex_clim_df[1,] <- rep(0,ncol(mean_hex_clim_df)) #hex area 1 is too small to have environmental variables. This doesn't matter as we don't report results from the following regions: remove_areaID <- c(1, 2, 3, 4, 6) The Bantu hadn't settled in this area by the time the dutch arrived in the Cape (~1600AD). To back this up there are no EIA sites in these regions.
+
+#Save areal environmental variables
+save(mean_hex_clim_df, 
+     file=here('data','environ_vars.RData'))
+
 
 #-------------------------------------------------------------------------------
 #PCA Analysis for environmental variables over entire sampling window ----
