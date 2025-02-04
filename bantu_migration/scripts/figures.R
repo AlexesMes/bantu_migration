@@ -38,11 +38,9 @@ source(here('src', 'grad_funcs.R'))
 
 # Load Observed Data
 load(here('data','eastc14.RData')) #East and Southern Africa
-#load(here('data','c14.RData')) #sub-Saharan Africa
 
 #Load nodes and edges between hex area centroids
 load(here('data','trig.RData'))
-#load(here('data','trig_cont.RData'))
 
 # Load quantile regression results
 load(here('output','quantreg_res.RData'))
@@ -1280,3 +1278,465 @@ anim_save("figure27_animation.gif",
 # postHPDplot(gpqr.tau90.comb[,'rho'], main=TeX('$\\rho$'), xlab='km', ylab='')
 # postHPDplot(gpqr.tau90.comb[,'etasq'], main=TeX('$\\eta^2$'), xlab='', ylab='')
 # dev.off()
+
+
+#===============================================================================
+##Bayesian Hierarchical ICAR Model -- over entire sub-Saharan region
+
+## Load Data
+
+# Load Observed Data
+load(here('data','c14.RData')) #sub-Saharan Africa
+#Load nodes and edges between hex area centroids
+load(here('data','trig_cont.RData'))
+#Load model data
+load(here("output", "ICAR_model_a_cont.RData"))
+load(here("output", "ICAR_model_b_cont.RData"))
+
+#----
+
+#Hex areas with and without out sites
+Hex_with_sites <- unique(siteInfo$area_id)
+Hex_without_sites <- which(rep(1:111) %!in% Hex_with_sites)
+
+
+#-------------------------------------------------------------------------------
+# Marginal Posterior Distribution of a[k], model i ---- FIGURE 28
+
+out.comb.icar.model.a  <- do.call(rbind, out_icar_model_a)
+post.a.model.i  <- out.comb.icar.model.a[,paste0('a[',c(5,7:111),']')] %>%  round() #all relevant hex areas
+model.i.long  <- data.frame(value = as.numeric(post.a.model.i),
+                            area = rep(c(5,7:111), each=nrow(post.a.model.i)))
+
+model.i.long  <- model.i.long %>%
+  mutate(area = factor(area, levels=paste0(c(5,7:111)), ordered=TRUE))
+
+#Plot
+pdf(file=here('output','figures','figure28.pdf'), height=10, width=8)
+ggplot(model.i.long, aes(x = value, y = area, fill='orange')) + 
+  geom_density_ridges() +
+  scale_x_reverse(limits=c(4470, 1000), breaks=BCADtoBP(c(-2300, -1900, -1500, -1100, -700, -300, 100, 500, 900)), labels=c('2300BC', '1900BC', '1500BC', '1100BC','700BC',  '300BC',  '100AD', '500AD', '900AD')) +
+  scale_fill_manual(values='orange') +
+  xlab(paste('Arrival time,', TeX('$a_k$'))) +
+  ylab(paste('Area,', TeX('$k$'))) +
+  theme(legend.position = "none")
+dev.off()
+
+#------
+# Marginal Posterior Distribution of a[k], model ii ---- FIGURE 29
+
+out.comb.icar.model.b  <- do.call(rbind, out_icar_model_b)
+post.a.model.ii  <- out.comb.icar.model.b[,paste0('a[',c(5,7:111),']')] %>%  round() #all relevant hex areas
+model.ii.long  <- data.frame(value = as.numeric(post.a.model.ii),
+                             area = rep(c(5,7:111), each=nrow(post.a.model.ii)))
+
+model.ii.long  <- model.ii.long %>%
+  mutate(area = factor(area, levels=paste0(c(5,7:111)), ordered=TRUE))
+
+#Plot
+pdf(file=here('output','figures','figure29.pdf'), height=10, width=8)
+ggplot(model.ii.long, aes(x = value, y = area, fill='orange')) + 
+  geom_density_ridges() +
+  scale_x_reverse(limits=c(4470, 1000), breaks=BCADtoBP(c(-2300, -1900, -1500, -1100, -700, -300, 100, 500, 900)), labels=c('2300BC', '1900BC', '1500BC', '1100BC','700BC',  '300BC',  '100AD', '500AD', '900AD')) +
+  scale_fill_manual(values='orange') +
+  xlab(paste('Arrival time,', TeX('$a_k$'))) +
+  ylab(paste('Area,', TeX('$k$'))) +
+  theme(legend.position = "none")
+dev.off()
+
+#-------------------------------------------------------------------------------
+# Probability Matrix of a[k], model i ---- FIGURE 30
+source(here('src','orderPPlot.R'))
+
+pdf(file=here('output','figures','figure30.pdf'), width=10, height=10.5)
+orderPPlot(post.a.model.i, name.vec=paste("Area", c(5,7:111)))
+dev.off()
+
+#------
+# Probability Matrix of a[k], model ii ---- FIGURE 31
+pdf(file=here('output','figures','figure31.pdf'), width=10, height=10.5)
+orderPPlot(post.a.model.ii, name.vec=paste("Area", c(5,7:111)))
+dev.off()
+
+#-------------------------------------------------------------------------------
+## Plot HEX areas with median arrival times ---- FIGURE 32
+
+#Extract arrival times for model (i)
+out.comb.icar.modela  <- do.call(rbind, out_icar_model_a)
+post.a.model.i  <- out.comb.icar.modela[,paste0('a[',1:111,']')]  %>% round() 
+hpdi.model.i  <- apply(post.a.model.i, 2, function(x){HPDinterval(as.mcmc(x), prob = .90)}) 
+med.model.i  <- apply(post.a.model.i, 2, median)
+hi90_mod.i  <- hpdi.model.i[1,]
+lo90_mod.i  <- hpdi.model.i[2,]
+
+median_hex_dates_mod.i <- hex_area_win %>% 
+  filter(area_ID %in% 1:111) %>% 
+  mutate(median_date = med.model.i,
+         hpdi_high = hi90_mod.i,
+         hpdi_low = lo90_mod.i,
+         contains_sites = as.factor(case_when(area_ID %in% Hex_with_sites ~ 1, area_ID %in% Hex_without_sites ~ 0))) %>% 
+  filter(area_ID %!in% c(1, 2, 3, 4, 6)) #The Bantu hadn't settled in this area by the time the dutch arrived in the Cape (~1600AD). To back this up there are no EIA sites in these regions.
+
+#Extract arrival times for model (ii)
+out.comb.icar.modelb  <- do.call(rbind, out_icar_model_b)
+post.a.model.ii  <- out.comb.icar.modelb[,paste0('a[',1:111,']')]  %>% round()
+hpdi.model.ii  <- apply(post.a.model.ii, 2, function(x){HPDinterval(as.mcmc(x), prob = .90)}) 
+med.model.ii  <- apply(post.a.model.ii, 2, median)
+hi90_mod.ii  <- hpdi.model.ii[1,]
+lo90_mod.ii  <- hpdi.model.ii[2,]
+
+median_hex_dates_mod.ii <- hex_area_win %>% 
+  filter(area_ID %in% 1:111) %>% 
+  mutate(median_date = med.model.ii,
+         hpdi_high = hi90_mod.ii,
+         hpdi_low = lo90_mod.ii,
+         contains_sites = as.factor(case_when(area_ID %in% Hex_with_sites ~ 1, area_ID %in% Hex_without_sites ~ 0))) %>% 
+  filter(area_ID %!in% c(1, 2, 3, 4, 6)) #The Bantu hadn't settled in this area by the time the dutch arrived in the Cape (~1600AD). To back this up there are no EIA sites in these regions.
+
+#Plot
+#-----MODEL (i)
+modi <- ggplot(data = median_hex_dates_mod.i) +
+  #geom_sf(data = st_buffer(st_as_sf(sampling_win, crs = 4326), 40000), aes(color = "grey50")) + #sampling window with coastal buffer
+  geom_sf(aes(fill = median_date)) + #hex grid #alpha=contains_sites
+  scale_fill_viridis_c(option="F", direction=-1) +
+  scale_alpha_manual(values=c(0.45, 1)) +
+  xlab('Longitude') +
+  ylab('Latitude') +
+  geom_sf_label(aes(label = paste0(median_date, "BP")), label.size  = NA, alpha = 0.4, size=3.5) + #hex grid labels #label = ifelse(contains_sites==0, NA, paste0(median_date, "BP")))
+  theme(panel.background = element_rect(fill = "lightblue",
+                                        colour = "lightblue",
+                                        size = 0.5,
+                                        linetype = "solid"),
+        legend.position = "none")
+
+
+modiHPDIlow <- ggplot(data = median_hex_dates_mod.i) +
+  #geom_sf(data = st_buffer(st_as_sf(sampling_win, crs = 4326), 40000), aes(color = "grey50")) + #sampling window with coastal buffer
+  geom_sf(aes(fill = hpdi_low)) + #alpha=contains_sites
+  ggtitle('90% HPDI (low)') +
+  scale_fill_viridis_c(option="F", direction=-1) +
+  scale_alpha_manual(values=c(0.45, 1)) +
+  theme(axis.line=element_blank(),
+        axis.text.x=element_blank(),
+        axis.text.y=element_blank(),
+        axis.ticks=element_blank(),
+        panel.background = element_rect(fill='transparent'),
+        plot.background = element_rect(fill='transparent', color=NA),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        panel.border = element_blank(),
+        plot.title = element_text(size=12),
+        legend.position = "none")
+
+modiHPDIhigh <- ggplot(data = median_hex_dates_mod.i) +
+  #geom_sf(data = st_buffer(st_as_sf(sampling_win, crs = 4326), 40000), aes(color = "grey50")) + #sampling window with coastal buffer
+  geom_sf(aes(fill = hpdi_high)) + #alpha=contains_sites
+  ggtitle('90% HPDI (high)') +
+  scale_fill_viridis_c(option="F", direction=-1) +
+  scale_alpha_manual(values=c(0.45, 1)) +
+  theme(axis.line=element_blank(),
+        axis.text.x=element_blank(),
+        axis.text.y=element_blank(),
+        axis.ticks=element_blank(),
+        panel.background = element_rect(fill='transparent'),
+        plot.background = element_rect(fill='transparent', color=NA),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        panel.border = element_blank(),
+        plot.title = element_text(size=12),
+        legend.position = "none")
+
+
+A <- cowplot::ggdraw() +
+  draw_plot(modi) +
+  draw_plot(modiHPDIlow, 
+            x = .73, y = .285, width = .25, height = .25) +
+  draw_plot(modiHPDIhigh, 
+            x = .73, y = .06, width = .25, height = .25)
+
+#-----MODEL (ii)
+modii <- ggplot(data = median_hex_dates_mod.ii) +
+  #geom_sf(data = st_buffer(st_as_sf(sampling_win, crs = 4326), 40000), aes(color = "grey50")) + #sampling window with coastal buffer
+  geom_sf(aes(fill = median_date)) + #hex grid
+  scale_fill_viridis_c(option="F", direction=-1) +
+  geom_sf_label(aes(label = paste0(median_date, "BP")), label.size  = NA, alpha = 0.4, size=3.5) + #hex grid labels
+  xlab('Longitude') +
+  ylab('Latitude') +
+  theme(panel.background = element_rect(fill = "lightblue",
+                                        colour = "lightblue",
+                                        size = 0.5,
+                                        linetype = "solid"),
+        legend.position = "none")
+
+modiiHPDIlow <- ggplot(data = median_hex_dates_mod.ii) +
+  #geom_sf(data = st_buffer(st_as_sf(sampling_win, crs = 4326), 40000), aes(color = "grey50")) + #sampling window with coastal buffer
+  geom_sf(aes(fill = hpdi_low)) + 
+  ggtitle('90% HPDI (low)') +
+  scale_fill_viridis_c(option="F", direction=-1) +
+  theme(axis.line=element_blank(),
+        axis.text.x=element_blank(),
+        axis.text.y=element_blank(),
+        axis.ticks=element_blank(),
+        panel.background = element_rect(fill='transparent'),
+        plot.background = element_rect(fill='transparent', color=NA),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        panel.border = element_blank(),
+        plot.title = element_text(size=12),
+        legend.position = "none")
+
+modiiHPDIhigh <- ggplot(data = median_hex_dates_mod.ii) +
+  #geom_sf(data = st_buffer(st_as_sf(sampling_win, crs = 4326), 40000), aes(color = "grey50")) + #sampling window with coastal buffer
+  geom_sf(aes(fill = hpdi_high)) + 
+  ggtitle('90% HPDI (high)') +
+  scale_fill_viridis_c(option="F", direction=-1) +
+  theme(axis.line=element_blank(),
+        axis.text.x=element_blank(),
+        axis.text.y=element_blank(),
+        axis.ticks=element_blank(),
+        panel.background = element_rect(fill='transparent'),
+        plot.background = element_rect(fill='transparent', color=NA),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        panel.border = element_blank(),
+        plot.title = element_text(size=12),
+        legend.position = "none")
+
+
+B <- cowplot::ggdraw() +
+  draw_plot(modii) +
+  draw_plot(modiiHPDIlow, 
+            x = .73, y = .285, width = .25, height = .25) +
+  draw_plot(modiiHPDIhigh, 
+            x = .73, y = .06, width = .25, height = .25)
+
+#Output
+pdf(file=here('output','figures','figure32.pdf'), width=15, height=8)
+grid.arrange(B, ncol=1, padding=0) #grid.arrange(A, B, ncol=2, padding=0) #TODO: remove Madagascar -- we have no sites!
+dev.off()
+
+
+#-------------------------------------------------------------------------------
+##Plot magnitude and direction of gradients for model (i) and (ii) -- FIGURE 33
+
+#Extract quantile information for models
+tmp.i = extract_gradinfo(out_icar_model_a) 
+tmp.ii = extract_gradinfo(out_icar_model_b) 
+
+qta.i = apply(tmp.i, 2, quantile, prob=c(0, 0.05, 0.25, 0.5, 0.75, 0.95, 1))
+qta.ii = apply(tmp.ii, 2, quantile, prob=c(0, 0.05, 0.25, 0.5, 0.75, 0.95, 1))
+
+#Extract uncertainty information
+uncert.i = sapply(as.data.frame(tmp.i), prop_gthan_zero)
+uncert.ii = sapply(as.data.frame(tmp.ii), prop_gthan_zero)
+
+#Add info to edges dataframe
+edge_info.i <- edge_info %>% 
+  mutate(mean_gradient = qta.i[4,], #50% quantile
+         uncertainty = uncert.i) %>% #% of distribution > zero
+  filter(distance <= mean(distance)*1.3, #Remove extremely long edges which are 'artificially' created along the internal window boundary or require extreme coastal movement along external window boundary
+         region1_id %!in% c(1,2,3,4,6),
+         region2_id %!in% c(1,2,3,4,6))
+
+edge_info.ii <- edge_info %>% 
+  mutate(mean_gradient = qta.ii[4,], #50% quantile
+         uncertainty = uncert.ii) %>% #% of distribution > zero
+  filter(distance <= mean(distance)*1.3, #Remove extremely long edges which are 'artificially' created along the internal window boundary or require extreme coastal movement along external window boundary
+         region1_id %!in% c(1,2,3,4,6),
+         region2_id %!in% c(1,2,3,4,6))
+
+#Create nodes
+rel_hex_win <- hex_area_win %>% filter(area_ID %!in% c(1,2,3,4,6))
+nodes <- st_coordinates(rel_hex_win$area_center)
+
+#--------
+#PLOT
+
+plot_grad <- function(edges_info, scale_par, sampling_window){
+  # Get the bounding box of the sample window
+  sample_win_buff <- st_buffer(st_as_sf(sampling_window, crs = 4326), 40000)
+  bbox <- sf::st_bbox(sample_win_buff)
+  
+  # Calculate the aspect ratio of the bounding box
+  aspect_ratio <- diff(range(c(bbox["ymin"], bbox["ymax"]))) / diff(range(c(bbox["xmin"], bbox["xmax"])))
+  gridsize <- 1 # Adjust the denominator to change grid density
+  
+  # Create an empty plot with the appropriate range
+  plot(x = c(bbox["xmin"], bbox["xmax"]), y = c(bbox["ymin"], bbox["ymax"]), type = "n",
+       xlab = "Latitude", ylab = "Longitude", main = "Gradient surface of arrival times", asp = 1/aspect_ratio, axes = F)
+  # Adding theme elements
+  rect(bbox["xmin"], bbox["ymin"], bbox["xmax"], bbox["ymax"], col = "lightblue", border=NA) #a blue-colored bounding box
+  # Add background grid
+  abline(v = seq(ceiling(bbox["xmin"]), floor(bbox["xmax"]), by = gridsize), col = "white")
+  abline(h = seq(ceiling(bbox["ymin"]), floor(bbox["ymax"]), by = gridsize), col = "white")
+  # Add labeled axes for the background grid
+  axis(side = 1, at = seq(ceiling(bbox["xmin"]), floor(bbox["xmax"]), by = gridsize*2),
+       labels = format(seq(ceiling(bbox["xmin"]), floor(bbox["xmax"]), by = gridsize*2), nsmall = 1))
+  axis(side = 2, at = seq(ceiling(bbox["ymin"]), floor(bbox["ymax"]), by = gridsize*2),
+       labels = format(seq(ceiling(bbox["ymin"]), floor(bbox["ymax"]), by = gridsize*2), nsmall = 1), las = 1, add = T)
+  # Add north arrow in the bottom right corner
+  north_arrow_length <- 4
+  north_arrow_x <- bbox["xmax"] - 0.05 * diff(c(bbox["xmin"], bbox["xmax"]))
+  north_arrow_y <- bbox["ymin"] + 0.05 * diff(c(bbox["ymin"], bbox["ymax"]))
+  arrows(x0 = north_arrow_x, y0 = north_arrow_y, x1 = north_arrow_x, y1 = north_arrow_y + north_arrow_length, 
+         length = 0.1, angle = 30, col = "black", lwd=2)
+  # Plotting the sampling window with coastal buffer
+  plot(sample_win_buff, col = "grey", border = rgb(0, 0, 0, 0.2), add = TRUE)
+  # Plotting the hex grid
+  plot(hex_area_win$geometry, add = TRUE, border = rgb(0, 0, 0, 0.2))
+  # Plotting the hex origins
+  points(nodes[,"X"], nodes[,"Y"], pch = 20, col = rgb(0, 0, 0, 0.8), cex = 2)
+  # Plot gradient arrows using the custom function
+  plot_arrows(edges_info, scale_par, lwd=4, length = 0.1) #length parameter defines arrowhead size
+}
+
+
+#Output
+pdf(file=here('output','figures','figure33.pdf'))
+A.i <- plot_grad(edge_info.i, 3, sampling_win)
+B.ii <- plot_grad(edge_info.ii, 3, sampling_win)
+grid.arrange(A.i, B.ii, ncol=2, padding=0)
+dev.off()
+
+#-------------------------------------------------------------------------------
+# Traceplot of start and end of occupation (a, b) ---- FIGURE 34
+
+pdf(file=here('output', 'figures','figure34.pdf'), width=8, height=8)
+par(mfrow=c(2,2))
+traceplot(out_icar_model_a[,'a[18]'], main=TeX('$a[18]$'),smooth=TRUE) #region area 18, as an example
+traceplot(out_icar_model_a[,'b[18]'], main=TeX('$b[18]$'),smooth=TRUE)
+traceplot(out_icar_model_a[,'nabla[18]'], main=TeX('$nabla[18]$'), smooth=TRUE)
+dev.off()
+
+pdf(file=here('output', 'figures','figure35.pdf'), width=8, height=8)
+par(mfrow=c(2,2))
+traceplot(out_icar_model_b[,'a[18]'], main=TeX('$a[18]$'),smooth=TRUE) #region area 18, as an example
+traceplot(out_icar_model_b[,'b[18]'], main=TeX('$b[18]$'),smooth=TRUE)
+traceplot(out_icar_model_b[,'nabla[18]'], main=TeX('$nabla[18]$'), smooth=TRUE)
+dev.off()
+
+#-------------------------------------------------------------------------------
+##Display proportion of distribution before specified time slices -- FIGURE 36
+
+#Hierarchical ICAR model
+out.comb.icar.modelb  <- do.call(rbind, out_icar_model_b)
+post.modelb.icar  <- out.comb.icar.modelb[,paste0('a[',1:111,']')]  %>% round()
+
+#Extract arrival times for tactical icar model
+med.modelb.icar  <- apply(post.modelb.icar, 2, median)
+
+time_slices <- seq(3200, 1400, -200)
+
+#Extract proportion of MCMC samples occurring before the specified time threshold
+prop_modelb_icar  <- lapply(time_slices,
+                            function(t) data.frame(x = 1:111,
+                                                   y = sapply(as.data.frame(post.modelb.icar), 
+                                                              prop_gthan_threshold, 
+                                                              threshold = t)))
+
+#Save figure for each time slice
+plot_list <- list() #Create a list to store the plots
+
+for (k in 1:length(time_slices)) #all time slices
+{
+  #Save in data structure
+  prop_thresholdb_icar <- hex_area_win %>%
+    filter(area_ID %in% 1:111) %>%
+    mutate(median_date = med.modelb.icar,
+           prop_threshold = prop_modelb_icar[[k]]$y,
+           contains_sites = as.factor(case_when(area_ID %in% Hex_with_sites ~ 1, area_ID %in% Hex_without_sites ~ 0))) %>%
+    filter(area_ID %!in% c(1, 2, 3, 4, 6)) #The Bantu hadn't settled in this area by the time the dutch arrived in the Cape (~1600AD). To back this up there are no EIA sites in these regions.
+  
+  #Plot
+  p <- ggplot(data = prop_thresholdb_icar) +
+    #geom_sf(data = st_buffer(st_as_sf(sampling_win, crs = 4326), 40000), aes(colour = "grey50"), color=NA) + #sampling window with coastal buffer
+    geom_sf(aes(fill = median_date, alpha=prop_threshold)) + #hex grid #alpha=contains_sites
+    scale_fill_viridis_c(option="F", direction=-1) +
+    scale_alpha_continuous(range = c(0, 1)) +  # Use for continuous alpha values
+    xlab('Longitude') +
+    ylab('Latitude') +
+    ggtitle(paste0('t = ', time_slices[k], ' BP')) +
+    #geom_sf_label(aes(label = paste0(median_date, "BP")), label.size  = NA, alpha = 0.4, size=3.5) + #hex grid labels #label = ifelse(contains_sites==0, NA, paste0(median_date, "BP")))
+    theme(panel.background = element_rect(fill = "lightblue",
+                                          colour = "lightblue",
+                                          size = 0.5,
+                                          linetype = "solid"),
+          legend.position = "none")
+  
+  plot_list[[k]] <- p
+}
+
+#Output
+pdf(file=here('output','figures','figure36.pdf'), width=15, height=8)
+grid.arrange(grobs=plot_list, ncol=5, nrow=2, padding=0) # Define the layout for the plots
+dev.off()
+
+#-------------------------------------------------------------------------------
+##Animate through time slices to display proportion of distribution before specified time -- FIGURE 36_animate
+
+#Extract proportion of MCMC samples occurring before the specified time threshold (note more time divisions for animation)
+time_slices2 <- seq(6000, 500, -50) 
+
+prop_modelb_icar2  <- lapply(time_slices2, 
+                             function(t) data.frame(x = 1:111, 
+                                                    y = sapply(as.data.frame(post.modelb.icar), 
+                                                               prop_gthan_threshold, 
+                                                               threshold = t)))
+
+# Combine all time slices into one dataset
+all_data <- lapply(seq_along(time_slices2), function(k) {
+  hex_area_win %>%
+    filter(area_ID %in% 1:111) %>%
+    mutate(median_date = med.modelb.icar,
+           prop_threshold = prop_modelb_icar2[[k]]$y,
+           time_slice = -time_slices2[k]) %>% #minus sign ensures animation time proceeds in the correct direction
+    filter(area_ID %!in% c(1, 2, 3, 4, 6)) %>% # Exclude specific areas
+    st_as_sf()})
+
+# Verify that all elements are sf objects
+if (!all(sapply(all_data, inherits, "sf"))) {
+  stop("One or more elements of all_data are not sf objects!")
+}
+
+# Combine all sf objects safely
+all_data <- do.call(rbind, all_data)
+
+#co-ordinates of area centroids used for label positions
+label_data <- st_coordinates(all_data$area_center)
+
+# Animated ggplot
+p <- ggplot(data = all_data) +
+  #geom_sf(data = st_buffer(st_as_sf(sampling_win, crs = 4326), 40000), aes(color = "grey50"), color=NA) +
+  geom_sf(aes(fill = median_date, alpha = prop_threshold)) +
+  scale_fill_viridis_c(option = "F", direction = -1) +
+  scale_alpha_continuous(range = c(0, 1)) +
+  xlab('Longitude') +
+  ylab('Latitude') +
+  geom_text(data = label_data,
+            aes(x = X, y = Y, label = paste0(all_data$median_date, " BP")),
+            size = 4.5, alpha = 0.4) +  #Use geom_text instead of geom_sf_label
+  theme(
+    panel.background = element_rect(
+      fill = "lightblue",
+      colour = "lightblue",
+      size = 0.5,
+      linetype = "solid"
+    ),
+    legend.position = "none",
+    plot.title = element_text(size = 20, face = "bold"),
+    axis.title.x = element_text(size = 15, face = "bold"),  # X-axis label
+    axis.title.y = element_text(size = 15, face = "bold")   # Y-axis label
+  ) +
+  labs(title = "Time Slice: {closest_state} BP") #Note: use '{closest_state}' with 'transition_states()' and '{frame_time}' with 'transition_time()'
+
+anim <- p +
+  transition_states(time_slice, transition_length = 2, state_length = 1) +
+  enter_fade() +
+  exit_fade()
+
+#Save the animation
+anim_save("figure36_animation.gif",
+          animation = animate(anim, width = 1200, height = 900, fps = 10))
+
+
+

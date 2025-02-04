@@ -28,7 +28,7 @@ source(here('src','hex_areas.R'))
 ## List of countries in sub-Saharan Africa ----
 subSahara_countries <- c("South Africa", 
                          "Lesotho", 
-                         "eSwatini", "Swaziland", 
+                         "Eswatini", "eSwatini", "Swaziland", 
                          "Botswana",
                          "Zimbabwe",
                          "Namibia",
@@ -59,7 +59,7 @@ subSahara_countries <- c("South Africa",
 ## List of countries associated with eastern EIA stream ----
 eastEIA_countries <- c("South Africa", 
                          "Lesotho", 
-                         "Eswatini", "Swaziland", 
+                         "Eswatini", "eSwatini", "Swaziland", 
                          "Botswana",
                          "Zimbabwe",
                          "Zambia",
@@ -183,7 +183,7 @@ write.csv(eastEIA_sites_df, here('data','eastEIA_dataset.csv'), row.names = FALS
 ## Determining which calibration curve should be used----
 
 #Remove unnecessary information
-eastEIA_sites_df <- eastEIA_sites_df %>%
+eastEIA_sites_df <- bantu_sites_df %>% #eastEIA_sites_df %>%
   dplyr::select(-reference, -material, -country)
 
 #Assign calibration curve ----
@@ -270,15 +270,42 @@ dist_org  <-  as.vector(set_units(st_distance(x=sites, y=origin_point), 'km')) #
 #-------------------------------------------------------------------------------
 # Generate Spatial Window for Analyses: Sub-Saharan Africa ----
 
-# #Sampling window: Sub-Saharan Africa ----
-# sampling_win <- ne_countries(country = subSahara_countries, returnclass = "sf") %>%
-#   filter(name_en != "Madagascar") #We focus on mainland sub-Saharan Africa
+#Sampling window: Sub-Saharan Africa ----
+sampling_win <- st_union(ne_countries(country = subSahara_countries, returnclass = "sf") %>%
+ filter(name_en %!in% c("Madagascar","Sudan"))) #We focus on mainland sub-Saharan Africa (also, there is something wrong with the geometry of Sudan -- remove country since we have no iron age dates there anyway)
 
 #Sampling window: Eastern Sub-Saharan Africa ----
-sampling_win <- ne_countries(continent = "Africa", country = eastEIA_countries, returnclass = "sf")
+#sampling_win <- ne_countries(continent = "Africa", country = eastEIA_countries, returnclass = "sf")
 
-#Generate Spatial Hexagons ----
-hex_area_win <- hex_areas(sampling_win, cell_d = 5)
+#Generate Spatial Hexagons ---- ##see code block below to determine hex diameter, cell_d 
+hex_area_win <- hex_areas(sampling_win, cell_d = 6.2) # for eastern sub-Saharan africa study region used cell diameter = 5
+
+#Remove spatial hexagons where the Bantu Expansion didn't reach
+#Sub-Saharan Africa, cell-diameter 6.2
+hex_area_win <- hex_area_win %>% 
+  filter(area_ID %!in% c(13, 25, 12, 24, 18, 30, 41, 3, 11, 23, 35, 46, 54, 61, 65, 66, 64, 57, 63)) %>% 
+  mutate(area_ID = row_number())
+#Sub-Saharan Africa, cell-diameter 5.2
+#hex_area_win <- hex_area_win %>% 
+#  filter(area_ID %!in% c(18, 25, 39, 24, 17, 38, 31, 45, 51, 23, 37, 4, 11, 88, 86, 87, 84, 83, 81, 73, 77, 68, 63)) %>% 
+#  mutate(area_ID = row_number())
+#Sub-Saharan Africa, cell-diameter 7.2
+#hex_area_win <- hex_area_win %>% 
+#  filter(area_ID %!in% c(1, 3, 9, 19, 30, 35, 25, 14, 20, 40, 48, 53, 55, 54, 51, 44, 10, 15)) %>% 
+#  mutate(area_ID = row_number())
+
+##CHECK -- plot hexs and sites
+# ggplot(data = hex_area_win) +
+#   geom_sf(data = st_buffer(st_as_sf(sampling_win, crs = 4326), 40000), aes(color = "grey50")) + #sampling window with coastal buffer
+#   geom_sf() + #hex grid
+#   geom_sf(data = as(sites, 'sf'), size=2, alpha=0.5) + #sites
+#   geom_sf_label(aes(label = area_ID)) + #hex grid labels
+#   #geom_sf(data = hex_area_win$area_center, size=2, alpha=1, aes(color = "purple")) + #hex-origins
+#   theme(panel.background = element_rect(fill = "lightblue",
+#                                         colour = "lightblue",
+#                                         size = 0.5,
+#                                         linetype = "solid"),
+#         legend.position = "none")
 
 #Assign hex area id to each site ----
 siteInfo$area_id <- as.integer(st_within(sites$geometry, hex_area_win$geometry))
@@ -289,7 +316,29 @@ dateInfo$area_id <- siteInfo$area_id[match(dateInfo$siteID, siteInfo$siteID)]
 area_freq  <- plyr::count(siteInfo, 'area_id') ##See how many sites fall in each hex area. Also make sure there are no 'NA' entries
 #In order to check that this lines up visually with how many sites are in each hex area see map_figure2
 
-
+#--------------------------------
+# ## Determining hex size ---
+# #Under changing hex size, determine the proportion of areal hex units in the sampling window with sites 
+# prop_units_df <- data.frame(d = numeric(), prop_with_sites = numeric())
+# 
+# for (d in seq(1, 15, 0.1)){
+#   hex_area_win <- hex_areas(sampling_win, cell_d = d)
+# siteInfo$area_id <- as.integer(st_within(sites$geometry, hex_area_win$geometry))
+# 
+# hex_with_sites <- length(unique(siteInfo$area_id))
+# all_hex <- length(hex_area_win$area_ID)
+# 
+# prop_with_sites <- hex_with_sites/all_hex
+# 
+#   prop_units_df <- rbind(prop_units_df, data.frame(d = d, prop_with_sites = prop_with_sites))
+# }
+# 
+# # Plot results
+# ggplot(prop_units_df, aes(x = d, y = prop_with_sites)) +
+#   geom_line() +
+#   geom_point() +
+#   labs(x = "Hexagon Size (d)", y = "Proportion of Hexagons with Sites", title = "Effect of Hexagon Size on Site Coverage") +
+#   theme_minimal()
 #-------------------------------------------------------------------------------
 ## Create list with constants and data ----
 
@@ -318,7 +367,7 @@ constants$C14err  <- cbind(intcal20$C14Age.sigma, shcal20$C14Age.sigma)
 
 #-------------------------------------------------------------------------------
 ## Save everything on a R image file ----
-save(sites, constants, eastEIA_dat, siteInfo, dateInfo, sampling_win, hex_area_win, file=here('data','eastc14.RData'))
+save(sites, constants, eastEIA_dat, siteInfo, dateInfo, sampling_win, hex_area_win, file=here('data','c14.RData')) #eastc14.RData
 
 
 #-------------------------------------------------------------------------------
@@ -332,7 +381,7 @@ constants_sw$calBP <- constants$calBP
 constants_sw$C14BP  <- constants$C14BP 
 constants_sw$C14err  <- constants$C14err
 
-save(constants_sw, sampling_win, hex_area_win, file=here('data','sample_window.RData'))
+save(constants_sw, sampling_win, hex_area_win, file=here('data','sample_window_cont.RData'))
 
 #-------------------------------------------------------------------------------
 ## Elevation Data
