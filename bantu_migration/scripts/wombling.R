@@ -15,10 +15,31 @@ set.seed(123)
 load(here('data', 'tactical_sim_ICAR.RData'))
 load(here('data','boundary_edges.RData')) #nodes and edges between hex area centroids
 
+load(here('data','environ_vars.RData')) #load areal environmental variables
+load(here('data','elevation.RData')) #load areal elevation data
+
 #Combine constants
 constants <- constants[names(constants) %!in% names(constants_trig)]
 constants <- c(constants, constants_trig)
-# #-------------------------------------------------------------------------------
+
+#-------------------------------------------------------------------------------
+## Environmental data
+
+#Exceptions: Assign hex areas which are too small to have elevation data that of their nearest neighbor.
+mean_hex_elv[1,1] <- mean_hex_elv[3,1] 
+mean_hex_elv[16,1] <- mean_hex_elv[20,1] 
+  
+environ_df <- cbind(mean_hex_clim_df, mean_hex_elv) 
+
+
+#Select 3 covariates (as a first example from Cologne PCA -- later determine which covariates are important!)
+environ_df <- environ_df %>% 
+  select("BWA_elv_msk", #Elevation
+         "bio07", #temperature annual range
+         "bio14") #precipitation of the driest month
+         #"rugosity") #measure of surface changes 
+
+#-------------------------------------------------------------------------------
 # ## Select relevant hexagons ----
 # 
 # sites <- sites %>% 
@@ -99,14 +120,14 @@ constants <- constants[names(constants) %!in% c("dist_mat", "dist_org", "center_
 #-------------------------------------------------------------------------------
 # Model Womble: Hierarchical ICAR with boundary identified ----
 
-model3 <- nimbleCode({
+modelW <- nimbleCode({
   #For Each Site
   for (j in 1:n_sites)
   {
     delta[j] ~ dgamma(gamma1, (gamma1-1)/gamma2)
     alpha[j] ~ dunif(max = a[id_areas[j]], min = b[id_areas[j]]);
   }
-  
+
   #For Each Date
   for (i in 1:n_dates){
     theta[i] ~ dunif(min = (alpha[id_sites[i]] - (delta[id_sites[i]]+1)), max = alpha[id_sites[i]]);
@@ -116,27 +137,44 @@ model3 <- nimbleCode({
   for (k in 1:n_areas){
     b[k] ~ dunif(50,5000);
     constraint_uniform[k] ~ dconstraint(a[k]>b[k]) #In each area, start date of occupation, a_k, must be greater than the end date of occupation, b_k (note: BP dates in the positive direction)
-  }
+    
+    a[k] ~ dnorm(mu[k], tau.err)
+    mu[k] <- beta0 + (x1[k]*beta1 + x2[k]*beta2 + x3[k]*beta3) + phi[k]
+    #a[k] <- phi[k]
+    }
   
-  # ICAR Model Prior
-  a[1:n_areas] ~ dcar_normal(adj[1:L], weights[1:L], num[1:n_areas], tau1, zero_mean =0)
-  tau1 ~ dgamma(1, 0.1)  #weak prior  
-
-  # Hyperprior for duration
-  gamma1 ~ dunif(1,20) #Hyperprior for rate
-  gamma2 ~ T(dnorm(mean=200, sd=100), 1, 500) #Hyperprior for mode
+  # ICAR Model prior to capture spatial random effects
+  phi[1:n_areas] ~ dcar_normal(adj[1:L], weights[1:L], num[1:n_areas], tau1, zero_mean =0)
+  #a[1:n_areas] ~ dcar_normal(adj[1:L], weights[1:L], num[1:n_areas], tau1, zero_mean =0)
   
   #For each boundary
-  for (t in 1:n_trans){
-    #nabla defines the difference in arrival time across a boundary
-    nabla[t] <- abs(a[edge_id1[t]] - a[edge_id2[t]]) #edge t: select first area, m, and second area, n
-  }
+  #for (t in 1:n_trans){
+  #  #nabla defines the difference in arrival time across a boundary
+  #  nabla[t] <- abs(a[edge_id1[t]] - a[edge_id2[t]]) #edge t: select first area, m, and second area, n
+  #}
   
+  #Priors
+  beta0 ~ dnorm(3300, sd=200); #Intercept
+  tau1 ~ dgamma(1, 0.1);  #weak prior for ICAR model -- spatial autocorrelation precision parameter 
+  
+  beta1 ~ dnorm(0, 0.000001);
+  beta2 ~ dnorm(0, 0.000001);
+  beta3 ~ dnorm(0, 0.000001);
+  
+  tau.err <- 1/sigma^2;
+  sigma ~ dunif(0,100);
+  
+  # Hyperprior for duration
+  gamma1 ~ dunif(1,20); #Hyperprior for rate
+  gamma2 ~ T(dnorm(mean=200, sd=100), 1, 500) #Hyperprior for mode
 })
 
-#Define initial values ---- 
+#Define initial values and data ---- 
 dW <- list(theta=sim_df$cra, 
-           constraint_uniform = rep(1, constants$n_areas)) 
+           constraint_uniform = rep(1, constants$n_areas),
+           x1 = environ_df[,1],
+           x2 = environ_df[,2],
+           x3 = environ_df[,3])
 
 
 initsW <- list(a=init_a,
@@ -145,6 +183,11 @@ initsW <- list(a=init_a,
                delta=delta_init,
                nabla = init_nabla,
                tau1=rgamma(1, shape = 1, rate = 0.1),
+               sigma= runif(1,0,100),
+               beta0=rnorm(1, 3300, 200),
+               beta1=rnorm(1, 0, 0.000001),
+               beta2=rnorm(1, 0, 0.000001),
+               beta3=rnorm(1, 0, 0.000001),
                gamma1=10,
                gamma2=200)
 
@@ -153,11 +196,11 @@ initsW <- list(a=init_a,
 mcmc.samplesW <- nimbleMCMC(code = modelW,
                             constants = constants,
                             data = dW,
-                            niter = 20, #2000000, 
+                            niter = 5, #2000000, 
                             nchains = 4, 
-                            thin= 2, #100, 
-                            nburnin = 10, #1000000,
-                            monitors = c('a', 'b', 'theta', 'delta', 'alpha', 'nabla'),
+                            thin= 1, #100, 
+                            nburnin = 2, #1000000,
+                            monitors = c('a', 'b'), #c('a', 'b', 'theta', 'delta', 'alpha', 'nabla'),
                             inits = initsW, 
                             samplesAsCodaMCMC=TRUE)
 

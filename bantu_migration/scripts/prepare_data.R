@@ -392,8 +392,8 @@ SRTM90m <- elevation_30s(country_codes$ISO3[1], path=here('input'), mask=TRUE)
 for (i in 2:nrow(country_codes)){
   SRTM90m <- merge(SRTM90m, elevation_30s(country_codes$ISO3[i], path=here('input'), mask=TRUE))
 }
-#plot(SRTM90m)
-#plot(hex_area_win$geometry, add = T)
+plot(SRTM90m)
+plot(hex_area_win$geometry, add = T)
 
 mean_hex_elv <- terra::zonal(SRTM90m, terra::vect(hex_area_win), fun = "mean", na.rm = TRUE) #calculate mean elevation in each hexagon
 
