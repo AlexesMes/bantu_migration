@@ -100,6 +100,10 @@ for (t in 1:constants$n_trans){
 init_a  <- init_a[ ,2] + buffer
 init_b  <- init_b[ ,2] - buffer
 
+# Initialise spatial residues
+init_phi <- init_a*0.1 #rep(0, constants$n_areas)
+
+
 #-------------------------------------------------------------------------------
 #Spatial data ----
 
@@ -140,19 +144,17 @@ modelW <- nimbleCode({
     
     a[k] ~ dnorm(mu[k], tau.err)
     mu[k] <- beta0 + (x1[k]*beta1 + x2[k]*beta2 + x3[k]*beta3) + phi[k]
-    #a[k] <- phi[k]
     }
   
   # ICAR Model prior to capture spatial random effects
   phi[1:n_areas] ~ dcar_normal(adj[1:L], weights[1:L], num[1:n_areas], tau1, zero_mean =0)
-  #a[1:n_areas] ~ dcar_normal(adj[1:L], weights[1:L], num[1:n_areas], tau1, zero_mean =0)
   
   #For each boundary
-  #for (t in 1:n_trans){
-  #  #nabla defines the difference in arrival time across a boundary
-  #  nabla[t] <- abs(a[edge_id1[t]] - a[edge_id2[t]]) #edge t: select first area, m, and second area, n
-  #}
-  
+  for (t in 1:n_trans){
+   #nabla defines the difference in arrival time across a boundary
+   nabla[t] <- abs(a[edge_id1[t]] - a[edge_id2[t]]) #edge t: select first area, m, and second area, n
+  }
+
   #Priors
   beta0 ~ dnorm(3300, sd=200); #Intercept
   tau1 ~ dgamma(1, 0.1);  #weak prior for ICAR model -- spatial autocorrelation precision parameter 
@@ -182,6 +184,7 @@ initsW <- list(a=init_a,
                alpha=alpha_init, 
                delta=delta_init,
                nabla = init_nabla,
+               phi=init_phi,
                tau1=rgamma(1, shape = 1, rate = 0.1),
                sigma= runif(1,0,100),
                beta0=rnorm(1, 3300, 200),
@@ -196,11 +199,11 @@ initsW <- list(a=init_a,
 mcmc.samplesW <- nimbleMCMC(code = modelW,
                             constants = constants,
                             data = dW,
-                            niter = 5, #2000000, 
+                            niter = 2000000, #2000000, 
                             nchains = 4, 
-                            thin= 1, #100, 
-                            nburnin = 2, #1000000,
-                            monitors = c('a', 'b'), #c('a', 'b', 'theta', 'delta', 'alpha', 'nabla'),
+                            thin= 100, #100, 
+                            nburnin = 1000000, #1000000,
+                            monitors = c('a', 'b', 'theta', 'delta', 'alpha', 'nabla', 'phi', 'mu'),
                             inits = initsW, 
                             samplesAsCodaMCMC=TRUE)
 
@@ -209,3 +212,7 @@ rhatW  <- gelman.diag(mcmc.samplesW, multivariate = FALSE)
 essW  <- effectiveSize(mcmc.samplesW)
 
 
+#-------------------------------------------------------------------------------
+# Save output ----
+save(mcmc.samplesW, rhatW, essW,
+     file=here('output','Womblemodel_tactsim.RData'))
