@@ -15,8 +15,8 @@ library(units)
 library(igraph)
 
 # Load and prepare data ----
-load(here('data','eastc14.RData')) #East and Southern Africa
-#load(here('data','c14.RData')) #sub-Saharan Africa
+#load(here('data','eastc14.RData')) #East and Southern Africa
+load(here('data','c14.RData')) #sub-Saharan Africa
 
 #-------------------------------------------------------------------------------
 ## Data preparation ----
@@ -84,8 +84,8 @@ ind_ext_edges <- which(is.na(as.numeric(check_edges_ext))) # indices of edges wh
 constants_trig <- list()
 constants_trig$center_coords <- center_coords
 
-##Plot delaunay triangulation
-#ggplot(data = hex_area_win[c(13, 18, 22),]) +
+# ##Plot delaunay triangulation
+# #ggplot(data = hex_area_win[c(13, 18, 22),]) +
 # ggplot(data = hex_area_win) + #TODO: Uncomment
 #   geom_sf(data = st_buffer(sampling_win, 40000), aes(color = "grey50")) + #sampling window with coastal buffer
 #   geom_sf() + #hex grid

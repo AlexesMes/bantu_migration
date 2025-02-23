@@ -278,21 +278,33 @@ sampling_win <- st_union(ne_countries(country = subSahara_countries, returnclass
 #sampling_win <- ne_countries(continent = "Africa", country = eastEIA_countries, returnclass = "sf")
 
 #Generate Spatial Hexagons ---- ##see code block below to determine hex diameter, cell_d 
-hex_area_win <- hex_areas(sampling_win, cell_d = 6.2) # for eastern sub-Saharan africa study region used cell diameter = 5
+hex_area_win <- hex_areas(sampling_win, cell_d = 6.2) # for eastern sub-Saharan africa study region used cell diameter = 5.4
 
 #Remove spatial hexagons where the Bantu Expansion didn't reach
 #Sub-Saharan Africa, cell-diameter 6.2
-hex_area_win <- hex_area_win %>% 
-  filter(area_ID %!in% c(13, 25, 12, 24, 18, 30, 41, 3, 11, 23, 35, 46, 54, 61, 65, 66, 64, 57, 63)) %>% 
+hex_area_win <- hex_area_win %>%
+  filter(area_ID %!in% c(13, 25, 12, 24, 18, 30, 41, 3, 11, 23, 35, 46, 54, 61, 65, 66, 64, 57, 63)) %>%
   mutate(area_ID = row_number())
 #Sub-Saharan Africa, cell-diameter 5.2
-#hex_area_win <- hex_area_win %>% 
-#  filter(area_ID %!in% c(18, 25, 39, 24, 17, 38, 31, 45, 51, 23, 37, 4, 11, 88, 86, 87, 84, 83, 81, 73, 77, 68, 63)) %>% 
+# hex_area_win <- hex_area_win %>%
+#  filter(area_ID %!in% c(18, 25, 39, 24, 17, 38, 31, 45, 51, 23, 37, 4, 11, 88, 86, 87, 84, 83, 81, 73, 77, 68, 63)) %>%
 #  mutate(area_ID = row_number())
 #Sub-Saharan Africa, cell-diameter 7.2
-#hex_area_win <- hex_area_win %>% 
-#  filter(area_ID %!in% c(1, 3, 9, 19, 30, 35, 25, 14, 20, 40, 48, 53, 55, 54, 51, 44, 10, 15)) %>% 
+# hex_area_win <- hex_area_win %>% 
+#  filter(area_ID %!in% c(1, 3, 9, 19, 30, 35, 25, 14, 20, 40, 48, 53, 55, 54, 51, 44, 10, 15)) %>%
 #  mutate(area_ID = row_number())
+# #East Africa, cell-diameter 5.4
+# hex_area_win <- hex_area_win %>%
+#   filter(area_ID %!in% c(1,2,3,4,7)) %>%
+#   mutate(area_ID = row_number())
+# #East Africa, cell-diameter 4.4
+# hex_area_win <- hex_area_win %>%
+#   filter(area_ID %!in% c(1,2,3,5)) %>%
+#   mutate(area_ID = row_number())
+# #East Africa, cell-diameter 6.4
+# hex_area_win <- hex_area_win %>%
+#   filter(area_ID %!in% c(1,2,6)) %>%
+#   mutate(area_ID = row_number())
 
 ##CHECK -- plot hexs and sites
 # ggplot(data = hex_area_win) +
@@ -318,27 +330,30 @@ area_freq  <- plyr::count(siteInfo, 'area_id') ##See how many sites fall in each
 
 #--------------------------------
 # ## Determining hex size ---
-# #Under changing hex size, determine the proportion of areal hex units in the sampling window with sites 
+# #Under changing hex size, determine the proportion of areal hex units in the sampling window with sites
 # prop_units_df <- data.frame(d = numeric(), prop_with_sites = numeric())
 # 
 # for (d in seq(1, 15, 0.1)){
 #   hex_area_win <- hex_areas(sampling_win, cell_d = d)
-# siteInfo$area_id <- as.integer(st_within(sites$geometry, hex_area_win$geometry))
+#   siteInfo$area_id <- as.integer(st_within(sites$geometry, hex_area_win$geometry))
 # 
-# hex_with_sites <- length(unique(siteInfo$area_id))
-# all_hex <- length(hex_area_win$area_ID)
+#   hex_with_sites <- length(unique(siteInfo$area_id))
+#   all_hex <- length(hex_area_win$area_ID)
 # 
-# prop_with_sites <- hex_with_sites/all_hex
+#   prop_with_sites <- hex_with_sites/all_hex
 # 
 #   prop_units_df <- rbind(prop_units_df, data.frame(d = d, prop_with_sites = prop_with_sites))
 # }
 # 
 # # Plot results
+# pdf(here('output','figures','figure_hexsize_cont.pdf'),height=5,width=5.5)
 # ggplot(prop_units_df, aes(x = d, y = prop_with_sites)) +
 #   geom_line() +
 #   geom_point() +
+#   scale_x_continuous(breaks=seq(0,15,by=1))+
 #   labs(x = "Hexagon Size (d)", y = "Proportion of Hexagons with Sites", title = "Effect of Hexagon Size on Site Coverage") +
 #   theme_minimal()
+# dev.off()
 #-------------------------------------------------------------------------------
 ## Create list with constants and data ----
 
