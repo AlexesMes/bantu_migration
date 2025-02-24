@@ -8,7 +8,7 @@ library(ggthemes)
 library(gridExtra)
 library(grid)
 library(gridBase)
-library(ggsn) #for scale bar and north arrow
+#library(ggsn) #for scale bar and north arrow
 library(rnaturalearth)
 library(rnaturalearthdata)
 library(parallel)
@@ -18,13 +18,15 @@ library(cowplot)
 # Load and prepare data ----
 load(here('data','c14.RData')) #eastc14.RData
 
-
+`%!in%` <- Negate(`%in%`)
 #-------------------------------------------------------------------------------
 ## Data preparation ----
 
 #Sampling window without internal boundaries
 countries <- constants$countries #eastEIAcountries
 cntry_sampling_win <- ne_countries(continent = "Africa", country = countries, returnclass = "sf")
+# cntry_sampling_win <- ne_countries(country = countries, returnclass = "sf") %>%
+#                            filter(name_en %!in% c("Madagascar","Sudan")) #We focus on mainland sub-Saharan Africa (also, there is something wrong with the geometry of Sudan -- remove country since we have no iron age dates there anyway)
 
 #-------------------------------------------------------------------------------
 ## Plot Data  ---- FIGURE figure_map
