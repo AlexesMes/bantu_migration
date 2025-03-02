@@ -108,7 +108,7 @@ area_freq  <- plyr::count(dates, 'area_id') ##See how many observations in each 
 #For example: A forest in central Africa
 
 hex_area_win <- hex_area_win %>% 
-  mutate(forest_present = case_when(area_ID %in% c(12,16,20,24,19) ~ 250, TRUE ~ 0)) #assume the forest provides a 250 year delay to expansion
+  mutate(forest_present = case_when(area_ID %in% c(16,24,19) ~ -400, TRUE ~ 0)) #assume the forest provides a 250 year delay to expansion
 
 ##Visulaise the presence/absence of forests
 ggplot(data = hex_area_win) +
@@ -164,7 +164,7 @@ sim_constants$beta1 <- rep(1, n_areas) #binary: turn on the effect of the forest
 sim_constants$mu <- rep(2000, n_areas) #runif(1:sim_constants$n_areas, min = 600, max = 3500) #rep(0, n_areas)
 sim_constants$mu2 <- rep(500, n_areas) #runif(1:sim_constants$n_areas, min = 50, max = 600)
 sim_constants$tau <- 0.000005
-sim_constants$tau.err <- 2500
+sim_constants$tau.err <- 0.5
 sim_constants$gamma <- 0.99
 
 #Define constraints, data, and initial values ----
@@ -209,7 +209,30 @@ simModel$simulate(nodesToSim)
 #   num = num, 
 #   M = rep(2000, 41))
 
+#-------------------------------------------------------------------------------
+##Visualize arrival times
 
+#Extract simulated arrival times
+true_hex_dates <- hex_area_win %>% 
+  filter(area_ID %in% 1:47) %>% 
+  mutate(true_a = simModel$a)
+
+#Plot
+ggplot(data = true_hex_dates) +
+  geom_sf(data = st_buffer(st_as_sf(sampling_win, crs = 4326), 40000), aes(color = "grey50")) + #sampling window with coastal buffer
+  geom_sf(aes(fill = true_a)) + 
+  scale_fill_viridis_c(option="F", direction=-1) +
+  scale_alpha_manual(values=c(0.45, 1)) +
+  xlab('Longitude') +
+  ylab('Latitude') +
+  geom_sf_label(aes(label = paste0(round(true_a), "BP")), label.size  = NA, alpha = 0.4, size=3.5) + 
+  theme(panel.background = element_rect(fill = "lightblue",
+                                        colour = "lightblue",
+                                        size = 0.5,
+                                        linetype = "solid"),
+        legend.position = "none")
+
+#-----------------------------------------------
 # Combine data ---- ##Note: no model uncertainty has yet been added in... generates dates, not uncalibrated radiocarbon dates with associated error (for this see tactical_ICAR_sim_uncert.R)
 cra = round(simModel$theta)
 sim_df <- list(cra = cra,
