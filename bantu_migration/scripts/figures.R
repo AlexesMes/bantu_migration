@@ -533,31 +533,6 @@ for (k in 1:41) #all hex areas
 
 dev.off()
 
-
-# pdf(file=here('output', 'figures','figure14W.pdf'), width=14, height=18)
-# # Define the layout for the plots
-# par(mfrow = c(7, 6))
-# 
-# for (k in 1:41) #all hex areas
-# {
-#   post.model.i <- do.call(rbind, mcmc.samplesW)[ , c(k, k+41)] #selecting a[k] and b[k]
-# 
-#   dens.i.a <- density(post.model.i[,1],bw = 5)
-#   dens.i.b <- density(post.model.i[,2],bw=5)
-#   
-#   # Plot
-#   plot(NULL, xlim=c(sim_a[[k]]+1000, sim_b[[k]]-1000), ylim=c(0,0.022), xlab='Cal BP', ylab='Posterior Probability')
-#   polygon(c(dens.i.a$x, rev(dens.i.a$x)), c(rep(0,length(dens.i.a$x)), rev(dens.i.a$y)), border=NA, col=rgb(0,0.4,0,0.5))
-#   #polygon(c(dens.i.b$x, rev(dens.i.b$x)), c(rep(0,length(dens.i.b$x)), rev(dens.i.b$y)), border=NA, col=rgb(0,0.4,0,0.5))
-#   abline(v=sim_a[[k]],lty=2) #abline(v=c(sim_a[[k]], sim_b[[k]]),lty=2)
-#   axis(3,at=sim_a[[k]],labels=TeX('$a$')) #axis(3,at=c(sim_a[[k]], sim_b[[k]]),labels=c(TeX('$a$'),TeX('$b$')))
-#   legend('topright', legend=c('Womble ICAR'), 
-#          fill= c('darkgreen')) 
-#   title(main = paste("Area", k))
-# }
-# 
-# dev.off()
-
 #-------------
 ##Show alpha values are recovered at sites for hierarchical ICAR model -- FIGURE 14.2
 sim_alpha <- constants$true_alpha
@@ -723,6 +698,155 @@ grid.arrange(grobs=plot_list, ncol=5, nrow=2, padding=0) # Define the layout for
 dev.off()
 
 #-------------------------------------------------------------------------------
+#-------------------------------------------------------------------------------
+###WOMBLE FIGURES ===
+
+##Load Data ----
+load(here("output", "Womblemodel_tactsim.RData")) 
+load(here('data', 'tactical_sim_womble.RData')) 
+
+
+#Hex areas with and without out sites
+Hex_with_sites <- unique(siteInfo$area_id)
+Hex_without_sites <- which(rep(1:47) %!in% Hex_with_sites)
+
+
+#With the tactical simulation data from hierarchical ICAR model
+out.comb.tac_icar.model  <- do.call(rbind, mcmc.samplesW3)
+post.model.tac_icar  <- out.comb.tac_icar.model[,paste0('a[',1:47,']')]  %>% round() #[,paste0('a[',1:47,']')]
+
+#Extract arrival times for tactical icar model
+med.model.tac_icar  <- apply(post.model.tac_icar, 2, median)
+
+time_slices <- seq(3200, 1400, -200)
+
+#Extract proportion of MCMC samples occurring before the specified time threshold
+prop_model_tac_icar  <- lapply(time_slices,
+                               function(t) data.frame(x = 1:47,
+                                                      y = sapply(as.data.frame(post.model.tac_icar), 
+                                                                 prop_gthan_threshold, 
+                                                                 threshold = t)))
+
+#Save figure for each time slice
+plot_list <- list() #Create a list to store the plots
+
+for (k in 1:length(time_slices)) #all time slices
+{
+  #Save in data structure
+  prop_threshold_tac_icar <- hex_area_win %>%
+    filter(area_ID %in% 1:47) %>%
+    mutate(median_date = med.model.tac_icar,
+           prop_threshold = prop_model_tac_icar[[k]]$y,
+           contains_sites = as.factor(case_when(area_ID %in% Hex_with_sites ~ 1, area_ID %in% Hex_without_sites ~ 0))) 
+  
+  #Plot
+  p <- ggplot(data = prop_threshold_tac_icar) +
+    geom_sf(data = st_buffer(st_as_sf(sampling_win, crs = 4326), 40000), aes(color = "grey50")) + #sampling window with coastal buffer
+    geom_sf(aes(fill = median_date, alpha=prop_threshold)) + #hex grid #alpha=contains_sites
+    scale_fill_viridis_c(option="F", direction=-1) +
+    scale_alpha_continuous(range = c(0, 1)) +  # Use for continuous alpha values
+    xlab('Longitude') +
+    ylab('Latitude') +
+    ggtitle(paste0('t = ', time_slices[k], ' BP')) +
+    #geom_sf_label(aes(label = paste0(median_date, "BP")), label.size  = NA, alpha = 0.4, size=3.5) + #hex grid labels #label = ifelse(contains_sites==0, NA, paste0(median_date, "BP")))
+    theme(panel.background = element_rect(fill = "lightblue",
+                                          colour = "lightblue",
+                                          size = 0.5,
+                                          linetype = "solid"),
+          legend.position = "none")
+  
+  plot_list[[k]] <- p
+}
+
+#Output
+pdf(file=here('output','figures','figure25W31.pdf'), width=15, height=8)
+grid.arrange(grobs=plot_list, ncol=5, nrow=2, padding=0) # Define the layout for the plots
+dev.off()
+
+#----------
+#Figure 22 -- Extract arrival times for model (i)
+post.a.model.i  <- out.comb.tac_icar.model[,paste0('a[',1:47,']')]  %>% round() 
+med.model.i  <- apply(post.a.model.i, 2, median)
+
+median_hex_dates_mod.i <- hex_area_win %>% 
+  filter(area_ID %in% 1:47) %>% 
+  mutate(median_date = med.model.i,
+         contains_sites = as.factor(case_when(area_ID %in% Hex_with_sites ~ 1, area_ID %in% Hex_without_sites ~ 0))) 
+
+#Plot
+modi <- ggplot(data = median_hex_dates_mod.i) +
+  geom_sf(data = st_buffer(st_as_sf(sampling_win, crs = 4326), 40000), aes(color = "grey50")) + #sampling window with coastal buffer
+  geom_sf(aes(fill = median_date)) + #hex grid #alpha=contains_sites
+  scale_fill_viridis_c(option="F", direction=-1) +
+  scale_alpha_manual(values=c(0.45, 1)) +
+  xlab('Longitude') +
+  ylab('Latitude') +
+  geom_sf_label(aes(label = paste0(median_date, "BP")), label.size  = NA, alpha = 0.4, size=3.5) + #hex grid labels #label = ifelse(contains_sites==0, NA, paste0(median_date, "BP")))
+  theme(panel.background = element_rect(fill = "lightblue",
+                                        colour = "lightblue",
+                                        size = 0.5,
+                                        linetype = "solid"),
+        legend.position = "none")
+
+
+#Output
+pdf(file=here('output','figures','figure22W31.pdf'), width=15, height=8)
+grid.arrange(modi, ncol=1, padding=0)
+dev.off()
+
+#----------
+##Figure 14 -- recovery of true parameters
+
+#For model (i) and (ii) select parameters a and b (i.e. start and end date of occupation in the region)
+sim_a <- constants$true_a
+sim_b <- constants$true_b
+
+pdf(file=here('output', 'figures','figure14W1.pdf'), width=14, height=18)
+# Define the layout for the plots
+par(mfrow = c(7, 6))
+
+for (k in 1:47) #all hex areas
+{
+  post.model.i <- do.call(rbind, mcmc.samplesW1)[ , c(k, k+47)] #selecting a[k] and b[k]
+
+  dens.i.a <- density(post.model.i[,1],bw = 5)
+  dens.i.b <- density(post.model.i[,2],bw=5)
+
+  # Plot
+  plot(NULL, xlim=c(sim_a[[k]]+1000, sim_b[[k]]-1000), ylim=c(0,0.022), xlab='Cal BP', ylab='Posterior Probability')
+  polygon(c(dens.i.a$x, rev(dens.i.a$x)), c(rep(0,length(dens.i.a$x)), rev(dens.i.a$y)), border=NA, col=rgb(0,0.4,0,0.5))
+  #polygon(c(dens.i.b$x, rev(dens.i.b$x)), c(rep(0,length(dens.i.b$x)), rev(dens.i.b$y)), border=NA, col=rgb(0,0.4,0,0.5))
+  abline(v=sim_a[[k]],lty=2) #abline(v=c(sim_a[[k]], sim_b[[k]]),lty=2)
+  axis(3,at=sim_a[[k]],labels=TeX('$a$')) #axis(3,at=c(sim_a[[k]], sim_b[[k]]),labels=c(TeX('$a$'),TeX('$b$')))
+  legend('topright', legend=c('Womble ICAR'),
+         fill= c('darkgreen'))
+  title(main = paste("Area", k))
+}
+
+dev.off()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#-------------------------------------------------------------------------------
+#-------------------------------------------------------------------------------
 ##Animate through time slices to display proportion of distribution before specified time -- FIGURE 25_animate
 
 #Extract proportion of MCMC samples occurring before the specified time threshold (note more time divisions for animation)
@@ -792,20 +916,31 @@ anim_save("figure25_animation.gif",
 #===============================================================================
 ##Bayesian ICAR Models
 
-`#Load Data ----
+# Load Observed Data
+load(here('data','eastc14.RData')) #East and Southern Africa
+
+#Load nodes and edges between hex area centroids
+load(here('data','trig.RData'))
+
+#Load Data ----
 load(here("output", "ICAR_model_a.RData")) #model (i) -- no sample interdependence
 load(here("output","ICAR_model_b.RData")) #model (ii) -- hierarchical structure
-`
+
+#-------------------------------------------------------------------------------
+#Hex areas with and without out sites
+Hex_with_sites <- unique(siteInfo$area_id)
+Hex_without_sites <- which(rep(1:34) %!in% Hex_with_sites)
+
 #-------------------------------------------------------------------------------
 # Marginal Posterior Distribution of a[k], model i ---- FIGURE 17
 
 out.comb.icar.model.a  <- do.call(rbind, out_icar_model_a)
-post.a.model.i  <- out.comb.icar.model.a[,paste0('a[',c(5,7:41),']')] %>%  round() #all relevant hex areas
+post.a.model.i  <- out.comb.icar.model.a[,paste0('a[',c(1:34),']')] %>%  round() #all relevant hex areas
 model.i.long  <- data.frame(value = as.numeric(post.a.model.i),
-                            area = rep(c(5,7:41), each=nrow(post.a.model.i)))
+                            area = rep(c(1:34), each=nrow(post.a.model.i)))
 
 model.i.long  <- model.i.long %>%
-  mutate(area = factor(area, levels=paste0(c(5,7:41)), ordered=TRUE))
+  mutate(area = factor(area, levels=paste0(c(1:34)), ordered=TRUE))
 
 #Plot
 pdf(file=here('output','figures','figure17.pdf'), height=10, width=8)
@@ -822,12 +957,12 @@ dev.off()
 # Marginal Posterior Distribution of a[k], model ii ---- FIGURE 18
 
 out.comb.icar.model.b  <- do.call(rbind, out_icar_model_b)
-post.a.model.ii  <- out.comb.icar.model.b[,paste0('a[',c(5,7:41),']')] %>%  round() #all relevant hex areas
-model.ii.long  <- data.frame(value = as.numeric(post.a.model.ii),
-                            area = rep(c(5,7:41), each=nrow(post.a.model.ii)))
+post.b.model.ii  <- out.comb.icar.model.b[,paste0('a[',c(1:34),']')] %>%  round() #all relevant hex areas
+model.ii.long  <- data.frame(value = as.numeric(post.b.model.ii),
+                            area = rep(c(1:34), each=nrow(post.b.model.ii)))
 
 model.ii.long  <- model.ii.long %>%
-  mutate(area = factor(area, levels=paste0(c(5,7:41)), ordered=TRUE))
+  mutate(area = factor(area, levels=paste0(c(1:34)), ordered=TRUE))
 
 #Plot
 pdf(file=here('output','figures','figure18.pdf'), height=10, width=8)
@@ -845,13 +980,13 @@ dev.off()
 source(here('src','orderPPlot.R'))
 
 pdf(file=here('output','figures','figure19.pdf'), width=10, height=10.5)
-orderPPlot(post.a.model.i, name.vec=paste("Area", c(5,7:41)))
+orderPPlot(post.a.model.i, name.vec=paste("Area", c(1:34)))
 dev.off()
 
 #------
 # Probability Matrix of a[k], model ii ---- FIGURE 20
 pdf(file=here('output','figures','figure20.pdf'), width=10, height=10.5)
-orderPPlot(post.a.model.ii, name.vec=paste("Area", c(5,7:41)))
+orderPPlot(post.a.model.ii, name.vec=paste("Area", c(1:34)))
 dev.off()
 
 #-------------------------------------------------------------------------------
@@ -882,7 +1017,7 @@ iseq.b = seq(1,by=3,length.out=36)
 abline(h=seq(3,by=3,length.out=36), col='darkgrey',lty=2)
 
 counter <- 1 #indexing counter
-for (i in c(5,7:41)) #all relevant hex areas
+for (i in c(1:34)) #all relevant hex areas
 {
   #Plot bar in area i
   post.bar(tmp.a[,i], i=iseq.a[counter], h=0.9, col='lightblue')
@@ -914,36 +1049,33 @@ dev.off()
 
 #Extract arrival times for model (i)
 out.comb.icar.modela  <- do.call(rbind, out_icar_model_a)
-post.a.model.i  <- out.comb.icar.modela[,paste0('a[',1:41,']')]  %>% round() 
+post.a.model.i  <- out.comb.icar.modela[,paste0('a[',1:34,']')]  %>% round() 
 hpdi.model.i  <- apply(post.a.model.i, 2, function(x){HPDinterval(as.mcmc(x), prob = .90)}) 
 med.model.i  <- apply(post.a.model.i, 2, median)
 hi90_mod.i  <- hpdi.model.i[1,]
 lo90_mod.i  <- hpdi.model.i[2,]
 
 median_hex_dates_mod.i <- hex_area_win %>% 
-  filter(area_ID %in% 1:41) %>% 
+  filter(area_ID %in% 1:34) %>% 
   mutate(median_date = med.model.i,
          hpdi_high = hi90_mod.i,
          hpdi_low = lo90_mod.i,
-         contains_sites = as.factor(case_when(area_ID %in% Hex_with_sites ~ 1, area_ID %in% Hex_without_sites ~ 0))) %>% 
-  filter(area_ID %!in% c(1, 2, 3, 4, 6)) #The Bantu hadn't settled in this area by the time the dutch arrived in the Cape (~1600AD). To back this up there are no EIA sites in these regions.
+         contains_sites = as.factor(case_when(area_ID %in% Hex_with_sites ~ 1, area_ID %in% Hex_without_sites ~ 0))) 
 
 #Extract arrival times for model (ii)
 out.comb.icar.modelb  <- do.call(rbind, out_icar_model_b)
-post.a.model.ii  <- out.comb.icar.modelb[,paste0('a[',1:41,']')]  %>% round()
+post.a.model.ii  <- out.comb.icar.modelb[,paste0('a[',1:34,']')]  %>% round()
 hpdi.model.ii  <- apply(post.a.model.ii, 2, function(x){HPDinterval(as.mcmc(x), prob = .90)}) 
 med.model.ii  <- apply(post.a.model.ii, 2, median)
 hi90_mod.ii  <- hpdi.model.ii[1,]
 lo90_mod.ii  <- hpdi.model.ii[2,]
 
 median_hex_dates_mod.ii <- hex_area_win %>% 
-  filter(area_ID %in% 1:41) %>% 
+  filter(area_ID %in% 1:34) %>% 
   mutate(median_date = med.model.ii,
          hpdi_high = hi90_mod.ii,
          hpdi_low = lo90_mod.ii,
-         contains_sites = as.factor(case_when(area_ID %in% Hex_with_sites ~ 1, area_ID %in% Hex_without_sites ~ 0))) %>% 
-  filter(area_ID %!in% c(1, 2, 3, 4, 6)) #The Bantu hadn't settled in this area by the time the dutch arrived in the Cape (~1600AD). To back this up there are no EIA sites in these regions.
-
+         contains_sites = as.factor(case_when(area_ID %in% Hex_with_sites ~ 1, area_ID %in% Hex_without_sites ~ 0))) 
 #Plot
 #-----MODEL (i)
 modi <- ggplot(data = median_hex_dates_mod.i) +
@@ -1085,20 +1217,15 @@ uncert.ii = sapply(as.data.frame(tmp.ii), prop_gthan_zero)
 edge_info.i <- edge_info %>% 
   mutate(mean_gradient = qta.i[4,], #50% quantile
          uncertainty = uncert.i) %>% #% of distribution > zero
-  filter(distance <= mean(distance)*1.3, #Remove extremely long edges which are 'artificially' created along the internal window boundary or require extreme coastal movement along external window boundary
-         region1_id %!in% c(1,2,3,4,6),
-         region2_id %!in% c(1,2,3,4,6))
+  filter(distance <= mean(distance)*1.3) #Remove extremely long edges which are 'artificially' created along the internal window boundary or require extreme coastal movement along external window boundary
 
 edge_info.ii <- edge_info %>% 
   mutate(mean_gradient = qta.ii[4,], #50% quantile
          uncertainty = uncert.ii) %>% #% of distribution > zero
-  filter(distance <= mean(distance)*1.3, #Remove extremely long edges which are 'artificially' created along the internal window boundary or require extreme coastal movement along external window boundary
-         region1_id %!in% c(1,2,3,4,6),
-         region2_id %!in% c(1,2,3,4,6))
+  filter(distance <= mean(distance)*1.3) #Remove extremely long edges which are 'artificially' created along the internal window boundary or require extreme coastal movement along external window boundary
 
 #Create nodes
-rel_hex_win <- hex_area_win %>% filter(area_ID %!in% c(1,2,3,4,6))
-nodes <- st_coordinates(rel_hex_win$area_center)
+nodes <- st_coordinates(hex_area_win$area_center)
 
 #--------
 #PLOT
@@ -1171,7 +1298,7 @@ dev.off()
 
 #Hierarchical ICAR model
 out.comb.icar.modelb  <- do.call(rbind, out_icar_model_b)
-post.modelb.icar  <- out.comb.icar.modelb[,paste0('a[',1:41,']')]  %>% round()
+post.modelb.icar  <- out.comb.icar.modelb[,paste0('a[',1:34,']')]  %>% round()
 
 #Extract arrival times for tactical icar model
 med.modelb.icar  <- apply(post.modelb.icar, 2, median)
@@ -1180,7 +1307,7 @@ time_slices <- seq(3200, 1400, -200)
 
 #Extract proportion of MCMC samples occurring before the specified time threshold
 prop_modelb_icar  <- lapply(time_slices,
-                            function(t) data.frame(x = 1:41,
+                            function(t) data.frame(x = 1:34,
                                                    y = sapply(as.data.frame(post.modelb.icar), 
                                                               prop_gthan_threshold, 
                                                               threshold = t)))
@@ -1192,12 +1319,10 @@ for (k in 1:length(time_slices)) #all time slices
 {
   #Save in data structure
   prop_thresholdb_icar <- hex_area_win %>%
-    filter(area_ID %in% 1:41) %>%
+    filter(area_ID %in% 1:34) %>%
     mutate(median_date = med.modelb.icar,
            prop_threshold = prop_modelb_icar[[k]]$y,
-           contains_sites = as.factor(case_when(area_ID %in% Hex_with_sites ~ 1, area_ID %in% Hex_without_sites ~ 0))) %>%
-    filter(area_ID %!in% c(1, 2, 3, 4, 6)) #The Bantu hadn't settled in this area by the time the dutch arrived in the Cape (~1600AD). To back this up there are no EIA sites in these regions.
-  
+           contains_sites = as.factor(case_when(area_ID %in% Hex_with_sites ~ 1, area_ID %in% Hex_without_sites ~ 0))) 
   #Plot
   p <- ggplot(data = prop_thresholdb_icar) +
     geom_sf(data = st_buffer(st_as_sf(sampling_win, crs = 4326), 40000), aes(colour = "grey50"), color=NA) + #sampling window with coastal buffer
@@ -1229,7 +1354,7 @@ dev.off()
 time_slices2 <- seq(4000, 1000, -50) 
 
 prop_modelb_icar2  <- lapply(time_slices2, 
-                             function(t) data.frame(x = 1:41, 
+                             function(t) data.frame(x = 1:34, 
                                                     y = sapply(as.data.frame(post.modelb.icar), 
                                                                prop_gthan_threshold, 
                                                                threshold = t)))
@@ -1237,11 +1362,10 @@ prop_modelb_icar2  <- lapply(time_slices2,
 # Combine all time slices into one dataset
 all_data <- lapply(seq_along(time_slices2), function(k) {
   hex_area_win %>%
-    filter(area_ID %in% 1:41) %>%
+    filter(area_ID %in% 1:34) %>%
     mutate(median_date = med.modelb.icar,
            prop_threshold = prop_modelb_icar2[[k]]$y,
            time_slice = -time_slices2[k]) %>% #minus sign ensures animation time proceeds in the correct direction
-    filter(area_ID %!in% c(1, 2, 3, 4, 6)) %>% # Exclude specific areas
     st_as_sf()})
 
 # Verify that all elements are sf objects
