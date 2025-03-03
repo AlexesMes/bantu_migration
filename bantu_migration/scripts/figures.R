@@ -801,13 +801,13 @@ dev.off()
 sim_a <- constants$true_a
 sim_b <- constants$true_b
 
-pdf(file=here('output', 'figures','figure14W1.pdf'), width=14, height=18)
+pdf(file=here('output', 'figures','figure14W31.pdf'), width=14, height=18)
 # Define the layout for the plots
 par(mfrow = c(7, 6))
 
 for (k in 1:47) #all hex areas
 {
-  post.model.i <- do.call(rbind, mcmc.samplesW1)[ , c(k, k+47)] #selecting a[k] and b[k]
+  post.model.i <- do.call(rbind, mcmc.samplesW3)[ , c(k, k+47)] #selecting a[k] and b[k]
 
   dens.i.a <- density(post.model.i[,1],bw = 5)
   dens.i.b <- density(post.model.i[,2],bw=5)
