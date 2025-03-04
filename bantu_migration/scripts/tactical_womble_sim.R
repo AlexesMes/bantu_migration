@@ -39,8 +39,8 @@ sf::sf_use_s2(TRUE) #turn on spherical co-ordinates
 
 #-------------------------------------------------------------------------------
 # Target Parameters ----
-n_sites  <- 100
-n_dates  <- 500 
+n_sites  <- 200
+n_dates  <- 800 
 origin_point <- st_sfc(st_point(c(11.4, 5.483))) #dispersal origin point -- approximately at Katuruka, st_point(c(-1.45, 31.77)) (east Africa) or Ngoume (sub-Saharan Africa)
 
 #-------------------------------------------------------------------------------
@@ -111,7 +111,7 @@ hex_area_win <- hex_area_win %>%
   mutate(forest_present = case_when(area_ID %in% c(16,24,19) ~ -400, TRUE ~ 0)) #assume the forest provides a 250 year delay to expansion
 
 ##Visulaise the presence/absence of forests
-ggplot(data = hex_area_win) +
+x1 <- ggplot(data = hex_area_win) +
   geom_sf(data = st_buffer(st_as_sf(sampling_win_outline, crs = 4326), 40000), aes(color = "grey50")) + #sampling window with coastal buffer
   geom_sf(aes(fill = factor(forest_present))) +  #color hex grid by binary variable
   scale_fill_manual(values = c("0" = "grey90", "1" = "green")) + # Define color
@@ -218,7 +218,7 @@ true_hex_dates <- hex_area_win %>%
   mutate(true_a = simModel$a)
 
 #Plot
-ggplot(data = true_hex_dates) +
+x2 <- ggplot(data = true_hex_dates) +
   geom_sf(data = st_buffer(st_as_sf(sampling_win, crs = 4326), 40000), aes(color = "grey50")) + #sampling window with coastal buffer
   geom_sf(aes(fill = true_a)) + 
   scale_fill_viridis_c(option="F", direction=-1) +
@@ -231,6 +231,11 @@ ggplot(data = true_hex_dates) +
                                         size = 0.5,
                                         linetype = "solid"),
         legend.position = "none")
+
+#Output
+pdf(file=here('output','figures','figure40.pdf'), width=15, height=8)
+grid.arrange(x1, x2, ncol=2, padding=0)
+dev.off()
 
 #-----------------------------------------------
 # Combine data ---- ##Note: no model uncertainty has yet been added in... generates dates, not uncalibrated radiocarbon dates with associated error (for this see tactical_ICAR_sim_uncert.R)

@@ -697,155 +697,8 @@ pdf(file=here('output','figures','figure25.pdf'), width=15, height=8)
 grid.arrange(grobs=plot_list, ncol=5, nrow=2, padding=0) # Define the layout for the plots
 dev.off()
 
-#-------------------------------------------------------------------------------
-#-------------------------------------------------------------------------------
-###WOMBLE FIGURES ===
-
-##Load Data ----
-load(here("output", "Womblemodel_tactsim.RData")) 
-load(here('data', 'tactical_sim_womble.RData')) 
 
 
-#Hex areas with and without out sites
-Hex_with_sites <- unique(siteInfo$area_id)
-Hex_without_sites <- which(rep(1:47) %!in% Hex_with_sites)
-
-
-#With the tactical simulation data from hierarchical ICAR model
-out.comb.tac_icar.model  <- do.call(rbind, mcmc.samplesW3)
-post.model.tac_icar  <- out.comb.tac_icar.model[,paste0('a[',1:47,']')]  %>% round() #[,paste0('a[',1:47,']')]
-
-#Extract arrival times for tactical icar model
-med.model.tac_icar  <- apply(post.model.tac_icar, 2, median)
-
-time_slices <- seq(3200, 1400, -200)
-
-#Extract proportion of MCMC samples occurring before the specified time threshold
-prop_model_tac_icar  <- lapply(time_slices,
-                               function(t) data.frame(x = 1:47,
-                                                      y = sapply(as.data.frame(post.model.tac_icar), 
-                                                                 prop_gthan_threshold, 
-                                                                 threshold = t)))
-
-#Save figure for each time slice
-plot_list <- list() #Create a list to store the plots
-
-for (k in 1:length(time_slices)) #all time slices
-{
-  #Save in data structure
-  prop_threshold_tac_icar <- hex_area_win %>%
-    filter(area_ID %in% 1:47) %>%
-    mutate(median_date = med.model.tac_icar,
-           prop_threshold = prop_model_tac_icar[[k]]$y,
-           contains_sites = as.factor(case_when(area_ID %in% Hex_with_sites ~ 1, area_ID %in% Hex_without_sites ~ 0))) 
-  
-  #Plot
-  p <- ggplot(data = prop_threshold_tac_icar) +
-    geom_sf(data = st_buffer(st_as_sf(sampling_win, crs = 4326), 40000), aes(color = "grey50")) + #sampling window with coastal buffer
-    geom_sf(aes(fill = median_date, alpha=prop_threshold)) + #hex grid #alpha=contains_sites
-    scale_fill_viridis_c(option="F", direction=-1) +
-    scale_alpha_continuous(range = c(0, 1)) +  # Use for continuous alpha values
-    xlab('Longitude') +
-    ylab('Latitude') +
-    ggtitle(paste0('t = ', time_slices[k], ' BP')) +
-    #geom_sf_label(aes(label = paste0(median_date, "BP")), label.size  = NA, alpha = 0.4, size=3.5) + #hex grid labels #label = ifelse(contains_sites==0, NA, paste0(median_date, "BP")))
-    theme(panel.background = element_rect(fill = "lightblue",
-                                          colour = "lightblue",
-                                          size = 0.5,
-                                          linetype = "solid"),
-          legend.position = "none")
-  
-  plot_list[[k]] <- p
-}
-
-#Output
-pdf(file=here('output','figures','figure25W31.pdf'), width=15, height=8)
-grid.arrange(grobs=plot_list, ncol=5, nrow=2, padding=0) # Define the layout for the plots
-dev.off()
-
-#----------
-#Figure 22 -- Extract arrival times for model (i)
-post.a.model.i  <- out.comb.tac_icar.model[,paste0('a[',1:47,']')]  %>% round() 
-med.model.i  <- apply(post.a.model.i, 2, median)
-
-median_hex_dates_mod.i <- hex_area_win %>% 
-  filter(area_ID %in% 1:47) %>% 
-  mutate(median_date = med.model.i,
-         contains_sites = as.factor(case_when(area_ID %in% Hex_with_sites ~ 1, area_ID %in% Hex_without_sites ~ 0))) 
-
-#Plot
-modi <- ggplot(data = median_hex_dates_mod.i) +
-  geom_sf(data = st_buffer(st_as_sf(sampling_win, crs = 4326), 40000), aes(color = "grey50")) + #sampling window with coastal buffer
-  geom_sf(aes(fill = median_date)) + #hex grid #alpha=contains_sites
-  scale_fill_viridis_c(option="F", direction=-1) +
-  scale_alpha_manual(values=c(0.45, 1)) +
-  xlab('Longitude') +
-  ylab('Latitude') +
-  geom_sf_label(aes(label = paste0(median_date, "BP")), label.size  = NA, alpha = 0.4, size=3.5) + #hex grid labels #label = ifelse(contains_sites==0, NA, paste0(median_date, "BP")))
-  theme(panel.background = element_rect(fill = "lightblue",
-                                        colour = "lightblue",
-                                        size = 0.5,
-                                        linetype = "solid"),
-        legend.position = "none")
-
-
-#Output
-pdf(file=here('output','figures','figure22W31.pdf'), width=15, height=8)
-grid.arrange(modi, ncol=1, padding=0)
-dev.off()
-
-#----------
-##Figure 14 -- recovery of true parameters
-
-#For model (i) and (ii) select parameters a and b (i.e. start and end date of occupation in the region)
-sim_a <- constants$true_a
-sim_b <- constants$true_b
-
-pdf(file=here('output', 'figures','figure14W31.pdf'), width=14, height=18)
-# Define the layout for the plots
-par(mfrow = c(7, 6))
-
-for (k in 1:47) #all hex areas
-{
-  post.model.i <- do.call(rbind, mcmc.samplesW3)[ , c(k, k+47)] #selecting a[k] and b[k]
-
-  dens.i.a <- density(post.model.i[,1],bw = 5)
-  dens.i.b <- density(post.model.i[,2],bw=5)
-
-  # Plot
-  plot(NULL, xlim=c(sim_a[[k]]+1000, sim_b[[k]]-1000), ylim=c(0,0.022), xlab='Cal BP', ylab='Posterior Probability')
-  polygon(c(dens.i.a$x, rev(dens.i.a$x)), c(rep(0,length(dens.i.a$x)), rev(dens.i.a$y)), border=NA, col=rgb(0,0.4,0,0.5))
-  #polygon(c(dens.i.b$x, rev(dens.i.b$x)), c(rep(0,length(dens.i.b$x)), rev(dens.i.b$y)), border=NA, col=rgb(0,0.4,0,0.5))
-  abline(v=sim_a[[k]],lty=2) #abline(v=c(sim_a[[k]], sim_b[[k]]),lty=2)
-  axis(3,at=sim_a[[k]],labels=TeX('$a$')) #axis(3,at=c(sim_a[[k]], sim_b[[k]]),labels=c(TeX('$a$'),TeX('$b$')))
-  legend('topright', legend=c('Womble ICAR'),
-         fill= c('darkgreen'))
-  title(main = paste("Area", k))
-}
-
-dev.off()
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-#-------------------------------------------------------------------------------
 #-------------------------------------------------------------------------------
 ##Animate through time slices to display proportion of distribution before specified time -- FIGURE 25_animate
 
@@ -1876,5 +1729,214 @@ anim <- p +
 anim_save("figure36_animation.gif",
           animation = animate(anim, width = 1200, height = 900, fps = 5))
 
+#===============================================================================
+###WOMBLE TACTICAL SIMULATION ===
+
+##Load Data ----
+load(here("output", "Womblemodel_tactsim.RData"))
+load(here('data', 'tactical_sim_womble.RData')) 
 
 
+#Hex areas with and without out sites
+Hex_with_sites <- unique(siteInfo$area_id)
+Hex_without_sites <- which(rep(1:47) %!in% Hex_with_sites)
+
+#-------
+##FIGURE 37 -- Time slices
+
+#With the tactical simulation data from hierarchical Wombling model
+out.comb.tac_icar.model  <- do.call(rbind, mcmc.samplesW1)
+post.model.tac_icar  <- out.comb.tac_icar.model[,paste0('a[',1:47,']')]  %>% round() #[,paste0('a[',1:47,']')]
+
+#Extract arrival times for tactical icar model
+med.model.tac_icar  <- apply(post.model.tac_icar, 2, median)
+
+time_slices <- seq(3200, 1400, -200)
+
+#Extract proportion of MCMC samples occurring before the specified time threshold
+prop_model_tac_icar  <- lapply(time_slices,
+                               function(t) data.frame(x = 1:47,
+                                                      y = sapply(as.data.frame(post.model.tac_icar), 
+                                                                 prop_gthan_threshold, 
+                                                                 threshold = t)))
+
+#Save figure for each time slice
+plot_list <- list() #Create a list to store the plots
+
+for (k in 1:length(time_slices)) #all time slices
+{
+  #Save in data structure
+  prop_threshold_tac_icar <- hex_area_win %>%
+    filter(area_ID %in% 1:47) %>%
+    mutate(median_date = med.model.tac_icar,
+           prop_threshold = prop_model_tac_icar[[k]]$y,
+           contains_sites = as.factor(case_when(area_ID %in% Hex_with_sites ~ 1, area_ID %in% Hex_without_sites ~ 0))) 
+  
+  #Plot
+  p <- ggplot(data = prop_threshold_tac_icar) +
+    geom_sf(data = st_buffer(st_as_sf(sampling_win, crs = 4326), 40000), aes(color = "grey50")) + #sampling window with coastal buffer
+    geom_sf(aes(fill = median_date, alpha=prop_threshold)) + #hex grid #alpha=contains_sites
+    scale_fill_viridis_c(option="F", direction=-1) +
+    scale_alpha_continuous(range = c(0, 1)) +  # Use for continuous alpha values
+    xlab('Longitude') +
+    ylab('Latitude') +
+    ggtitle(paste0('t = ', time_slices[k], ' BP')) +
+    #geom_sf_label(aes(label = paste0(median_date, "BP")), label.size  = NA, alpha = 0.4, size=3.5) + #hex grid labels #label = ifelse(contains_sites==0, NA, paste0(median_date, "BP")))
+    theme(panel.background = element_rect(fill = "lightblue",
+                                          colour = "lightblue",
+                                          size = 0.5,
+                                          linetype = "solid"),
+          legend.position = "none")
+  
+  plot_list[[k]] <- p
+}
+
+#Output
+pdf(file=here('output','figures','figure37_Wb1.pdf'), width=15, height=8)
+grid.arrange(grobs=plot_list, ncol=5, nrow=2, padding=0) # Define the layout for the plots
+dev.off()
+
+#----------
+##FIGURE 38 -- Arrival times
+post.a.model.i  <- out.comb.tac_icar.model[,paste0('a[',1:47,']')]  %>% round() 
+med.model.i  <- apply(post.a.model.i, 2, median)
+
+median_hex_dates_mod.i <- hex_area_win %>% 
+  filter(area_ID %in% 1:47) %>% 
+  mutate(median_date = med.model.i,
+         contains_sites = as.factor(case_when(area_ID %in% Hex_with_sites ~ 1, area_ID %in% Hex_without_sites ~ 0))) 
+
+#Plot
+modi <- ggplot(data = median_hex_dates_mod.i) +
+  geom_sf(data = st_buffer(st_as_sf(sampling_win, crs = 4326), 40000), aes(color = "grey50")) + #sampling window with coastal buffer
+  geom_sf(aes(fill = median_date)) + #hex grid #alpha=contains_sites
+  scale_fill_viridis_c(option="F", direction=-1) +
+  scale_alpha_manual(values=c(0.45, 1)) +
+  xlab('Longitude') +
+  ylab('Latitude') +
+  geom_sf_label(aes(label = paste0(median_date, "BP")), label.size  = NA, alpha = 0.4, size=3.5) + #hex grid labels #label = ifelse(contains_sites==0, NA, paste0(median_date, "BP")))
+  theme(panel.background = element_rect(fill = "lightblue",
+                                        colour = "lightblue",
+                                        size = 0.5,
+                                        linetype = "solid"),
+        legend.position = "none")
+
+
+#Output
+pdf(file=here('output','figures','figure38_Wb1.pdf'), width=15, height=8)
+grid.arrange(modi, ncol=1, padding=0)
+dev.off()
+
+#----------
+##FIGURE 39 -- recovery of true parameters
+
+#For model (i) and (ii) select parameters a and b (i.e. start and end date of occupation in the region)
+sim_a <- constants$true_a
+sim_b <- constants$true_b
+
+pdf(file=here('output', 'figures','figure39_Wb1.pdf'), width=14, height=18)
+# Define the layout for the plots
+par(mfrow = c(7, 6))
+
+for (k in 1:47) #all hex areas
+{
+  post.model.i <- do.call(rbind, mcmc.samplesW1)[ , c(k, k+47)] #selecting a[k] and b[k]
+  
+  dens.i.a <- density(post.model.i[,1],bw = 5)
+  dens.i.b <- density(post.model.i[,2],bw=5)
+  
+  # Plot
+  plot(NULL, xlim=c(sim_a[[k]]+1000, sim_b[[k]]-1000), ylim=c(0,0.022), xlab='Cal BP', ylab='Posterior Probability')
+  polygon(c(dens.i.a$x, rev(dens.i.a$x)), c(rep(0,length(dens.i.a$x)), rev(dens.i.a$y)), border=NA, col=rgb(0,0.4,0,0.5))
+  #polygon(c(dens.i.b$x, rev(dens.i.b$x)), c(rep(0,length(dens.i.b$x)), rev(dens.i.b$y)), border=NA, col=rgb(0,0.4,0,0.5))
+  abline(v=sim_a[[k]],lty=2) #abline(v=c(sim_a[[k]], sim_b[[k]]),lty=2)
+  axis(3,at=sim_a[[k]],labels=TeX('$a$')) #axis(3,at=c(sim_a[[k]], sim_b[[k]]),labels=c(TeX('$a$'),TeX('$b$')))
+  legend('topright', legend=c('Womble ICAR'),
+         fill= c('darkgreen'))
+  title(main = paste("Area", k))
+}
+
+dev.off()
+
+#----------
+##Display significant boundaries -- FIGURE 41
+load(here('data','trig_cont.RData'))
+
+#With the tactical simulation data from hierarchical wombling model
+post.model.tac_womble_nab  <- out.comb.tac_icar.model[,paste0('nabla[',1:110,']')]  %>% round()
+
+#Extract differences in arrival times for tactical wombling model
+med.model.tac_womble_nab  <- apply(post.model.tac_womble_nab, 2, median)
+
+#difference_slices <- seq(600, 0, -200)
+
+#Extract proportion of MCMC sample differences which are significant over a specified time difference
+prop_model_tac_womble_nab  <- data.frame(x = 1:110,
+                                         y = sapply(as.data.frame(post.model.tac_womble_nab), 
+                                                    prop_gthan_threshold, 
+                                                    threshold = 400))
+
+#Add info to edges dataframe
+edge_info.i <- edge_info %>%
+  mutate(mean_gradient = med.model.tac_womble_nab, #50% quantile
+         prob_BLV = prop_model_tac_womble_nab$y) #% of distribution > specified threshold
+
+#Create nodes
+nodes <- st_coordinates(hex_area_win$area_center)
+
+#Plot
+ggplot(data = median_hex_dates_mod.i) +
+  geom_sf(data = st_buffer(st_as_sf(sampling_win, crs = 4326), 40000), aes(color = "grey50")) + #sampling window with coastal buffer
+  geom_sf(aes(alpha=0.01)) + #hex grid #geom_sf(aes(fill = median_date, alpha=prop_threshold)) + #hex grid #alpha=contains_sites
+  geom_segment(data=edge_info.i, aes(x= region1_x, 
+                                     y= region1_y, 
+                                     xend= region2_x, 
+                                     yend= region2_y, 
+                                     alpha= prob_BLV), 
+               color="red", 
+               size=1) +
+  scale_alpha_continuous(range = c(0, 1)) +  # Use for continuous alpha values
+  xlab('Longitude') +
+  ylab('Latitude') +
+  ggtitle(paste0('c = 400', ' years')) +
+  #geom_sf_label(aes(label = paste0(median_date, "BP")), label.size  = NA, alpha = 0.4, size=3.5) + #hex grid labels #label = ifelse(contains_sites==0, NA, paste0(median_date, "BP")))
+  theme(panel.background = element_rect(fill = "lightblue",
+                                        colour = "lightblue",
+                                        size = 0.5,
+                                        linetype = "solid"),
+        legend.position = "none")
+
+
+
+
+# library(sf)
+# library(tidyverse)
+# 
+# # Example: Create hex_area_window with multiple hexagonal polygons
+# hex_area_window <- st_sfc(
+#   st_polygon(list(matrix(c(0, 0,  1, 0,  1.5, 0.87,  1, 1.74,  0, 1.74,  -0.5, 0.87,  0, 0), ncol = 2, byrow = TRUE))),
+#   st_polygon(list(matrix(c(2, 0,  3, 0,  3.5, 0.87,  3, 1.74,  2, 1.74,  1.5, 0.87,  2, 0), ncol = 2, byrow = TRUE)))
+# ) %>% st_as_sf()
+# 
+# # Define the specified line segment as an sf LINESTRING object
+# line_segment <- st_linestring(matrix(c(x1, y1, x2, y2), ncol = 2, byrow = TRUE)) %>%
+#   st_sfc(crs = st_crs(hex_area_window)) %>%
+#   st_as_sf()
+# 
+# # Find intersections
+# intersecting_segments <- hex_area_window %>% 
+#   st_intersection(line_segment)
+# 
+# # Plot for visualization
+# ggplot() +
+#   geom_sf(data = hex_area_window, fill = NA, color = "black") +
+#   geom_sf(data = line_segment, color = "red", size = 1) +
+#   geom_sf(data = intersecting_segments, color = "blue", size = 1.5) +
+#   theme_minimal()
+
+
+
+#Output
+pdf(file=here('output','figures','figure41.pdf'))
+plot_grad(edge_info.i, 3, sampling_win)
+dev.off()
