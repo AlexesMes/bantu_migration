@@ -1745,7 +1745,7 @@ Hex_without_sites <- which(rep(1:47) %!in% Hex_with_sites)
 ##FIGURE 37 -- Time slices
 
 #With the tactical simulation data from hierarchical Wombling model
-out.comb.tac_icar.model  <- do.call(rbind, mcmc.samplesW1)
+out.comb.tac_icar.model  <- do.call(rbind, mcmc.samplesW2)
 post.model.tac_icar  <- out.comb.tac_icar.model[,paste0('a[',1:47,']')]  %>% round() #[,paste0('a[',1:47,']')]
 
 #Extract arrival times for tactical icar model
@@ -1792,7 +1792,7 @@ for (k in 1:length(time_slices)) #all time slices
 }
 
 #Output
-pdf(file=here('output','figures','figure37_Wb1.pdf'), width=15, height=8)
+pdf(file=here('output','figures','figure37_Wbm1.pdf'), width=15, height=8)
 grid.arrange(grobs=plot_list, ncol=5, nrow=2, padding=0) # Define the layout for the plots
 dev.off()
 
@@ -1823,7 +1823,7 @@ modi <- ggplot(data = median_hex_dates_mod.i) +
 
 
 #Output
-pdf(file=here('output','figures','figure38_Wb1.pdf'), width=15, height=8)
+pdf(file=here('output','figures','figure38_Wbm1.pdf'), width=15, height=8)
 grid.arrange(modi, ncol=1, padding=0)
 dev.off()
 
@@ -1834,13 +1834,13 @@ dev.off()
 sim_a <- constants$true_a
 sim_b <- constants$true_b
 
-pdf(file=here('output', 'figures','figure39_Wb1.pdf'), width=14, height=18)
+pdf(file=here('output', 'figures','figure39_Wbm1.pdf'), width=14, height=18)
 # Define the layout for the plots
 par(mfrow = c(7, 6))
 
 for (k in 1:47) #all hex areas
 {
-  post.model.i <- do.call(rbind, mcmc.samplesW1)[ , c(k, k+47)] #selecting a[k] and b[k]
+  post.model.i <- do.call(rbind, mcmc.samplesW2)[ , c(k, k+47)] #selecting a[k] and b[k]
   
   dens.i.a <- density(post.model.i[,1],bw = 5)
   dens.i.b <- density(post.model.i[,2],bw=5)
@@ -1879,27 +1879,31 @@ prop_model_tac_womble_nab  <- data.frame(x = 1:110,
 #Add info to edges dataframe
 edge_info.i <- edge_info %>%
   mutate(mean_gradient = med.model.tac_womble_nab, #50% quantile
-         prob_BLV = prop_model_tac_womble_nab$y) #% of distribution > specified threshold
+         prob_BLV = prop_model_tac_womble_nab$y, #% of distribution > specified threshold
+         boundary = mapply(function(a, b) {intersection <- st_intersection(hex_area_win$geometry[[a]], hex_area_win$geometry[[b]])
+                                           if (st_is_empty(intersection) || st_is(intersection, "MULTILINESTRING")) return(st_linestring()) else return(intersection)}, 
+                           edge_info.i$region1_id, 
+                           edge_info.i$region2_id)) #shared boundary between two subareas 
 
 #Create nodes
 nodes <- st_coordinates(hex_area_win$area_center)
 
+#Create boundary segments
+boundaries <- st_sf(prob_BLV = edge_info.i$prob_BLV,
+                    geometry = st_sfc(edge_info.i$boundary)) #lapply(edge_info.i$boundary[[a]], st_coordinates(a))
+st_crs(boundaries) <- 4326  # Set CRS to EPSG:4326 (WGS 84)
+  
 #Plot
 ggplot(data = median_hex_dates_mod.i) +
-  geom_sf(data = st_buffer(st_as_sf(sampling_win, crs = 4326), 40000), aes(color = "grey50")) + #sampling window with coastal buffer
-  geom_sf(aes(alpha=0.01)) + #hex grid #geom_sf(aes(fill = median_date, alpha=prop_threshold)) + #hex grid #alpha=contains_sites
-  geom_segment(data=edge_info.i, aes(x= region1_x, 
-                                     y= region1_y, 
-                                     xend= region2_x, 
-                                     yend= region2_y, 
-                                     alpha= prob_BLV), 
-               color="red", 
-               size=1) +
+  geom_sf(data = st_buffer(st_as_sf(sampling_win, crs = 4326), 40000), fill = "grey80", color = "grey40") + #sampling window with coastal buffer
+  geom_sf(aes(alpha=0.01), color = "grey60") + #hex grid 
+  # geom_segment(data=edge_info.i$boundary, aes(#x= region1_x, y= region1_y, xend= region2_x, yend= region2_y, alpha= prob_BLV), color="red", size=2) +
+  geom_sf(data = boundaries, lwd=3, aes(alpha=prob_BLV), color = "red") +
+  geom_sf(data = hex_area_win$area_center, size=2, alpha=1, color = "grey40") + #hex-centers
   scale_alpha_continuous(range = c(0, 1)) +  # Use for continuous alpha values
   xlab('Longitude') +
   ylab('Latitude') +
   ggtitle(paste0('c = 400', ' years')) +
-  #geom_sf_label(aes(label = paste0(median_date, "BP")), label.size  = NA, alpha = 0.4, size=3.5) + #hex grid labels #label = ifelse(contains_sites==0, NA, paste0(median_date, "BP")))
   theme(panel.background = element_rect(fill = "lightblue",
                                         colour = "lightblue",
                                         size = 0.5,
@@ -1907,36 +1911,7 @@ ggplot(data = median_hex_dates_mod.i) +
         legend.position = "none")
 
 
-
-
-# library(sf)
-# library(tidyverse)
-# 
-# # Example: Create hex_area_window with multiple hexagonal polygons
-# hex_area_window <- st_sfc(
-#   st_polygon(list(matrix(c(0, 0,  1, 0,  1.5, 0.87,  1, 1.74,  0, 1.74,  -0.5, 0.87,  0, 0), ncol = 2, byrow = TRUE))),
-#   st_polygon(list(matrix(c(2, 0,  3, 0,  3.5, 0.87,  3, 1.74,  2, 1.74,  1.5, 0.87,  2, 0), ncol = 2, byrow = TRUE)))
-# ) %>% st_as_sf()
-# 
-# # Define the specified line segment as an sf LINESTRING object
-# line_segment <- st_linestring(matrix(c(x1, y1, x2, y2), ncol = 2, byrow = TRUE)) %>%
-#   st_sfc(crs = st_crs(hex_area_window)) %>%
-#   st_as_sf()
-# 
-# # Find intersections
-# intersecting_segments <- hex_area_window %>% 
-#   st_intersection(line_segment)
-# 
-# # Plot for visualization
-# ggplot() +
-#   geom_sf(data = hex_area_window, fill = NA, color = "black") +
-#   geom_sf(data = line_segment, color = "red", size = 1) +
-#   geom_sf(data = intersecting_segments, color = "blue", size = 1.5) +
-#   theme_minimal()
-
-
-
-#Output
-pdf(file=here('output','figures','figure41.pdf'))
-plot_grad(edge_info.i, 3, sampling_win)
-dev.off()
+# #Output
+# pdf(file=here('output','figures','figure41.pdf'))
+# plot_grad(edge_info.i, 3, sampling_win)
+# dev.off()
