@@ -39,8 +39,8 @@ sf::sf_use_s2(TRUE) #turn on spherical co-ordinates
 
 #-------------------------------------------------------------------------------
 # Target Parameters ----
-n_sites  <- 200
-n_dates  <- 800 
+n_sites  <- 100
+n_dates  <- 500 
 origin_point <- st_sfc(st_point(c(11.4, 5.483))) #dispersal origin point -- approximately at Katuruka, st_point(c(-1.45, 31.77)) (east Africa) or Ngoume (sub-Saharan Africa)
 
 #-------------------------------------------------------------------------------
@@ -233,7 +233,7 @@ x2 <- ggplot(data = true_hex_dates) +
         legend.position = "none")
 
 #Output
-pdf(file=here('output','figures','figure40.pdf'), width=15, height=8)
+pdf(file=here('output','figures','figure40i.pdf'), width=15, height=8)
 grid.arrange(x1, x2, ncol=2, padding=0)
 dev.off()
 

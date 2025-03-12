@@ -346,5 +346,5 @@ essW3  <- effectiveSize(mcmc.samplesW3)
 save(mcmc.samplesW1, rhatW1, essW1,
      mcmc.samplesW2, rhatW2, essW2,
      mcmc.samplesW3, rhatW3, essW3,
-     file=here('output','Womblemodel_tactsim.RData'))
+     file=here('output','Womblemodel_tactsim_i.RData'))
 
