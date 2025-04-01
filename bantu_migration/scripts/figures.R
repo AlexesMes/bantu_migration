@@ -1733,7 +1733,7 @@ anim_save("figure36_animation.gif",
 ###WOMBLE TACTICAL SIMULATION ===
 
 ##Load Data ----
-load(here("output", "Womblemodel_tactsim.RData"))
+load(here("output", "Womblemodel_tactsim_covariate.RData"))
 load(here('data', 'tactical_sim_womble.RData')) 
 
 
@@ -1745,7 +1745,7 @@ Hex_without_sites <- which(rep(1:47) %!in% Hex_with_sites)
 ##FIGURE 37 -- Time slices
 
 #With the tactical simulation data from hierarchical Wombling model
-out.comb.tac_icar.model  <- do.call(rbind, mcmc.samplesW1)
+out.comb.tac_icar.model  <- do.call(rbind, mcmc.samplesW)
 post.model.tac_icar  <- out.comb.tac_icar.model[,paste0('a[',1:47,']')]  %>% round() #[,paste0('a[',1:47,']')]
 
 #Extract arrival times for tactical icar model
@@ -1792,7 +1792,7 @@ for (k in 1:length(time_slices)) #all time slices
 }
 
 #Output
-pdf(file=here('output','figures','figure37_Wb1.pdf'), width=15, height=8)
+pdf(file=here('output','figures','figure37_covariate.pdf'), width=15, height=8)
 grid.arrange(grobs=plot_list, ncol=5, nrow=2, padding=0) # Define the layout for the plots
 dev.off()
 
@@ -1823,7 +1823,7 @@ modi <- ggplot(data = median_hex_dates_mod.i) +
 
 
 #Output
-pdf(file=here('output','figures','figure38_Wb1.pdf'), width=15, height=8)
+pdf(file=here('output','figures','figure38_covariate.pdf'), width=15, height=8)
 grid.arrange(modi, ncol=1, padding=0)
 dev.off()
 
@@ -1834,13 +1834,13 @@ dev.off()
 sim_a <- constants$true_a
 sim_b <- constants$true_b
 
-pdf(file=here('output', 'figures','figure39_Wb1.pdf'), width=14, height=18)
+pdf(file=here('output', 'figures','figure39_covariate.pdf'), width=14, height=18)
 # Define the layout for the plots
 par(mfrow = c(7, 6))
 
 for (k in 1:47) #all hex areas
 {
-  post.model.i <- do.call(rbind, mcmc.samplesW1)[ , c(k, k+47)] #selecting a[k] and b[k]
+  post.model.i <- do.call(rbind, mcmc.samplesW)[ , c(k, k+47)] #selecting a[k] and b[k]
   
   dens.i.a <- density(post.model.i[,1],bw = 5)
   dens.i.b <- density(post.model.i[,2],bw=5)
@@ -1851,6 +1851,33 @@ for (k in 1:47) #all hex areas
   #polygon(c(dens.i.b$x, rev(dens.i.b$x)), c(rep(0,length(dens.i.b$x)), rev(dens.i.b$y)), border=NA, col=rgb(0,0.4,0,0.5))
   abline(v=sim_a[[k]],lty=2) #abline(v=c(sim_a[[k]], sim_b[[k]]),lty=2)
   axis(3,at=sim_a[[k]],labels=TeX('$a$')) #axis(3,at=c(sim_a[[k]], sim_b[[k]]),labels=c(TeX('$a$'),TeX('$b$')))
+  legend('topright', legend=c('Womble ICAR'),
+         fill= c('darkgreen'))
+  title(main = paste("Area", k))
+}
+
+dev.off()
+
+#----------
+##FIGURE 42 -- examination of beta parameter values
+
+pdf(file=here('output', 'figures','figure42_covariate.pdf'), width=14, height=18)
+# Define the layout for the plots
+par(mfrow = c(7, 6))
+
+for (k in 1:47) #all hex areas
+{
+  post.model.i <- do.call(rbind, mcmc.samplesW)[,paste0('beta4[',k,']')]  %>% round() #selecting beta4[k]
+  
+  dens.i.beta4 <- density(post.model.i, bw = 5)
+  
+  med.beta4 <- median(post.model.i)
+  
+  # Plot
+  plot(NULL, xlim=c(-200, 200), ylim=c(0,0.03), xlab='Cal BP', ylab='Posterior Probability')
+  polygon(c(dens.i.beta4$x, rev(dens.i.beta4$x)), c(rep(0,length(dens.i.beta4$x)), rev(dens.i.beta4$y)), border=NA, col=rgb(0,0.4,0,0.5))
+  abline(v=med.beta4,lty=2) 
+  axis(3,at=0,labels=TeX('$beta4$'))
   legend('topright', legend=c('Womble ICAR'),
          fill= c('darkgreen'))
   title(main = paste("Area", k))
@@ -1894,7 +1921,7 @@ boundaries <- st_sf(prob_BLV = edge_info.i$prob_BLV,
 st_crs(boundaries) <- 4326  # Set CRS to EPSG:4326 (WGS 84)
   
 #Plot
-pdf(file=here('output','figures','figure41_Wb1.pdf'))
+pdf(file=here('output','figures','figure41_covariate.pdf'))
 ggplot(data = median_hex_dates_mod.i) +
   geom_sf(data = st_buffer(st_as_sf(sampling_win, crs = 4326), 40000), fill = "grey80", color = "grey40") + #sampling window with coastal buffer
   geom_sf(aes(alpha=0.01), color = "grey60") + #hex grid 

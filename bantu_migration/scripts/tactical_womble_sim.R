@@ -9,12 +9,14 @@ library(ggplot2)
 library(viridis)
 library(rcarbon)
 library(units)
+library(gridExtra)
 
 rm(list = ls())
 `%!in%` <- Negate(`%in%`)
 set.seed(123)
 
 ##SCRIPT TO SIMULATE DATA (WITH UNDERLYING SPATIAL AUTOCORRELATED STRUCTURE AND COVARIATE EFFECT) FOR WOMBLING MODEL WITHOUT ERRORS
+##Note to simulate data with underlying wave of advance pattern -- uncomment ##WOA sections
 
 # Load sample window data ----
 load(here('data','sample_window_cont.RData'))
@@ -39,8 +41,8 @@ sf::sf_use_s2(TRUE) #turn on spherical co-ordinates
 
 #-------------------------------------------------------------------------------
 # Target Parameters ----
-n_sites  <- 100
-n_dates  <- 500 
+n_sites  <- 100 #100 can reduce to 100 sites, 500 dates if we want to see the strength of the ICAR in areas without sites. Otherwise 200 sites, 800 dates (reflects density of real data)
+n_dates  <- 500 #500
 origin_point <- st_sfc(st_point(c(11.4, 5.483))) #dispersal origin point -- approximately at Katuruka, st_point(c(-1.45, 31.77)) (east Africa) or Ngoume (sub-Saharan Africa)
 
 #-------------------------------------------------------------------------------
@@ -104,11 +106,20 @@ site_freq  <- plyr::count(dates, 'site_id') ##See how many observations at each 
 area_freq  <- plyr::count(dates, 'area_id') ##See how many observations in each hex area
 
 #-------------------------------------------------------------------------------
+#Identify origin area -- this section is only needed if ##WOA is being simulated
+origin_area <- as.integer(st_within(origin_point, hex_area_win$geometry))
+origin_area_center <- hex_area_win[hex_area_win$area_ID==origin_area, "area_center"]
+
+#Distance in km from origin area to hex centers
+hex_area_win <- hex_area_win %>% 
+  mutate(dist_from_origin = as.vector(set_units(st_distance(x=area_center, y=origin_area_center), 'km'))) 
+
+#-------------------------------------------------------------------------------
 ##Create binary environmental variable --
 #For example: A forest in central Africa
 
 hex_area_win <- hex_area_win %>% 
-  mutate(forest_present = case_when(area_ID %in% c(16,24,19) ~ -400, TRUE ~ 0)) #assume the forest provides a 250 year delay to expansion
+  mutate(forest_present = case_when(area_ID %in% c(16,24,19) ~ -400, TRUE ~ 0)) #assume the forest provides a 400 year delay to expansion
 
 ##Visulaise the presence/absence of forests
 x1 <- ggplot(data = hex_area_win) +
@@ -127,6 +138,7 @@ x1 <- ggplot(data = hex_area_win) +
 #-------------------------------------------------------------------------------
 ##MODEL ---
 
+##ICAR Simulate --
 sim_model <- nimbleCode({
   # Simulate spatially correlated data for all k in 1:n_areas
   for (k in 1:n_areas){
@@ -134,10 +146,10 @@ sim_model <- nimbleCode({
     nu[k] <- x1[k]*beta1[k] + phi[k];
   }
   phi[1:n_areas] ~ dcar_proper(mu = mu[1:n_areas], adj=adj[1:L], num=num[1:n_areas], tau=tau, gamma=gamma) # ICAR prior to capture spatial random effects
-  d[1:n_areas] ~ dcar_proper(mu = mu2[1:n_areas], adj=adj[1:L], num=num[1:n_areas], tau=tau, gamma=gamma) 
+  d[1:n_areas] ~ dcar_proper(mu = mu2[1:n_areas], adj=adj[1:L], num=num[1:n_areas], tau=tau, gamma=gamma)
   b[1:n_areas] <- a[1:n_areas] - abs(d[1:n_areas]) #duration must be positive
   #tau ~ dgamma(2, 0.5)
-  
+
   for (j in 1:n_sites)
   {
     delta[j] ~ dgamma(5,(5-1)/100); #Site duration parameter.
@@ -145,12 +157,37 @@ sim_model <- nimbleCode({
     beta[j] <- alpha[j] - (delta[j] + 1); #The +1 ensures at a minimum where there are two dates at a site there will be 1 year between them.
     constraint_duration[j] ~ dconstraint(alpha[j]>(delta[j]+1)); #Site can't have have a duration longer than its time of first arrival
   }
-  
+
   for (i in 1:n_dates){
     theta[i] ~ dunif(min=beta[id_sites[i]], max=alpha[id_sites[i]]);
     cra_constraint[i] ~ dconstraint(theta[i] > 0);
   }
 })
+
+##WOA Wave of Advance Simulate --
+# sim_model <- nimbleCode({
+#   # Simulate spatially correlated data for all k in 1:n_areas
+#   for (k in 1:n_areas){
+#     a[k] ~ dnorm(nu[k], sd=sigma);
+#     nu[k] <- beta0 - dist[k]/s + x1[k]*beta1[k];
+#   }
+#   d[1:n_areas] ~ dcar_proper(mu = mu3[1:n_areas], adj=adj[1:L], num=num[1:n_areas], tau=tau, gamma=gamma)
+#   b[1:n_areas] <- a[1:n_areas] - abs(d[1:n_areas]*0.5) #duration must be positive
+#   #tau ~ dgamma(2, 0.5)
+# 
+#   for (j in 1:n_sites)
+#   {
+#     delta[j] ~ dgamma(5,(5-1)/100); #Site duration parameter.
+#     alpha[j] ~ dunif(max=a[id_areas[j]], min=b[id_areas[j]]);
+#     beta[j] <- alpha[j] - (delta[j] + 1); #The +1 ensures at a minimum where there are two dates at a site there will be 1 year between them.
+#     constraint_duration[j] ~ dconstraint(alpha[j]>(delta[j]+1)); #Site can't have have a duration longer than its time of first arrival
+#   }
+# 
+#   for (i in 1:n_dates){
+#     theta[i] ~ dunif(min=beta[id_sites[i]], max=alpha[id_sites[i]]);
+#     cra_constraint[i] ~ dconstraint(theta[i] > 0);
+#   }
+# })
 
 #Define constants ----
 sim_constants <- constants
@@ -166,6 +203,12 @@ sim_constants$mu2 <- rep(500, n_areas) #runif(1:sim_constants$n_areas, min = 50,
 sim_constants$tau <- 0.000005
 sim_constants$tau.err <- 0.5
 sim_constants$gamma <- 0.99
+##WOA constants
+# sim_constants$dist <- hex_area_win$dist_from_origin
+# sim_constants$s  <- 2.5 #Speed of the wave of advance (in km a year)
+# sim_constants$beta0 <- 2600 #off-set -- arrival time in the origin hex
+# sim_constants$sigma <- 50
+# sim_constants$mu3 <- rep(500, n_areas)
 
 #Define constraints, data, and initial values ----
 dat <- list(constraint_uniform = rep(1, sim_constants$n_areas),
@@ -183,11 +226,13 @@ set.seed(1223)
 simModel <- nimbleModel(code = sim_model, constants = sim_constants, data = dat, inits = inits)
 
 nodesToSim <- simModel$getDependencies(c("a", "phi", "d", "b", "delta", "alpha", "beta", "theta"), self = T, downstream = T)
+#nodesToSim <- simModel$getDependencies(c("a", "d", "b", "delta", "alpha", "beta", "theta"), self = T, downstream = T) ##WOA
+
 
 simModel$simulate(nodesToSim)
-# simModel$a #check variables
-# simModel$b
-# simModel$theta
+#simModel$a #check variables
+#simModel$b
+#simModel$theta
 
 
 ##Check spatial autocorrelation with Moran's statistic
@@ -233,7 +278,7 @@ x2 <- ggplot(data = true_hex_dates) +
         legend.position = "none")
 
 #Output
-pdf(file=here('output','figures','figure40i.pdf'), width=15, height=8)
+pdf(file=here('output','figures','figure40_covariate.pdf'), width=15, height=8)
 grid.arrange(x1, x2, ncol=2, padding=0)
 dev.off()
 
