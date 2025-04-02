@@ -36,3 +36,15 @@ bantu_migration/output/ICARmodel_tactsim.RData
 bantu_migration/output/Womblemodel_tactsim.RData
 
 *.tif
+
+bantu_migration/output/Womblemodel_tactsim_woa_nocovariate.RData
+
+bantu_migration/output/Womblemodel_tactsim_woa_falsecovariate.RData
+
+bantu_migration/output/Womblemodel_tactsim_covariate.RData
+
+bantu_migration/output/Womblemodel_tactsim_nocovariate.RData
+
+bantu_migration/output/Womblemodel_tactsim_woa_covariate.RData
+
+bantu_migration/output/Womblemodel_tactsim_covariate_dense.RData

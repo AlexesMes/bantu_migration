@@ -15,6 +15,7 @@ library(units)
 #library(p3k14c)
 library(geodata)
 library(terra)
+library(stars)
 
 rm(list = ls())
 
@@ -183,7 +184,7 @@ write.csv(eastEIA_sites_df, here('data','eastEIA_dataset.csv'), row.names = FALS
 ## Determining which calibration curve should be used----
 
 #Remove unnecessary information
-eastEIA_sites_df <- bantu_sites_df %>% #eastEIA_sites_df %>%
+eastEIA_sites_df <- eastEIA_sites_df %>% #bantu_sites_df %>%
   dplyr::select(-reference, -material, -country)
 
 #Assign calibration curve ----
@@ -271,20 +272,20 @@ dist_org  <-  as.vector(set_units(st_distance(x=sites, y=origin_point), 'km')) #
 # Generate Spatial Window for Analyses: Sub-Saharan Africa ----
 
 #Sampling window: Sub-Saharan Africa ----
-sampling_win <- st_union(ne_countries(country = subSahara_countries, returnclass = "sf") %>%
- filter(name_en %!in% c("Madagascar","Sudan"))) #We focus on mainland sub-Saharan Africa (also, there is something wrong with the geometry of Sudan -- remove country since we have no iron age dates there anyway)
+#sampling_win <- st_union(ne_countries(country = subSahara_countries, returnclass = "sf") %>%
+# filter(name_en %!in% c("Madagascar","Sudan"))) #We focus on mainland sub-Saharan Africa (also, there is something wrong with the geometry of Sudan -- remove country since we have no iron age dates there anyway)
 
 #Sampling window: Eastern Sub-Saharan Africa ----
-#sampling_win <- ne_countries(continent = "Africa", country = eastEIA_countries, returnclass = "sf")
+sampling_win <- ne_countries(continent = "Africa", country = eastEIA_countries, returnclass = "sf")
 
 #Generate Spatial Hexagons ---- ##see code block below to determine hex diameter, cell_d 
-hex_area_win <- hex_areas(sampling_win, cell_d = 6.2) # for eastern sub-Saharan africa study region used cell diameter = 5.4
+hex_area_win <- hex_areas(sampling_win, cell_d = 4.4) #for eastern sub-Saharan africa study region used cell diameter = 5.4
 
 #Remove spatial hexagons where the Bantu Expansion didn't reach
 #Sub-Saharan Africa, cell-diameter 6.2
-hex_area_win <- hex_area_win %>%
-  filter(area_ID %!in% c(13, 25, 12, 24, 18, 30, 41, 3, 11, 23, 35, 46, 54, 61, 65, 66, 64, 57, 63)) %>%
-  mutate(area_ID = row_number())
+# hex_area_win <- hex_area_win %>%
+#   filter(area_ID %!in% c(13, 25, 12, 24, 18, 30, 41, 3, 11, 23, 35, 46, 54, 61, 65, 66, 64, 57, 63)) %>%
+#   mutate(area_ID = row_number())
 #Sub-Saharan Africa, cell-diameter 5.2
 # hex_area_win <- hex_area_win %>%
 #  filter(area_ID %!in% c(18, 25, 39, 24, 17, 38, 31, 45, 51, 23, 37, 4, 11, 88, 86, 87, 84, 83, 81, 73, 77, 68, 63)) %>%
@@ -298,9 +299,9 @@ hex_area_win <- hex_area_win %>%
 #   filter(area_ID %!in% c(1,2,3,4,7)) %>%
 #   mutate(area_ID = row_number())
 # #East Africa, cell-diameter 4.4
-# hex_area_win <- hex_area_win %>%
-#   filter(area_ID %!in% c(1,2,3,5)) %>%
-#   mutate(area_ID = row_number())
+hex_area_win <- hex_area_win %>%
+  filter(area_ID %!in% c(1,2,3,5)) %>%
+  mutate(area_ID = row_number())
 # #East Africa, cell-diameter 6.4
 # hex_area_win <- hex_area_win %>%
 #   filter(area_ID %!in% c(1,2,6)) %>%
@@ -415,3 +416,75 @@ mean_hex_elv <- terra::zonal(SRTM90m, terra::vect(hex_area_win), fun = "mean", n
 
 #Save elevation output
 save(mean_hex_elv, SRTM90m, file=here('data','elevation.RData'))
+
+#-------------------------------------------------------------------------------
+## Crop suitability data
+
+#Read in crop data ----
+pearl_millet_sf <- read_stars("data/environment/Soil_suitability_Chemura/Cereals/Suit/pmillet_curr.tif") %>% 
+  st_as_sf() %>% 
+  rename("pmillet_suit" = "pmillet_curr.tif")
+
+sorghum_sf <- read_stars("data/environment/Soil_suitability_Chemura/Cereals/Suit/sorghum_curr.tif") %>% 
+  st_as_sf() %>% 
+  rename("sorghum_suit" = "sorghum_curr.tif")
+
+#--------------  
+#Aggregate suitability values for each hexagonal area ----
+
+#Assign hex area id
+pearl_millet_sf$area_id <- as.integer(st_within(pearl_millet_sf$geometry, hex_area_win$geometry))
+
+sorghum_sf$area_id <- as.integer(st_within(sorghum_sf$geometry, hex_area_win$geometry))
+
+
+#Filter for suitability values within the sample window
+pearl_millet_sf <- pearl_millet_sf %>% 
+  filter(!is.na(area_id))
+
+sorghum_sf <- sorghum_sf %>% 
+  filter(!is.na(area_id))
+
+
+#Aggregate
+pearl_millet_df <- pearl_millet_sf %>% 
+  group_by(area_id) %>% 
+  summarize(mean_pmillet_suit = mean(pmillet_suit)) %>% 
+  as.data.frame() %>% 
+  dplyr::select(area_id, mean_pmillet_suit) %>% 
+  na.omit()
+
+sorghum_df <- sorghum_sf %>% 
+  group_by(area_id) %>% 
+  summarize(mean_sorghum_suit = mean(sorghum_suit)) %>% 
+  as.data.frame() %>% 
+  dplyr::select(area_id, mean_sorghum_suit) %>% 
+  na.omit()
+
+#Impute values from neighbors for hex areas that are too small to have suitability values
+#NB: This needs to be changed for different sample windows!
+pearl_millet_df[nrow(pearl_millet_df) + 1,] = c(16, pearl_millet_df[pearl_millet_df$area_id==27, ]$mean_pmillet_suit)
+pearl_millet_df[nrow(pearl_millet_df) + 1,] = c(17, pearl_millet_df[pearl_millet_df$area_id==12, ]$mean_pmillet_suit)
+pearl_millet_df[nrow(pearl_millet_df) + 1,] = c(38, pearl_millet_df[pearl_millet_df$area_id==29, ]$mean_pmillet_suit)
+pearl_millet_df[nrow(pearl_millet_df) + 1,] = c(45, pearl_millet_df[pearl_millet_df$area_id==41, ]$mean_pmillet_suit)
+pearl_millet_df[nrow(pearl_millet_df) + 1,] = c(46, pearl_millet_df[pearl_millet_df$area_id==39, ]$mean_pmillet_suit)
+pearl_millet_df[nrow(pearl_millet_df) + 1,] = c(47, pearl_millet_df[pearl_millet_df$area_id==44, ]$mean_pmillet_suit)
+
+sorghum_df[nrow(sorghum_df) + 1,] = c(16, sorghum_df[sorghum_df$area_id==27, ]$mean_sorghum_suit)
+sorghum_df[nrow(sorghum_df) + 1,] = c(17, sorghum_df[sorghum_df$area_id==12, ]$mean_sorghum_suit)
+sorghum_df[nrow(sorghum_df) + 1,] = c(38, sorghum_df[sorghum_df$area_id==29, ]$mean_sorghum_suit)
+sorghum_df[nrow(sorghum_df) + 1,] = c(45, sorghum_df[sorghum_df$area_id==41, ]$mean_sorghum_suit)
+sorghum_df[nrow(sorghum_df) + 1,] = c(46, sorghum_df[sorghum_df$area_id==39, ]$mean_sorghum_suit)
+sorghum_df[nrow(sorghum_df) + 1,] = c(47, sorghum_df[sorghum_df$area_id==44, ]$mean_sorghum_suit)
+
+#--------------
+#Join crop data
+agg_crop_suitability <- pearl_millet_df %>% 
+  left_join(sorghum_df, by=join_by(area_id)) %>% 
+  rowwise() %>% 
+  mutate(max_crop_suit = as.numeric(max(mean_pmillet_suit, mean_sorghum_suit))) %>% 
+  select(area_id, max_crop_suit)
+
+#--------------
+#Save crop suitability output
+save(agg_crop_suitability, file=here('data','crop_suitability.RData'))
