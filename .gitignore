@@ -48,3 +48,7 @@ bantu_migration/output/Womblemodel_tactsim_nocovariate.RData
 bantu_migration/output/Womblemodel_tactsim_woa_covariate.RData
 
 bantu_migration/output/Womblemodel_tactsim_covariate_dense.RData
+
+bantu_migration/data/environment/AnimalHusbandry_suitability_Beck/
+
+bantu_migration/output/Womble_Emodel_d44.RData

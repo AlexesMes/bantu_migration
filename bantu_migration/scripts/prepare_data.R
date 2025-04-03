@@ -16,6 +16,7 @@ library(units)
 library(geodata)
 library(terra)
 library(stars)
+library(raster)
 
 rm(list = ls())
 
@@ -404,15 +405,28 @@ save(constants_sw, sampling_win, hex_area_win, file=here('data','sample_window_c
 
 country_codes <- country_codes() %>% filter(NAME %in% eastEIA_countries) #obtain country codes 
 
+#Import elevation data
 SRTM90m <- elevation_30s(country_codes$ISO3[1], path=here('input'), mask=TRUE)
 for (i in 2:nrow(country_codes)){
   SRTM90m <- merge(SRTM90m, elevation_30s(country_codes$ISO3[i], path=here('input'), mask=TRUE))
 }
-plot(SRTM90m)
-plot(hex_area_win$geometry, add = T)
 
-mean_hex_elv <- terra::zonal(SRTM90m, terra::vect(hex_area_win), fun = "mean", na.rm = TRUE) #calculate mean elevation in each hexagon
+#plot(SRTM90m)
+#plot(hex_area_win$geometry, add = T)
 
+#Add area IDs
+mean_hex_elv <- data.frame(area_ID = hex_area_win$area_ID,
+                           mean_elevation = terra::zonal(SRTM90m, terra::vect(hex_area_win), fun = "mean", na.rm = TRUE)) #calculate mean elevation in each hexagon
+
+#Impute missing values from nearest neighbors 
+mean_hex_elv[mean_hex_elv$area_ID==17, ] = c(17, mean_hex_elv[mean_hex_elv$area_ID==8, ]$BWA_elv_msk)
+mean_hex_elv[mean_hex_elv$area_ID==47, ] = c(47, mean_hex_elv[mean_hex_elv$area_ID==44, ]$BWA_elv_msk)
+mean_hex_elv[mean_hex_elv$area_ID==45, ] = c(45, mean_hex_elv[mean_hex_elv$area_ID==48, ]$BWA_elv_msk)
+mean_hex_elv[mean_hex_elv$area_ID==37, ] = c(37, mean_hex_elv[mean_hex_elv$area_ID==32, ]$BWA_elv_msk)
+
+#Normalise elevation to [0,1] scale
+mean_hex_elv <- mean_hex_elv %>% 
+  mutate(norm_mean_elv = BWA_elv_msk/max(BWA_elv_msk))
 
 #Save elevation output
 save(mean_hex_elv, SRTM90m, file=here('data','elevation.RData'))
@@ -445,7 +459,7 @@ pearl_millet_sf <- pearl_millet_sf %>%
 sorghum_sf <- sorghum_sf %>% 
   filter(!is.na(area_id))
 
-
+#------
 #Aggregate
 pearl_millet_df <- pearl_millet_sf %>% 
   group_by(area_id) %>% 
@@ -461,7 +475,8 @@ sorghum_df <- sorghum_sf %>%
   dplyr::select(area_id, mean_sorghum_suit) %>% 
   na.omit()
 
-#Impute values from neighbors for hex areas that are too small to have suitability values
+#--------------  
+#Impute values from neighbors for hex areas that are too small to have suitability values ----
 #NB: This needs to be changed for different sample windows!
 pearl_millet_df[nrow(pearl_millet_df) + 1,] = c(16, pearl_millet_df[pearl_millet_df$area_id==27, ]$mean_pmillet_suit)
 pearl_millet_df[nrow(pearl_millet_df) + 1,] = c(17, pearl_millet_df[pearl_millet_df$area_id==12, ]$mean_pmillet_suit)
@@ -477,8 +492,49 @@ sorghum_df[nrow(sorghum_df) + 1,] = c(45, sorghum_df[sorghum_df$area_id==41, ]$m
 sorghum_df[nrow(sorghum_df) + 1,] = c(46, sorghum_df[sorghum_df$area_id==39, ]$mean_sorghum_suit)
 sorghum_df[nrow(sorghum_df) + 1,] = c(47, sorghum_df[sorghum_df$area_id==44, ]$mean_sorghum_suit)
 
+
+pearl_millet_df <- pearl_millet_df %>% arrange(area_id) 
+sorghum_df <- sorghum_df %>% arrange(area_id) 
+
+#Plot
+#Pearl Millet
+ggplot(data = hex_area_win) +
+  geom_sf(data = st_buffer(st_as_sf(sampling_win, crs = 4326), 40000), color = "grey50") + #sampling window with coastal buffer
+  geom_sf(aes(fill = pearl_millet_df$mean_pmillet_suit)) +
+  scale_fill_gradientn(colours = rev(terrain.colors(7)), name = "Pearl Millet Suitability") +
+  theme(panel.background = element_rect(fill = "lightblue",
+                                        colour = "lightblue",
+                                        size = 0.5,
+                                        linetype = "solid"))
+# ggplot(data = pearl_millet_sf) +
+#   geom_sf(data = st_buffer(st_as_sf(sampling_win, crs = 4326), 40000), color = "grey50") + #sampling window with coastal buffer
+#   geom_sf(aes(fill = pmillet_suit)) +
+#   scale_fill_gradientn(colours = rev(terrain.colors(7)), name = "Pearl Millet Suitability") +
+#   theme(panel.background = element_rect(fill = "lightblue",
+#                                         colour = "lightblue",
+#                                         size = 0.5,
+#                                         linetype = "solid"))
+
+#Sorghum
+ggplot(data = hex_area_win) +
+  geom_sf(data = st_buffer(st_as_sf(sampling_win, crs = 4326), 40000), color = "grey50") + #sampling window with coastal buffer
+  geom_sf(aes(fill = sorghum_df$mean_sorghum_suit)) +
+  scale_fill_gradientn(colours = rev(terrain.colors(7)), name = "Sorghum Suitability") +
+  theme(panel.background = element_rect(fill = "lightblue",
+                                        colour = "lightblue",
+                                        size = 0.5,
+                                        linetype = "solid"))
+# ggplot(data = sorghum_sf) +
+#   geom_sf(data = st_buffer(st_as_sf(sampling_win, crs = 4326), 40000), color = "grey50") + #sampling window with coastal buffer
+#   geom_sf(aes(fill = sorghum_suit)) +
+#   scale_fill_gradientn(colours = rev(terrain.colors(7)), name = "Sorghum Suitability") +
+#   theme(panel.background = element_rect(fill = "lightblue",
+#                                         colour = "lightblue",
+#                                         size = 0.5,
+#                                         linetype = "solid"))
+
 #--------------
-#Join crop data
+#Join crop data ----
 agg_crop_suitability <- pearl_millet_df %>% 
   left_join(sorghum_df, by=join_by(area_id)) %>% 
   rowwise() %>% 
@@ -486,5 +542,68 @@ agg_crop_suitability <- pearl_millet_df %>%
   select(area_id, max_crop_suit)
 
 #--------------
-#Save crop suitability output
+#Save crop suitability output ----
 save(agg_crop_suitability, file=here('data','crop_suitability.RData'))
+
+
+
+#-------------------------------------------------------------------------------
+## Sedentary animal husbandry suitability data
+
+#Read in animal husbandry data ----
+animal_hus_sf <- read_stars("data/environment/AnimalHusbandry_suitability_Beck/anim_suit.asc") %>% 
+  st_as_sf() %>% 
+  rename("animal_hus_suit" = "anim_suit.asc")
+
+st_crs(animal_hus_sf)  <- 4326 
+#--------------  
+#Aggregate suitability values for each hexagonal area ----
+
+#Assign hex area id
+animal_hus_sf$area_id <- as.integer(st_within(animal_hus_sf$geometry, hex_area_win$geometry))
+
+#Filter for suitability values within the sample window
+animal_hus_sf <- animal_hus_sf %>% 
+  filter(!is.na(area_id))
+
+#------
+#Aggregate
+amimal_hus_df <- animal_hus_sf %>% 
+  group_by(area_id) %>% 
+  summarize(mean_animal_hus_suit = mean(animal_hus_suit)) %>% 
+  as.data.frame() %>% 
+  dplyr::select(area_id, mean_animal_hus_suit) %>% 
+  na.omit()
+
+#--------------  
+#Impute values from neighbors for hex areas that are too small to have suitability values ----
+#NB: This needs to be changed for different sample windows!
+amimal_hus_df[nrow(amimal_hus_df) + 1,] = c(17, amimal_hus_df[amimal_hus_df$area_id==12, ]$mean_animal_hus_suit)
+amimal_hus_df[nrow(amimal_hus_df) + 1,] = c(47, amimal_hus_df[amimal_hus_df$area_id==44, ]$mean_animal_hus_suit)
+
+amimal_hus_df <- amimal_hus_df %>% arrange(area_id) 
+
+#Plot
+#Animal Husbandry
+ggplot(data = hex_area_win) +
+  geom_sf(data = st_buffer(st_as_sf(sampling_win, crs = 4326), 40000), color = "grey50") + #sampling window with coastal buffer
+  geom_sf(aes(fill = amimal_hus_df$mean_animal_hus_suit)) +
+  scale_fill_gradientn(colours = rev(terrain.colors(7)), name = "Animal Husbandry Suitability") +
+  theme(panel.background = element_rect(fill = "lightblue",
+                                        colour = "lightblue",
+                                        size = 0.5,
+                                        linetype = "solid"))
+# ggplot(data = animal_hus_sf) +
+#   geom_sf(data = st_buffer(st_as_sf(sampling_win, crs = 4326), 40000), color = "grey50") + #sampling window with coastal buffer
+#   geom_sf(aes(fill = animal_hus_suit)) +
+#   scale_fill_gradientn(colours = rev(terrain.colors(7)), name = "Animal Husbandry Suitability") +
+#   theme(panel.background = element_rect(fill = "lightblue",
+#                                         colour = "lightblue",
+#                                         size = 0.5,
+#                                         linetype = "solid"))
+
+
+#Save animal husbandry suitability output ----
+save(amimal_hus_df, file=here('data','animal_hus_suitability.RData'))
+
+
