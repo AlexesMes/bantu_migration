@@ -1730,10 +1730,10 @@ anim_save("figure36_animation.gif",
           animation = animate(anim, width = 1200, height = 900, fps = 5))
 
 #===============================================================================
-###WOMBLE TACTICAL SIMULATION ===
+###WOMBLE TACTICAL SIMULATION === #Below (figures 37-44) are examples for a simulation with 2 covariates which overlap (change for each simulation)
 
 ##Load Data ----
-load(here("output", "Womblemodel_tactsim_covariate.RData"))
+load(here("output", "Womblemodel_tactsim_2covariate_overlap.RData"))
 load(here('data', 'tactical_sim_womble.RData')) 
 
 
@@ -1792,7 +1792,7 @@ for (k in 1:length(time_slices)) #all time slices
 }
 
 #Output
-pdf(file=here('output','figures','figure37_covariate.pdf'), width=15, height=8)
+pdf(file=here('output','figures','figure37_2covariate_overlap.pdf'), width=15, height=8)
 grid.arrange(grobs=plot_list, ncol=5, nrow=2, padding=0) # Define the layout for the plots
 dev.off()
 
@@ -1823,7 +1823,7 @@ modi <- ggplot(data = median_hex_dates_mod.i) +
 
 
 #Output
-pdf(file=here('output','figures','figure38_covariate.pdf'), width=15, height=8)
+pdf(file=here('output','figures','figure38_2covariate_overlap.pdf'), width=15, height=8)
 grid.arrange(modi, ncol=1, padding=0)
 dev.off()
 
@@ -1834,7 +1834,7 @@ dev.off()
 sim_a <- constants$true_a
 sim_b <- constants$true_b
 
-pdf(file=here('output', 'figures','figure39_covariate.pdf'), width=14, height=18)
+pdf(file=here('output', 'figures','figure39_2covariate_overlap.pdf'), width=14, height=18)
 # Define the layout for the plots
 par(mfrow = c(7, 6))
 
@@ -1861,29 +1861,76 @@ dev.off()
 #----------
 ##FIGURE 42 -- examination of beta parameter values
 
-pdf(file=here('output', 'figures','figure42_covariate.pdf'), width=14, height=18)
+pdf(file=here('output', 'figures','figure42_2covariate_overlap.pdf'), width=14, height=18)
+
+par(mfrow = c(2, 2))
+
+#Beta1
+post.model.i <- do.call(rbind, mcmc.samplesW)[,paste0('beta1')]  %>% round() #selecting beta4[k]
+dens.i.beta1 <- density(post.model.i, bw = 5)
+med.beta1 <- median(post.model.i)
+# Plot
+plot(NULL, xlim=c(med.beta1-500, med.beta1+500), ylim=c(0,0.045), xlab='Cal BP', ylab='Posterior Probability')
+polygon(c(dens.i.beta1$x, rev(dens.i.beta1$x)), c(rep(0,length(dens.i.beta1$x)), rev(dens.i.beta1$y)), border=NA, col=rgb(0,0.4,0,0.5))
+abline(v=med.beta1,lty=2)
+axis(3,at=med.beta1,labels=TeX('$beta1$'))
+legend('topright', legend=c('Womble ICAR'),
+       fill= c('darkgreen'))
+
+#Beta2
+post.model.i2 <- do.call(rbind, mcmc.samplesW)[,paste0('beta2')]  %>% round() #selecting beta4[k]
+dens.i.beta2 <- density(post.model.i2, bw = 5)
+med.beta2 <- median(post.model.i2)
+# Plot
+plot(NULL, xlim=c(med.beta2-500, med.beta2+500), ylim=c(0,0.025), xlab='Cal BP', ylab='Posterior Probability')
+polygon(c(dens.i.beta2$x, rev(dens.i.beta2$x)), c(rep(0,length(dens.i.beta2$x)), rev(dens.i.beta2$y)), border=NA, col=rgb(0,0.4,0,0.5))
+abline(v=med.beta2,lty=2)
+axis(3,at=med.beta2,labels=TeX('$beta2$'))
+legend('topright', legend=c('Womble ICAR'),
+       fill= c('darkgreen'))
+
+# #Beta0
+# post.model.i0 <- do.call(rbind, mcmc.samplesW)[,paste0('beta0')]  %>% round() #selecting beta4[k]
+# dens.i.beta0 <- density(post.model.i0, bw = 5)
+# med.beta0 <- median(post.model.i0)
+# # Plot
+# plot(NULL, xlim=c(med.beta0-300, med.beta0+300), ylim=c(0,0.04), xlab='Cal BP', ylab='Posterior Probability')
+# polygon(c(dens.i.beta0$x, rev(dens.i.beta0$x)), c(rep(0,length(dens.i.beta0$x)), rev(dens.i.beta0$y)), border=NA, col=rgb(0,0.4,0,0.5))
+# abline(v=med.beta0,lty=2)
+# axis(3,at=med.beta0,labels=TeX('$beta0$'))
+# legend('topright', legend=c('Womble ICAR'),
+#        fill= c('darkgreen'))
+
+dev.off()
+
+#----------
+##FIGURE 43 -- examination of phi parameter values
+
+pdf(file=here('output', 'figures','figure43_2covariate_overlap.pdf'), width=14, height=18)
+
 # Define the layout for the plots
 par(mfrow = c(7, 6))
 
 for (k in 1:47) #all hex areas
 {
-  post.model.i <- do.call(rbind, mcmc.samplesW)[,paste0('beta4[',k,']')]  %>% round() #selecting beta4[k]
-  
-  dens.i.beta4 <- density(post.model.i, bw = 5)
-  
-  med.beta4 <- median(post.model.i)
-  
+  post.model.i <- do.call(rbind, mcmc.samplesW)[,paste0('phi[',k,']')]  %>% round()
+
+  dens.i.phi <- density(post.model.i, bw = 5)
+
+  med.phi <- median(post.model.i)
+
   # Plot
-  plot(NULL, xlim=c(-200, 200), ylim=c(0,0.03), xlab='Cal BP', ylab='Posterior Probability')
-  polygon(c(dens.i.beta4$x, rev(dens.i.beta4$x)), c(rep(0,length(dens.i.beta4$x)), rev(dens.i.beta4$y)), border=NA, col=rgb(0,0.4,0,0.5))
-  abline(v=med.beta4,lty=2) 
-  axis(3,at=0,labels=TeX('$beta4$'))
+  plot(NULL, xlim=c(med.phi-500, med.phi+500), ylim=c(0,0.03), xlab='Cal BP', ylab='Posterior Probability')
+  polygon(c(dens.i.phi$x, rev(dens.i.phi$x)), c(rep(0,length(dens.i.phi$x)), rev(dens.i.phi$y)), border=NA, col=rgb(0,0.4,0,0.5))
+  abline(v=med.phi,lty=2)
+  axis(3,at=0,labels=TeX('$phi$'))
   legend('topright', legend=c('Womble ICAR'),
          fill= c('darkgreen'))
   title(main = paste("Area", k))
 }
 
 dev.off()
+
 
 #----------
 ##Display significant boundaries -- FIGURE 41
@@ -1921,11 +1968,304 @@ boundaries <- st_sf(prob_BLV = edge_info.i$prob_BLV,
 st_crs(boundaries) <- 4326  # Set CRS to EPSG:4326 (WGS 84)
   
 #Plot
-pdf(file=here('output','figures','figure41_covariate.pdf'))
+pdf(file=here('output','figures','figure41_2covariate_overlap.pdf'))
 ggplot(data = median_hex_dates_mod.i) +
   geom_sf(data = st_buffer(st_as_sf(sampling_win, crs = 4326), 40000), fill = "grey80", color = "grey40") + #sampling window with coastal buffer
-  geom_sf(aes(alpha=0.01), color = "grey60") + #hex grid 
+  geom_sf(aes(alpha=0.01), color = "grey60") + scale_alpha(range = c(0, 1)) + #hex grid 
   # geom_segment(data=edge_info.i$boundary, aes(#x= region1_x, y= region1_y, xend= region2_x, yend= region2_y, alpha= prob_BLV), color="red", size=2) +
+  geom_sf(data = boundaries, lwd=3, aes(alpha=prob_BLV), color = "red") +
+  geom_sf(data = hex_area_win$area_center, size=2, alpha=1, color = "grey40") + #hex-centers
+  scale_alpha_continuous(range = c(0, 1)) +  # Use for continuous alpha values
+  xlab('Longitude') +
+  ylab('Latitude') +
+  ggtitle(paste0('c = 400', ' years')) +
+  theme(panel.background = element_rect(fill = "lightblue",
+                                        colour = "lightblue",
+                                        size = 0.5,
+                                        linetype = "solid"),
+        legend.position = "none")
+dev.off()
+
+#---
+##Repeat wombling but with spatial residues, phi[k]
+
+#With the tactical simulation data from hierarchical wombling model
+post.model.tac_womble_nab_phi  <- out.comb.tac_icar.model[,paste0('nabla_phi[',1:110,']')]  %>% round()
+
+#Extract differences in spatial residues times for tactical wombling model
+med.model.tac_womble_nab_phi  <- apply(post.model.tac_womble_nab_phi, 2, median)
+
+#difference_slices <- seq(600, 0, -200)
+
+#Extract proportion of MCMC sample differences which are significant over a specified time difference
+prop_model_tac_womble_nab_phi  <- data.frame(x = 1:110,
+                                             y = sapply(as.data.frame(post.model.tac_womble_nab_phi), 
+                                                      prop_gthan_threshold, 
+                                                      threshold = 400))
+
+#Add info to edges dataframe
+edge_info_phi.i <- edge_info %>%
+  mutate(mean_gradient = med.model.tac_womble_nab_phi, #50% quantile
+         prob_BLV = prop_model_tac_womble_nab_phi$y, #% of distribution > specified threshold
+         boundary = mapply(function(a, b) {intersection <- st_intersection(hex_area_win$geometry[[a]], hex_area_win$geometry[[b]])
+         if (st_is_empty(intersection) || st_is(intersection, "MULTILINESTRING")) return(st_linestring()) else return(intersection)}, 
+         edge_info$region1_id, 
+         edge_info$region2_id)) #shared boundary between two subareas 
+
+#Create boundary segments
+boundaries_phi <- st_sf(prob_BLV = edge_info_phi.i$prob_BLV,
+                    geometry = st_sfc(edge_info_phi.i$boundary))
+st_crs(boundaries_phi) <- 4326  # Set CRS to EPSG:4326 (WGS 84)
+
+#Plot
+pdf(file=here('output','figures','figure41_2covariate_overlap.pdf'))
+ggplot(data = median_hex_dates_mod.i) +
+  geom_sf(data = st_buffer(st_as_sf(sampling_win, crs = 4326), 40000), fill = "grey80", color = "grey40") + #sampling window with coastal buffer
+  geom_sf(aes(alpha=0.01), color = "grey60") + scale_alpha(range = c(0, 1)) + #hex grid 
+  # geom_segment(data=edge_info.i$boundary, aes(#x= region1_x, y= region1_y, xend= region2_x, yend= region2_y, alpha= prob_BLV), color="red", size=2) +
+  geom_sf(data = boundaries_phi, lwd=3, aes(alpha=prob_BLV), color = "red") +
+  geom_sf(data = hex_area_win$area_center, size=2, alpha=1, color = "grey40") + #hex-centers
+  scale_alpha_continuous(range = c(0, 1)) +  # Use for continuous alpha values
+  xlab('Longitude') +
+  ylab('Latitude') +
+  ggtitle(paste0('Spatail residue wombling, ', 'c = 400', ' years')) +
+  theme(panel.background = element_rect(fill = "lightblue",
+                                        colour = "lightblue",
+                                        size = 0.5,
+                                        linetype = "solid"),
+        legend.position = "none")
+dev.off()
+
+
+#---------
+##Traceplot of start of occupation and beat parameters (a[k]) -- FIGURE 44
+
+pdf(file=here('output', 'figures','figure44_2covariate_overlap.pdf'), width=8, height=8)
+par(mfrow=c(2,3))
+traceplot(mcmc.samplesW[,'a[24]'], main=TeX('$a[24]$'),smooth=TRUE) #region area 24, as an example
+traceplot(mcmc.samplesW[,'nabla[24]'], main=TeX('$nabla[24]$'),smooth=TRUE)
+traceplot(mcmc.samplesW[,'b[24]'], main=TeX('$b[24]$'),smooth=TRUE)
+#traceplot(mcmc.samplesW[,'beta0'], main=TeX('$beta0$'),smooth=TRUE)
+traceplot(mcmc.samplesW[,'beta1'], main=TeX('$beta1$'),smooth=TRUE)
+traceplot(mcmc.samplesW[,'beta2'], main=TeX('$beta2$'),smooth=TRUE)
+dev.off()
+
+#===============================================================================
+###WOMBLE MODEL ===
+
+##Load Data ----
+load(here("output", "Womble_Emodel_d44_2covariate.RData"))
+load(here('data', 'eastc14_d44.RData')) #East and Southern Africa
+
+load(here('data','trig_d44.RData')) #nodes and edges between hex area centroids
+#load(here('data','crop_suitability.RData')) #environmental data
+
+
+#Hex areas with and without out sites
+Hex_with_sites <- unique(siteInfo$area_id)
+Hex_without_sites <- which(rep(1:47) %!in% Hex_with_sites)
+
+#-------
+##FIGURE 45 -- Time slices
+
+#With the tactical simulation data from hierarchical Wombling model
+out.comb.womble.model  <- do.call(rbind, out_womble_model)
+post.model.womble <- out.comb.womble.model[,paste0('a[',1:47,']')]  %>% round() 
+
+#Extract arrival times for tactical icar model
+med.model.womble  <- apply(post.model.womble, 2, median)
+
+time_slices <- seq(3200, 1400, -200)
+
+#Extract proportion of MCMC samples occurring before the specified time threshold
+prop_model_womble  <- lapply(time_slices,
+                             function(t) data.frame(x = 1:47,
+                                                    y = sapply(as.data.frame(post.model.womble), 
+                                                               prop_gthan_threshold, 
+                                                               threshold = t)))
+
+#Save figure for each time slice
+plot_list <- list() #Create a list to store the plots
+
+for (k in 1:length(time_slices)) #all time slices
+{
+  #Save in data structure
+  prop_threshold_womble <- hex_area_win %>%
+    filter(area_ID %in% 1:47) %>%
+    mutate(median_date = med.model.womble,
+           prop_threshold = prop_model_womble[[k]]$y,
+           contains_sites = as.factor(case_when(area_ID %in% Hex_with_sites ~ 1, area_ID %in% Hex_without_sites ~ 0))) 
+  
+  #Plot
+  p <- ggplot(data = prop_threshold_womble) +
+    geom_sf(data = st_buffer(st_as_sf(sampling_win, crs = 4326), 40000), aes(color = "grey50"), color=NA) + #sampling window with coastal buffer
+    geom_sf(aes(fill = median_date, alpha=prop_threshold)) + #hex grid #alpha=contains_sites
+    scale_fill_viridis_c(option="F", direction=-1) +
+    scale_alpha_continuous(range = c(0, 1)) +  # Use for continuous alpha values
+    xlab('Longitude') +
+    ylab('Latitude') +
+    ggtitle(paste0('t = ', time_slices[k], ' BP')) +
+    theme(panel.background = element_rect(fill = "lightblue",
+                                          colour = "lightblue",
+                                          size = 0.5,
+                                          linetype = "solid"),
+          legend.position = "none")
+  
+  plot_list[[k]] <- p
+}
+
+#Output
+pdf(file=here('output','figures','figure45_EWomble_d44_2covariate.pdf'), width=15, height=8)
+grid.arrange(grobs=plot_list, ncol=5, nrow=2, padding=0) # Define the layout for the plots
+dev.off()
+
+#----------
+##FIGURE 46 -- Arrival times
+post.a.model.i  <- out.comb.womble.model[,paste0('a[',1:47,']')]  %>% round() 
+med.model.i  <- apply(post.a.model.i, 2, median)
+
+median_hex_dates_mod.i <- hex_area_win %>% 
+  filter(area_ID %in% 1:47) %>% 
+  mutate(median_date = med.model.i,
+         contains_sites = as.factor(case_when(area_ID %in% Hex_with_sites ~ 1, area_ID %in% Hex_without_sites ~ 0))) 
+
+#Plot
+modi <- ggplot(data = median_hex_dates_mod.i) +
+  geom_sf(data = st_buffer(st_as_sf(sampling_win, crs = 4326), 40000), aes(color = "grey50"), color=NA) + #sampling window with coastal buffer
+  geom_sf(aes(fill = median_date)) + #hex grid #alpha=contains_sites
+  scale_fill_viridis_c(option="F", direction=-1) +
+  scale_alpha_manual(values=c(0.45, 1)) +
+  xlab('Longitude') +
+  ylab('Latitude') +
+  geom_sf_label(aes(label = paste0(median_date, "BP")), label.size  = NA, alpha = 0.4, size=3.5) + #hex grid labels #label = ifelse(contains_sites==0, NA, paste0(median_date, "BP")))
+  theme(panel.background = element_rect(fill = "lightblue",
+                                        colour = "lightblue",
+                                        size = 0.5,
+                                        linetype = "solid"),
+        legend.position = "none")
+
+
+#Output
+pdf(file=here('output','figures','figure46_EWomble_d44_2covariate.pdf'), width=15, height=8)
+grid.arrange(modi, ncol=1, padding=0)
+dev.off()
+
+#----------
+##FIGURE 47 -- examine a[k]
+
+pdf(file=here('output', 'figures','figure47_EWomble_d44_2covariate.pdf'), width=14, height=18)
+# Define the layout for the plots
+par(mfrow = c(7, 6))
+
+for (k in 1:47) #all hex areas
+{
+  post.model.i <- do.call(rbind, out_womble_model)[ , c(k, k+47)] #selecting a[k] and b[k]
+  
+  dens.i.a <- density(post.model.i[,1],bw = 5)
+  dens.i.b <- density(post.model.i[,2],bw=5)
+  
+  # Plot
+  plot(NULL, xlim=c(mean(dens.i.a$x[[k]])+1000, mean(dens.i.a$x[[k]])-1000), ylim=c(0,0.022), xlab='Cal BP', ylab='Posterior Probability')
+  polygon(c(dens.i.a$x, rev(dens.i.a$x)), c(rep(0,length(dens.i.a$x)), rev(dens.i.a$y)), border=NA, col=rgb(0,0.4,0,0.5))
+  axis(3,at=mean(dens.i.a$x[[k]]),labels=TeX('$a$'))
+  legend('topright', legend=c('Womble ICAR'),
+         fill= c('darkgreen'))
+  title(main = paste("Area", k))
+}
+
+dev.off()
+
+#----------
+##FIGURE 48 -- examination of beta parameter values
+
+pdf(file=here('output', 'figures','figure48_EWomble_d44_2covariate_beta1.pdf'), width=14, height=18)
+# Define the layout for the plots
+par(mfrow = c(7, 6))
+
+for (k in 1:47) #all hex areas
+{
+  post.model.i <- do.call(rbind, out_womble_model)[,paste0('beta1[',k,']')]  %>% round() #selecting beta4[k]
+  
+  dens.i.beta1 <- density(post.model.i, bw = 5)
+  
+  med.beta1 <- median(post.model.i)
+  
+  # Plot
+  plot(NULL, xlim=c(-200, 200), ylim=c(0,0.03), xlab='Cal BP', ylab='Posterior Probability')
+  polygon(c(dens.i.beta1$x, rev(dens.i.beta1$x)), c(rep(0,length(dens.i.beta1$x)), rev(dens.i.beta1$y)), border=NA, col=rgb(0,0.4,0,0.5))
+  abline(v=med.beta1,lty=2) 
+  axis(3,at=0,labels=TeX('$beta1'))
+  legend('topright', legend=c('Womble ICAR'),
+         fill= c('darkgreen'))
+  title(main = paste("Area", k))
+}
+
+dev.off()
+
+# pdf(file=here('output', 'figures','figure46_EWomble_d44_2covariate_beta2.pdf'), width=14, height=18)
+# # Define the layout for the plots
+# par(mfrow = c(7, 6))
+# 
+# for (k in 1:47) #all hex areas
+# {
+#   post.model.i <- do.call(rbind, out_womble_model)[,paste0('beta2[',k,']')]  %>% round() #selecting beta4[k]
+#   
+#   dens.i.beta2 <- density(post.model.i, bw = 5)
+#   
+#   med.beta2 <- median(post.model.i)
+#   
+#   # Plot
+#   plot(NULL, xlim=c(-200, 200), ylim=c(0,0.03), xlab='Cal BP', ylab='Posterior Probability')
+#   polygon(c(dens.i.beta2$x, rev(dens.i.beta2$x)), c(rep(0,length(dens.i.beta2$x)), rev(dens.i.beta2$y)), border=NA, col=rgb(0,0.4,0,0.5))
+#   abline(v=med.beta2,lty=2) 
+#   axis(3,at=0,labels=TeX('$beta2'))
+#   legend('topright', legend=c('Womble ICAR'),
+#          fill= c('darkgreen'))
+#   title(main = paste("Area", k))
+# }
+# 
+# dev.off()
+
+#----------
+##Display significant boundaries -- FIGURE 49
+load(here('data','trig_d44.RData'))
+
+#With the data from hierarchical wombling model
+post.model.womble_nab  <- out.comb.womble.model[,paste0('nabla[',1:111,']')]  %>% round()
+
+#Extract differences in arrival times for wombling model
+med.model.womble_nab  <- apply(post.model.womble_nab, 2, median)
+
+#difference_slices <- seq(600, 0, -200)
+
+#Extract proportion of MCMC sample differences which are significant over a specified time difference
+prop_model_womble_nab  <- data.frame(x = 1:111,
+                                     y = sapply(as.data.frame(post.model.womble_nab), 
+                                                prop_gthan_threshold, 
+                                                threshold = 400))
+
+#Add info to edges dataframe
+edge_info.i <- edge_info %>%
+  mutate(mean_gradient = med.model.womble_nab, #50% quantile
+         prob_BLV = prop_model_womble_nab$y, #% of distribution > specified threshold
+         boundary = mapply(function(a, b) {intersection <- st_intersection(hex_area_win$geometry[[a]], hex_area_win$geometry[[b]])
+         if (st_is_empty(intersection) || st_is(intersection, "MULTILINESTRING")) return(st_linestring()) else return(intersection)}, 
+         edge_info$region1_id, 
+         edge_info$region2_id)) #shared boundary between two subareas 
+
+#Create nodes
+nodes <- st_coordinates(hex_area_win$area_center)
+
+#Create boundary segments
+boundaries <- st_sf(prob_BLV = edge_info.i$prob_BLV,
+                    geometry = st_sfc(edge_info.i$boundary)) #lapply(edge_info.i$boundary[[a]], st_coordinates(a))
+st_crs(boundaries) <- 4326  # Set CRS to EPSG:4326 (WGS 84)
+
+#Plot
+pdf(file=here('output','figures','figure49_EWomble_d44_2covariate.pdf'))
+ggplot(data = median_hex_dates_mod.i) +
+  geom_sf(data = st_buffer(st_as_sf(sampling_win, crs = 4326), 40000), fill = "grey80", aes(color = "grey40"), color=NA) + #sampling window with coastal buffer
+  geom_sf(aes(alpha=0.01), color = "grey60") + #hex grid 
   geom_sf(data = boundaries, lwd=3, aes(alpha=prob_BLV), color = "red") +
   geom_sf(data = hex_area_win$area_center, size=2, alpha=1, color = "grey40") + #hex-centers
   scale_alpha_continuous(range = c(0, 1)) +  # Use for continuous alpha values

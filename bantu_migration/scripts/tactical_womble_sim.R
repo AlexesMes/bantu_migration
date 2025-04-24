@@ -41,8 +41,8 @@ sf::sf_use_s2(TRUE) #turn on spherical co-ordinates
 
 #-------------------------------------------------------------------------------
 # Target Parameters ----
-n_sites  <- 100 #100 can reduce to 100 sites, 500 dates if we want to see the strength of the ICAR in areas without sites. Otherwise 200 sites, 800 dates (reflects density of real data)
-n_dates  <- 500 #500
+n_sites  <- 200 #100 can reduce to 100 sites, 500 dates if we want to see the strength of the ICAR in areas without sites. Otherwise 200 sites, 800 dates (reflects density of real data)
+n_dates  <- 800 #500
 origin_point <- st_sfc(st_point(c(11.4, 5.483))) #dispersal origin point -- approximately at Katuruka, st_point(c(-1.45, 31.77)) (east Africa) or Ngoume (sub-Saharan Africa)
 
 #-------------------------------------------------------------------------------
@@ -115,17 +115,19 @@ hex_area_win <- hex_area_win %>%
   mutate(dist_from_origin = as.vector(set_units(st_distance(x=area_center, y=origin_area_center), 'km'))) 
 
 #-------------------------------------------------------------------------------
-##Create binary environmental variable --
+##Create environmental variables --
 #For example: A forest in central Africa
 
 hex_area_win <- hex_area_win %>% 
-  mutate(forest_present = case_when(area_ID %in% c(16,24,19) ~ -400, TRUE ~ 0)) #assume the forest provides a 400 year delay to expansion
+  mutate(forest_present = case_when(area_ID %in% c(16, 24, 19) ~ 1, TRUE ~ 0), #forest_present = runif(1:n_areas, 0, 1), #assume the forest provides a 400 year delay to expansion
+         water_present = case_when(area_ID %in% c(16, 37, 25, 27, 24) ~ 1, TRUE ~ 0)) #water_present = runif(1:n_areas, 0, 1)) #presence of water aids arrival time -- makes hex more appealing
 
 ##Visulaise the presence/absence of forests
-x1 <- ggplot(data = hex_area_win) +
+y1 <- ggplot(data = hex_area_win) +
   geom_sf(data = st_buffer(st_as_sf(sampling_win_outline, crs = 4326), 40000), aes(color = "grey50")) + #sampling window with coastal buffer
+  #geom_sf(aes(fill = "grey50")) + #uncomment this line (and comment out the two below) if no covariate is present
   geom_sf(aes(fill = factor(forest_present))) +  #color hex grid by binary variable
-  scale_fill_manual(values = c("0" = "grey90", "1" = "green")) + # Define color
+  scale_fill_manual(values = c("0" = "grey90", "1" = "green")) + # Define color #
   geom_sf(data = as(sites, 'sf'), size=2, alpha=0.5) + #sites
   geom_sf_label(aes(label = area_ID)) + #hex grid labels
   theme(panel.background = element_rect(fill = "lightblue",
@@ -143,7 +145,7 @@ sim_model <- nimbleCode({
   # Simulate spatially correlated data for all k in 1:n_areas
   for (k in 1:n_areas){
     a[k] ~ dnorm(nu[k], tau.err);
-    nu[k] <- x1[k]*beta1[k] + phi[k];
+    nu[k] <- phi[k] + x1[k]*beta1 + x2[k]*beta2;
   }
   phi[1:n_areas] ~ dcar_proper(mu = mu[1:n_areas], adj=adj[1:L], num=num[1:n_areas], tau=tau, gamma=gamma) # ICAR prior to capture spatial random effects
   d[1:n_areas] ~ dcar_proper(mu = mu2[1:n_areas], adj=adj[1:L], num=num[1:n_areas], tau=tau, gamma=gamma)
@@ -164,12 +166,12 @@ sim_model <- nimbleCode({
   }
 })
 
-##WOA Wave of Advance Simulate --
+# #WOA Wave of Advance Simulate --
 # sim_model <- nimbleCode({
 #   # Simulate spatially correlated data for all k in 1:n_areas
 #   for (k in 1:n_areas){
 #     a[k] ~ dnorm(nu[k], sd=sigma);
-#     nu[k] <- beta0 - dist[k]/s + x1[k]*beta1[k];
+#     nu[k] <- beta0 - dist[k]/s + x1[k]*beta1 + x2[k]*beta2;
 #   }
 #   d[1:n_areas] ~ dcar_proper(mu = mu3[1:n_areas], adj=adj[1:L], num=num[1:n_areas], tau=tau, gamma=gamma)
 #   b[1:n_areas] <- a[1:n_areas] - abs(d[1:n_areas]*0.5) #duration must be positive
@@ -197,13 +199,15 @@ sim_constants$n_areas  <- constants_sw$n_areas
 sim_constants$id_sites  <- dates$site_id
 sim_constants$id_areas <- sites$area_id
 sim_constants$x1 <- hex_area_win$forest_present
-sim_constants$beta1 <- rep(1, n_areas) #binary: turn on the effect of the forest covariate
+sim_constants$beta1 <- -400 #magnitude of the effect of the forest covariate
+sim_constants$x2 <- hex_area_win$water_present
+sim_constants$beta2 <- +250 #magnitude of the effect of the water covariate
 sim_constants$mu <- rep(2000, n_areas) #runif(1:sim_constants$n_areas, min = 600, max = 3500) #rep(0, n_areas)
 sim_constants$mu2 <- rep(500, n_areas) #runif(1:sim_constants$n_areas, min = 50, max = 600)
 sim_constants$tau <- 0.000005
 sim_constants$tau.err <- 0.5
 sim_constants$gamma <- 0.99
-##WOA constants
+# #WOA constants
 # sim_constants$dist <- hex_area_win$dist_from_origin
 # sim_constants$s  <- 2.5 #Speed of the wave of advance (in km a year)
 # sim_constants$beta0 <- 2600 #off-set -- arrival time in the origin hex
@@ -263,7 +267,7 @@ true_hex_dates <- hex_area_win %>%
   mutate(true_a = simModel$a)
 
 #Plot
-x2 <- ggplot(data = true_hex_dates) +
+y2 <- ggplot(data = true_hex_dates) +
   geom_sf(data = st_buffer(st_as_sf(sampling_win, crs = 4326), 40000), aes(color = "grey50")) + #sampling window with coastal buffer
   geom_sf(aes(fill = true_a)) + 
   scale_fill_viridis_c(option="F", direction=-1) +
@@ -278,8 +282,8 @@ x2 <- ggplot(data = true_hex_dates) +
         legend.position = "none")
 
 #Output
-pdf(file=here('output','figures','figure40_covariate.pdf'), width=15, height=8)
-grid.arrange(x1, x2, ncol=2, padding=0)
+pdf(file=here('output','figures','figure40_2covariate_overlap.pdf'), width=15, height=8)
+grid.arrange(y1, y2, ncol=2, padding=0)
 dev.off()
 
 #-----------------------------------------------
@@ -306,6 +310,18 @@ siteInfo <- data.frame(site_id = earliest_dates$site_id,
 
 #Assign hex area id to each site ----
 siteInfo$area_id <- as.integer(st_within(sites_sf$geometry, hex_area_win$geometry))
+
+#----
+##Add noise to environmental variables after simulation has occurred to make covariate parameter values (for nonbinary simulations) more difficult to infer #NB: can be commented out
+# hex_area_win$forest_present <- hex_area_win$forest_present + rnorm(nrow(hex_area_win), mean = 0, sd = 0.1) #10% noise
+# hex_area_win$water_present <- hex_area_win$water_present + rnorm(nrow(hex_area_win), mean = 0, sd = 0.1)
+# 
+# # Clamp the values between 0 and 1
+# hex_area_win$forest_present <- pmin(pmax(hex_area_win$forest_present, 0), 1)
+# hex_area_win$water_present <- pmin(pmax(hex_area_win$water_present, 0), 1)
+
+
+#----
 
 #Save constants ----
 constants <- sim_constants[names(sim_constants) %!in% c("a", "b")]

@@ -4,6 +4,7 @@ library(coda)
 library(nimbleCarbon)
 library(rcarbon)
 library(dplyr)
+library(msm)
 
 rm(list = ls())
 `%!in%` <- Negate(`%in%`)
@@ -17,16 +18,8 @@ set.seed(123)
 load(here('data', 'tactical_sim_womble.RData'))
 load(here('data','trig_cont.RData')) #nodes and edges between hex area centroids
 
-
 #Combine constants
 constants <- c(constants, constants_trig)
-
-#-------------------------------------------------------------------------------
-## Environmental Data ----
-hex_area_win <- hex_area_win %>% 
-  mutate(forest_present = case_when(area_ID %in% c(16,24,19) ~ 1, TRUE ~ 0)) #assume the forest provides a 250 year delay to expansion
-
-
 #-------------------------------------------------------------------------------
 ## Initialise Parameters ----
 
@@ -66,13 +59,14 @@ for (t in 1:constants$n_trans){
   
   init_nabla[t] <- (init_a$earliest[init_a$area_id==m] - init_a$earliest[init_a$area_id==n])
 }
+init_nabla_phi <- init_nabla*0.5
 
 #Add buffer
 init_a  <- init_a[ ,2] + buffer
 init_b  <- init_b[ ,2] - buffer
 
 # Initialise spatial residues
-init_phi <- init_a #init_a*0.5 (if using an intercept, beta0, in model)
+init_phi <- init_a*1.5 #(use init_a if no intercept (beta0) is included and zero_mean=0)
 
 #-------------------------------------------------------------------------------
 #Spatial data ----
@@ -89,7 +83,18 @@ constants$adj <- nbInfo$adj
 constants$weights <- nbInfo$weights
 constants$num <- nbInfo$num
 constants$L <- length(nbInfo$adj)
-constants <- constants[names(constants) %!in% c("dist_mat", "dist_org", "center_coords")] #remove constants which aren't used
+constants <- constants[names(constants) %!in% c("dist_mat", 
+                                                "dist_org", 
+                                                "center_coords",
+                                                "beta0",
+                                                "beta1",
+                                                "beta2",
+                                                "x1",
+                                                "x2",
+                                                "mu",
+                                                "mu2",
+                                                "tau.err",
+                                                "tau")] #remove constants which aren't used
 
 # #-------------------------------------------------------------------------------
 ## Model W: ICAR and wombling integrating sample interdependence, i.e. the addition of a hierarchical model ----
@@ -109,26 +114,29 @@ modelW <- nimbleCode({
   
   #For Each Region
   for (k in 1:n_areas){
-    b[k] ~ dunif(50,5000);
+    b[k] ~ dunif(50,4000);
     constraint_uniform[k] ~ dconstraint(a[k]>b[k]) #In each area, start date of occupation, a_k, must be greater than the end date of occupation, b_k (note: BP dates in the positive direction)
     
     #a[k] ~ dnorm(phi[k], tau.err)
-    a[k] <- (x[k]*beta4[k]) + phi[k] #beta0 + (x[k]*beta4[k]) + phi[k]
-    beta4[k] ~ dnorm(0, sd=200); #dunif(-1, 1); #determining strength of forest covariate in each area
+    a[k] <- phi[k] + x1[k]*beta1 + x2[k]*beta2; 
   }
   
   # ICAR Model prior to capture spatial random effects
-  phi[1:n_areas] ~ dcar_normal(adj[1:L], weights[1:L], num[1:n_areas], tau1, zero_mean =0)
+  phi[1:n_areas] ~ dcar_normal(adj[1:L], weights[1:L], num[1:n_areas], tau1, zero_mean=0)
   
   #For Each Boundary
   for (t in 1:n_trans){
     #nabla defines the difference in arrival time across a boundary
     nabla[t] <- abs(a[edge_id1[t]] - a[edge_id2[t]]) #edge t: select first area, m, and second area, n
+    #nabla_phi defines the difference in spatial residues across a boundary
+    nabla_phi[t] <- abs(phi[edge_id1[t]] - phi[edge_id2[t]])
   }
   
   #Priors
-  #beta0 ~ dnorm(2500, sd=500); #Intercept
-  tau1 ~ dgamma(1, 0.1);  #weak prior for ICAR model -- spatial autocorrelation precision parameter
+  #beta0 ~ dunif(1000,3000); #dnorm(2000, sd=300); #Intercept
+  beta1 ~ dnorm(0, sd=300); #dunif(-1, 1); #determining strength of forest covariate in each area
+  beta2 ~ dnorm(0, sd=300);
+  tau1 ~ dgamma(0.8, 0.1);  #weak prior for ICAR model -- spatial autocorrelation precision parameter
   
   #tau.err <- 1/sigma^2;
   #sigma ~ dunif(0,100);
@@ -139,10 +147,33 @@ modelW <- nimbleCode({
   
 })
 
+
+# # Generate a sequence of values for beta0
+# beta0 <- seq(0, 4000, length.out = 4000)
+# # Compute the density
+# density0 <- dnorm(beta0, mean = 2000, sd = 300)
+# # Plot the density
+# plot(beta0, density0, type = "l",
+#      main = "Density of beta0 ~ N(2000, 400²)", xlab = "beta0", ylab = "Density", col = "blue", lwd = 2)
+# grid()
+
+# # Generate a sequence of values for beta0
+# beta1 <- seq(-2000, 2000, length.out = 4000)
+# # Compute the density
+# density1 <- dnorm(beta1, mean = 0, sd =  300) #dtruncnorm(beta1, a=-2000, b=0, mean = 0, sd = 300)
+# # Plot the density
+# plot(beta1, density1, type = "l",
+#      main = "Density of beta1 ~ N(0, 200²)", xlab = "beta1", ylab = "Density", col = "blue", lwd = 2)
+# grid()
+
+
+
+
 #Define initial values ----
 dW <- list(theta=sim_df$cra,
-            constraint_uniform = rep(1, constants$n_areas),
-            x = hex_area_win$forest_present)
+           constraint_uniform = rep(1, constants$n_areas),
+           x1 = hex_area_win$forest_present,
+           x2 = hex_area_win$water_present)
 
 
 initsW <- list(a=init_a,
@@ -150,10 +181,11 @@ initsW <- list(a=init_a,
                 alpha=alpha_init,
                 delta=delta_init,
                 phi=init_phi,
-                tau1=rgamma(1, shape = 1, rate = 0.1),
+                tau1=rgamma(1, shape = 0.8, rate = 0.1),
                 #sigma= runif(1,0,100),
-                #beta0=rnorm(1, 2500, 500),
-                beta4=rnorm(1:constants$n_areas, 0, sd=200), #runif(1:constants$n_areas, min = -1, max = 1)
+                #beta0=runif(1, 1000,3000), #rnorm(1, 2000, 300),
+                beta1=rnorm(1, 0, sd=300), #rnorm(1:constants$n_areas, 0, sd=200), #runif(1:constants$n_areas, min = -1, max = 1)
+                beta2=rnorm(1, 0, sd=300),
                 gamma1=10,
                 gamma2=200)
 
@@ -162,11 +194,11 @@ initsW <- list(a=init_a,
 mcmc.samplesW <- nimbleMCMC(code = modelW,
                              constants = constants,
                              data = dW,
-                             niter = 200000,
+                             niter = 2000000,
                              nchains = 4,
                              thin= 100,
-                             nburnin = 100000,
-                             monitors = c('a', 'b', 'theta', 'nabla', 'delta', 'alpha', 'phi', 'beta4'), #beta0
+                             nburnin = 1000000,
+                             monitors = c('a', 'b', 'theta', 'nabla', 'nabla_phi', 'delta', 'alpha', 'phi', 'beta1', 'beta2'), #'beta0'
                              inits = initsW,
                              samplesAsCodaMCMC=TRUE)
 
@@ -177,4 +209,4 @@ essW  <- effectiveSize(mcmc.samplesW)
 #-------------------------------------------------------------------------------
 # Save output ----
 save(mcmc.samplesW, rhatW, essW,
-     file=here('output','Womblemodel_tactsim_covariate.RData'))
+     file=here('output','Womblemodel_tactsim_2covariate_overlap.RData'))
