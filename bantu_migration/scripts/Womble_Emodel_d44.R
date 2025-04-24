@@ -15,8 +15,10 @@ rm(list = ls())
 load(here('data', 'eastc14_d44.RData')) #East and Southern Africa
 
 load(here('data','trig_d44.RData')) #nodes and edges between hex area centroids
-load(here('data','crop_suitability.RData')) #environmental data
 
+#Environmental data
+load(here('data','crop_suitability.RData'))
+load(here('data','animal_hus_suitability.RData'))
 
 #Combine constants
 constants <- c(constants, constants_trig)
@@ -27,7 +29,8 @@ dat <- list(cra = dateInfo$cra, #theta=sim_df$cra
             cra_error = dateInfo$cra_error,
             constraint_uniform = rep(1, constants$n_areas),
             cra_constraint = rep(1, constants$n_dates), # Set-up constraint for ignoring inference outside calibration range
-            x = agg_crop_suitability$max_crop_suit) #crop-suitability data
+            x1 = agg_crop_suitability$max_crop_suit, #crop-suitability data
+            x2 = amimal_hus_df$mean_animal_hus_suit) #animal-husbandry-suitability data
 
 #Calibration curve
 constants$cc <- as.numeric(as.factor(dateInfo$calCurve)) #intcal20==1 and shcal20==2
@@ -82,7 +85,7 @@ init_a  <- init_a[ ,2] + buffer
 init_b  <- init_b[ ,2] - buffer
 
 # Initialise spatial residues
-init_phi <- init_a #init_a*0.5 (if using an intercept, beta0, in model)
+init_phi <- init_a*1.5 #(use init_a if no intercept (beta0) is included and zero_mean=0)
 
 #-------------------------------------------------------------------------------
 #Spatial data
@@ -137,8 +140,7 @@ modelW <- function(seed, d, theta_init, init_nabla, alpha_init, delta_init, init
       constraint_uniform[k] ~ dconstraint(a[k]>b[k]) #In each area, start date of occupation, a_k, must be greater than the end date of occupation, b_k (note: BP dates in the positive direction)
       
       #a[k] ~ dnorm(phi[k], tau.err)
-      a[k] <- (x[k]*beta1[k]) + phi[k] #beta0 + (x[k]*beta1[k]) + phi[k]
-      beta1[k] ~ dnorm(0, sd=200); #dunif(-1, 1); #determining strength of forest covariate in each area
+      a[k] <- x1[k]*beta1 + x2[k]*beta2 + phi[k] #beta0 + x[k]*beta1 + phi[k]
     }
     
     # ICAR Model prior to capture spatial random effects
@@ -151,7 +153,9 @@ modelW <- function(seed, d, theta_init, init_nabla, alpha_init, delta_init, init
     }
 
     #Priors
-    #beta0 ~ dnorm(2500, sd=500); #Intercept
+    #beta0 ~ dunif(1000,3000); #dnorm(2000, sd=300); #Intercept
+    beta1 ~ dnorm(0, sd=300); #determining strength of the covariate
+    beta2 ~ dnorm(0, sd=300); 
     tau1 ~ dgamma(1, 0.1);  #weak prior for ICAR model -- spatial autocorrelation precision parameter
     
     #tau.err <- 1/sigma^2;
@@ -171,7 +175,9 @@ modelW <- function(seed, d, theta_init, init_nabla, alpha_init, delta_init, init
                 delta=delta_init, 
                 nabla=init_nabla,
                 tau=rgamma(1, shape = 1, rate = 0.1),
-                beta1=rnorm(1:constants$n_areas, 0, sd=200), #runif(1:constants$n_areas, min = -1, max = 1)
+                #beta0=runif(1, 1000,3000), #rnorm(1, 2000, 300),
+                beta1=rnorm(1, 0, sd=300), #rnorm(1:constants$n_areas, 0, sd=200), #runif(1:constants$n_areas, min = -1, max = 1)
+                beta2=rnorm(1, 0, sd=300),
                 gamma1=10,
                 gamma2=200)
   
@@ -179,7 +185,7 @@ modelW <- function(seed, d, theta_init, init_nabla, alpha_init, delta_init, init
   model <- nimbleModel(model, constants=constants, data=d, inits=inits)
   cModel <- compileNimble(model)
   conf <- configureMCMC(model, control=list(adaptInterval=20000, adaptFactorExponent=0.1))
-  conf$addMonitors(c('a','b','nabla','theta','delta','alpha','beta1'))
+  conf$addMonitors(c('a','b','nabla','theta','delta','alpha','beta1', 'beta2'))
   MCMC <- buildMCMC(conf)
   cMCMC <- compileNimble(MCMC)
   results <- runMCMC(cMCMC, niter = niter, thin = thin, nburnin = nburnin, samplesAsCodaMCMC = T, setSeed = seed) 
@@ -192,8 +198,8 @@ modelW <- function(seed, d, theta_init, init_nabla, alpha_init, delta_init, init
 ncores  <-  4
 cl <- makeCluster(ncores)
 seeds <- c(12, 34, 56, 78)
-niter  <- 1000000
-nburnin  <- 500000
+niter  <- 2000000
+nburnin  <- 1000000
 thin  <- 100
 
 #Hierarchical Womble Model 
@@ -229,4 +235,4 @@ save(out_womble_model,
      rhat_womble_model, 
      ess_womble_model, 
      agg_womble_model, 
-     file=here('output','Womble_Emodel_d44.RData'))
+     file=here('output','Womble_Emodel_d44_2covariate.RData'))
