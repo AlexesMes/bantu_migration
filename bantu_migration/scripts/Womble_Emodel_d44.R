@@ -17,8 +17,9 @@ load(here('data', 'eastc14_d44.RData')) #East and Southern Africa
 load(here('data','trig_d44.RData')) #nodes and edges between hex area centroids
 
 #Environmental data
-load(here('data','crop_suitability.RData'))
+load(here('data','crop_suitability2.RData')) #load(here('data','crop_suitability2.RData'))
 load(here('data','animal_hus_suitability.RData'))
+load(here('data','elevation.RData'))
 
 #Combine constants
 constants <- c(constants, constants_trig)
@@ -29,9 +30,10 @@ dat <- list(cra = dateInfo$cra, #theta=sim_df$cra
             cra_error = dateInfo$cra_error,
             constraint_uniform = rep(1, constants$n_areas),
             cra_constraint = rep(1, constants$n_dates), # Set-up constraint for ignoring inference outside calibration range
-            x1 = agg_crop_suitability$max_crop_suit, #crop-suitability data
-            x2 = amimal_hus_df$mean_animal_hus_suit) #animal-husbandry-suitability data
-
+            x1 = agr_suit_df$mean_agr_suit, #agg_crop_suitability$max_crop_suit, #crop-suitability data
+            x2 = amimal_hus_df$mean_animal_hus_suit, #animal-husbandry-suitability data
+            x3 = mean_hex_elv$norm_mean_elv) #elevation
+            
 #Calibration curve
 constants$cc <- as.numeric(as.factor(dateInfo$calCurve)) #intcal20==1 and shcal20==2
 
@@ -71,14 +73,15 @@ init_empty_area <- function(init_df) {
 init_a <- init_a %>% init_empty_area() %>%  arrange(area_id)
 init_b <- init_b %>% init_empty_area() %>%  arrange(area_id)
 
-#Gradient parameter initialisation
-init_nabla <- 0 
-for (t in 1:constants$n_trans){ 
-  m <- constants$edge_id1[t] #transition/edge t, select first area
-  n <- constants$edge_id2[t] #transition/edge t, select second area
-  
-  init_nabla[t] <- (init_a$earliest[init_a$area_id==m] - init_a$earliest[init_a$area_id==n])/constants$edge_dist[t]
-}
+# #Gradient parameter initialisation
+# init_nabla <- 0 
+# for (t in 1:constants$n_trans){ 
+#   m <- constants$edge_id1[t] #transition/edge t, select first area
+#   n <- constants$edge_id2[t] #transition/edge t, select second area
+#   
+#   init_nabla[t] <- (init_a$earliest[init_a$area_id==m] - init_a$earliest[init_a$area_id==n])/constants$edge_dist[t]
+# }
+# init_nabla_phi <- init_nabla*0.5
 
 #Add buffer
 init_a  <- init_a[ ,2] + buffer
@@ -110,7 +113,7 @@ constants <- constants[names(constants) %!in% c("dist_mat",
 #-------------------------------------------------------------------------------
 # Model Womble: Hierarchical ICAR with boundary identified ----
 
-modelW <- function(seed, d, theta_init, init_nabla, alpha_init, delta_init, init_a, init_b, init_phi, constants, nburnin, thin, niter)
+modelW <- function(seed, d, theta_init, alpha_init, delta_init, init_a, init_b, init_phi, constants, nburnin, thin, niter)
 {
   #Load Library
   library(nimbleCarbon)
@@ -140,7 +143,7 @@ modelW <- function(seed, d, theta_init, init_nabla, alpha_init, delta_init, init
       constraint_uniform[k] ~ dconstraint(a[k]>b[k]) #In each area, start date of occupation, a_k, must be greater than the end date of occupation, b_k (note: BP dates in the positive direction)
       
       #a[k] ~ dnorm(phi[k], tau.err)
-      a[k] <- x1[k]*beta1 + x2[k]*beta2 + phi[k] #beta0 + x[k]*beta1 + phi[k]
+      a[k] <- x3[k]*beta3 + phi[k]; #+ beta0 #x1[k]*beta1 + x2[k]*beta2 + 
     }
     
     # ICAR Model prior to capture spatial random effects
@@ -150,12 +153,15 @@ modelW <- function(seed, d, theta_init, init_nabla, alpha_init, delta_init, init
     for (t in 1:n_trans){
       #nabla defines the difference in arrival time across a boundary
       nabla[t] <- abs(a[edge_id1[t]] - a[edge_id2[t]]) #edge t: select first area, m, and second area, n
+      #nabla_phi defines the difference in spatial residues across a boundary
+      nabla_phi[t] <- abs(phi[edge_id1[t]] - phi[edge_id2[t]])
     }
 
     #Priors
     #beta0 ~ dunif(1000,3000); #dnorm(2000, sd=300); #Intercept
-    beta1 ~ dnorm(0, sd=300); #determining strength of the covariate
-    beta2 ~ dnorm(0, sd=300); 
+    #beta1 ~ dnorm(0, sd=300); #determining strength of the covariate
+    #beta2 ~ dnorm(0, sd=300); 
+    beta3 ~ dnorm(0, sd=300);
     tau1 ~ dgamma(1, 0.1);  #weak prior for ICAR model -- spatial autocorrelation precision parameter
     
     #tau.err <- 1/sigma^2;
@@ -173,11 +179,11 @@ modelW <- function(seed, d, theta_init, init_nabla, alpha_init, delta_init, init
                 phi=init_phi,
                 alpha=alpha_init, 
                 delta=delta_init, 
-                nabla=init_nabla,
                 tau=rgamma(1, shape = 1, rate = 0.1),
                 #beta0=runif(1, 1000,3000), #rnorm(1, 2000, 300),
-                beta1=rnorm(1, 0, sd=300), #rnorm(1:constants$n_areas, 0, sd=200), #runif(1:constants$n_areas, min = -1, max = 1)
-                beta2=rnorm(1, 0, sd=300),
+                #beta1=rnorm(1, 0, sd=300), #rnorm(1:constants$n_areas, 0, sd=200), #runif(1:constants$n_areas, min = -1, max = 1)
+                #beta2=rnorm(1, 0, sd=300),
+                beta3=rnorm(1, 0, sd=300),
                 gamma1=10,
                 gamma2=200)
   
@@ -185,7 +191,7 @@ modelW <- function(seed, d, theta_init, init_nabla, alpha_init, delta_init, init
   model <- nimbleModel(model, constants=constants, data=d, inits=inits)
   cModel <- compileNimble(model)
   conf <- configureMCMC(model, control=list(adaptInterval=20000, adaptFactorExponent=0.1))
-  conf$addMonitors(c('a','b','nabla','theta','delta','alpha','beta1', 'beta2'))
+  conf$addMonitors(c('a','b','nabla', 'nabla_phi','theta','delta','alpha','beta3')) #'beta1', 'beta2',
   MCMC <- buildMCMC(conf)
   cMCMC <- compileNimble(MCMC)
   results <- runMCMC(cMCMC, niter = niter, thin = thin, nburnin = nburnin, samplesAsCodaMCMC = T, setSeed = seed) 
@@ -211,7 +217,6 @@ out_womble_model <-  parLapply(cl = cl,
                               theta_init = theta_init, 
                               init_a = init_a, 
                               init_b = init_b, 
-                              init_nabla = init_nabla,
                               alpha_init = alpha_init, 
                               delta_init = delta_init,
                               init_phi = init_phi,
@@ -235,4 +240,4 @@ save(out_womble_model,
      rhat_womble_model, 
      ess_womble_model, 
      agg_womble_model, 
-     file=here('output','Womble_Emodel_d44_2covariate.RData'))
+     file=here('output','Womble_Emodel_d44_elev_covariate.RData'))

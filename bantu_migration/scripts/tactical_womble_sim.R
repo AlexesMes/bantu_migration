@@ -120,7 +120,7 @@ hex_area_win <- hex_area_win %>%
 
 hex_area_win <- hex_area_win %>% 
   mutate(forest_present = case_when(area_ID %in% c(16, 24, 19) ~ 1, TRUE ~ 0), #forest_present = runif(1:n_areas, 0, 1), #assume the forest provides a 400 year delay to expansion
-         water_present = case_when(area_ID %in% c(16, 37, 25, 27, 24) ~ 1, TRUE ~ 0)) #water_present = runif(1:n_areas, 0, 1)) #presence of water aids arrival time -- makes hex more appealing
+         water_present = case_when(area_ID %in% c(12, 37, 25, 27, 24) ~ 1, TRUE ~ 0)) #water_present = runif(1:n_areas, 0, 1)) #presence of water aids arrival time -- makes hex more appealing
 
 ##Visulaise the presence/absence of forests
 y1 <- ggplot(data = hex_area_win) +
@@ -199,9 +199,9 @@ sim_constants$n_areas  <- constants_sw$n_areas
 sim_constants$id_sites  <- dates$site_id
 sim_constants$id_areas <- sites$area_id
 sim_constants$x1 <- hex_area_win$forest_present
-sim_constants$beta1 <- -400 #magnitude of the effect of the forest covariate
+sim_constants$beta1 <- -550 #magnitude of the effect of the forest covariate
 sim_constants$x2 <- hex_area_win$water_present
-sim_constants$beta2 <- +250 #magnitude of the effect of the water covariate
+sim_constants$beta2 <- +300 #magnitude of the effect of the water covariate
 sim_constants$mu <- rep(2000, n_areas) #runif(1:sim_constants$n_areas, min = 600, max = 3500) #rep(0, n_areas)
 sim_constants$mu2 <- rep(500, n_areas) #runif(1:sim_constants$n_areas, min = 50, max = 600)
 sim_constants$tau <- 0.000005

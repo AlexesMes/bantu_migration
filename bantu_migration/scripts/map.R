@@ -16,7 +16,7 @@ library(RColorBrewer)
 library(cowplot)
 
 # Load and prepare data ----
-load(here('data','c14.RData')) #eastc14.RData
+load(here('data','eastc14_d44.RData')) #eastc14.RData
 
 `%!in%` <- Negate(`%in%`)
 #-------------------------------------------------------------------------------
@@ -24,9 +24,12 @@ load(here('data','c14.RData')) #eastc14.RData
 
 #Sampling window without internal boundaries
 countries <- constants$countries #eastEIAcountries
-cntry_sampling_win <- ne_countries(continent = "Africa", country = countries, returnclass = "sf")
-# cntry_sampling_win <- ne_countries(country = countries, returnclass = "sf") %>%
-#                            filter(name_en %!in% c("Madagascar","Sudan")) #We focus on mainland sub-Saharan Africa (also, there is something wrong with the geometry of Sudan -- remove country since we have no iron age dates there anyway)
+#cntry_sampling_win <- ne_countries(continent = "Africa", country = countries, returnclass = "sf")
+cntry_sampling_win <- ne_countries(country = countries, returnclass = "sf") %>%
+                            filter(name_en %!in% c("Madagascar","Sudan")) #We focus on mainland sub-Saharan Africa (also, there is something wrong with the geometry of Sudan -- remove country since we have no iron age dates there anyway)
+
+EA_cntry_sampling_win <- ne_countries(country = countries, returnclass = "sf") %>%
+  filter(name_en %in% constants$eastEIAcountries) 
 
 #-------------------------------------------------------------------------------
 ## Plot Data  ---- FIGURE figure_map
@@ -71,6 +74,8 @@ basemap <- function(){
   return(plt)
 }
 
+#sites <- sites %>% filter(dataorigin %in% c("aDRAC", "SARD"))
+
 #Ploting sites with basemap ----
 plt.main <- basemap() +
   geom_sf(data = sites,
@@ -78,7 +83,7 @@ plt.main <- basemap() +
           size = 2,
           alpha=0.5) +
   geom_point() +
-  geom_point(aes(x=constants$origin_point[1], y=constants$origin_point[2]), colour="purple", size=3) +
+  #geom_point(aes(x=constants$origin_point[1], y=constants$origin_point[2]), colour="purple", size=3) +
   ggsn::north(data = sites, location="bottomright", anchor = c(x = 43, y = -31)) + 
   ggsn::scalebar(sites,
                  location  = "bottomright",
@@ -109,6 +114,52 @@ cowplot::ggdraw() +
             x = .05, y = .275, width = .15, height = .15)
 dev.off()
 
+#-------------------------------------------------------------------------------
+## Demarcate sample area
+
+sites2 <- sites %>% filter(dataorigin %in% c("Collected", "SARD"))
+#sites2 <- st_within(sites2$geometry, EA_cntry_sampling_win)
+
+
+#Ploting sites with basemap ----
+plt.main2 <- basemap() +
+  geom_sf(data = sites2,
+          aes(colour=dataorigin),
+          size = 2,
+          alpha=0.5) +
+  geom_point() +
+  geom_sf(data = st_buffer(st_as_sf(st_union(EA_cntry_sampling_win), crs = 4326), 10000), color = "orange", alpha=0.4, lwd=2) + #internal country borders
+  #geom_point(aes(x=constants$origin_point[1], y=constants$origin_point[2]), colour="purple", size=3) +
+  ggsn::north(data = sites, location="bottomright", anchor = c(x = 43, y = -31)) + 
+  ggsn::scalebar(sites,
+                 location  = "bottomright",
+                 anchor = c(x = 46, y = -33),
+                 dist = 500, 
+                 dist_unit = "km",
+                 transform = TRUE, 
+                 model = "WGS84",
+                 height = .01, 
+                 st.dist = .025,
+                 border.size = .1, 
+                 st.size = 3) +
+  coord_sf(xlim = c(7, 50),
+           ylim = c(-35, 6.5)) +
+  scale_x_continuous(breaks = seq(8, 50, 2)) +
+  labs(colour="Original dataset") +
+  scale_colour_discrete(labels = c("Collected", "SARD")) + 
+  theme_few() +
+  theme(axis.title = element_blank(),
+        plot.background = element_rect(color = NA,
+                                       fill = NA))
+
+
+pdf(file=here('output','figures','figure_map_EA_boarders.pdf'), width=8.5, height=7)
+cowplot::ggdraw() +
+  draw_plot(plt.main2) +
+  draw_plot(minimap, 
+            x = .05, y = .275, width = .15, height = .15)
+dev.off()
+
 
 #-------------------------------------------------------------------------------
 ## Plot HEX areas and country borders ---- FIGURE figure_map2
@@ -126,9 +177,9 @@ hex_area_plot <- ggplot(data = hex_area_win) +
         legend.position = "none")
 
 cntry_plot <- ggplot(data = hex_area_win) +
-  geom_sf(data = st_buffer(st_as_sf(cntry_sampling_win, crs = 4326), 40000), aes(color = "grey50"), lwd=2) + #internal country borders
-  geom_sf(data = as(sites, 'sf'), size=2, alpha=0.5) + #sites
-  geom_sf_label(data = cntry_sampling_win, aes(label = admin, alpha=0.6), color="darkred", size=4) + #country labels
+  geom_sf(data = st_buffer(st_as_sf(EA_cntry_sampling_win, crs = 4326), 40000), aes(color = "grey50"), lwd=2) + #internal country borders
+  geom_sf(data = as(sites2, 'sf'), size=2, alpha=0.5) + #sites
+  geom_sf_label(data = EA_cntry_sampling_win, aes(label = admin, alpha=0.6), color="darkred", size=4) + #country labels
   theme(panel.background = element_rect(fill = "lightblue",
                                         colour = "lightblue",
                                         size = 0.5,

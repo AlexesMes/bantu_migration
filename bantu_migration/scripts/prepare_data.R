@@ -185,7 +185,7 @@ write.csv(eastEIA_sites_df, here('data','eastEIA_dataset.csv'), row.names = FALS
 ## Determining which calibration curve should be used----
 
 #Remove unnecessary information
-eastEIA_sites_df <- eastEIA_sites_df %>% #bantu_sites_df %>%
+eastEIA_sites_df <- bantu_sites_df %>% #eastEIA_sites_df %>% #
   dplyr::select(-reference, -material, -country)
 
 #Assign calibration curve ----
@@ -384,7 +384,7 @@ constants$C14err  <- cbind(intcal20$C14Age.sigma, shcal20$C14Age.sigma)
 
 #-------------------------------------------------------------------------------
 ## Save everything on a R image file ----
-save(sites, constants, eastEIA_dat, siteInfo, dateInfo, sampling_win, hex_area_win, file=here('data','c14.RData')) #eastc14.RData
+save(sites, constants, eastEIA_dat, siteInfo, dateInfo, sampling_win, hex_area_win, file=here('data','eastc14.RData')) #c14.RData
 
 
 #-------------------------------------------------------------------------------
@@ -411,7 +411,7 @@ for (i in 2:nrow(country_codes)){
   SRTM90m <- merge(SRTM90m, elevation_30s(country_codes$ISO3[i], path=here('input'), mask=TRUE))
 }
 
-#plot(SRTM90m)
+plot(SRTM90m)
 #plot(hex_area_win$geometry, add = T)
 
 #Add area IDs
@@ -546,6 +546,65 @@ agg_crop_suitability <- pearl_millet_df %>%
 save(agg_crop_suitability, file=here('data','crop_suitability.RData'))
 
 
+#----------------- ALTERNATIVE AGRICULTURAL SUITABILITY ------------------------
+
+## Sedentary animal husbandry suitability data
+
+#Read in animal husbandry data ----
+agr_suit_sf <- read_stars("data/environment/Agriculture_suitability_Beck/agr_suit.asc") %>% 
+  st_as_sf() %>% 
+  rename("agr_suit" = "agr_suit.asc")
+
+st_crs(agr_suit_sf)  <- 4326 
+#--------------  
+#Aggregate suitability values for each hexagonal area ----
+
+#Assign hex area id
+agr_suit_sf$area_id <- as.integer(st_within(agr_suit_sf$geometry, hex_area_win$geometry))
+
+#Filter for suitability values within the sample window
+agr_suit_sf <- agr_suit_sf %>% 
+  filter(!is.na(area_id))
+
+#------
+#Aggregate
+agr_suit_df <- agr_suit_sf %>% 
+  group_by(area_id) %>% 
+  summarize(mean_agr_suit = mean(agr_suit)) %>% 
+  as.data.frame() %>% 
+  dplyr::select(area_id, mean_agr_suit) %>% 
+  na.omit()
+
+#--------------  
+#Impute values from neighbors for hex areas that are too small to have suitability values ----
+#NB: This needs to be changed for different sample windows!
+agr_suit_df[nrow(agr_suit_df) + 1,] = c(17, agr_suit_df[agr_suit_df$area_id==12, ]$mean_agr_suit)
+agr_suit_df[nrow(agr_suit_df) + 1,] = c(47, agr_suit_df[agr_suit_df$area_id==44, ]$mean_agr_suit)
+
+agr_suit_df <- agr_suit_df %>% arrange(area_id) 
+
+#Plot
+#Agricultural suitability
+ggplot(data = hex_area_win) +
+  geom_sf(data = st_buffer(st_as_sf(sampling_win, crs = 4326), 40000), color = "grey50") + #sampling window with coastal buffer
+  geom_sf(aes(fill = agr_suit_df$mean_agr_suit)) +
+  scale_fill_gradientn(colours = rev(terrain.colors(7)), name = "Agriculture Suitability") +
+  theme(panel.background = element_rect(fill = "lightblue",
+                                        colour = "lightblue",
+                                        size = 0.5,
+                                        linetype = "solid"))
+# ggplot(data = agr_suit_sf) +
+#   geom_sf(data = st_buffer(st_as_sf(sampling_win, crs = 4326), 40000), color = "grey50") + #sampling window with coastal buffer
+#   geom_sf(aes(fill = agr_suit)) +
+#   scale_fill_gradientn(colours = rev(terrain.colors(7)), name = "Agriculture Suitability") +
+#   theme(panel.background = element_rect(fill = "lightblue",
+#                                         colour = "lightblue",
+#                                         size = 0.5,
+#                                         linetype = "solid"))
+
+
+#Save alternative agriculutural suitability output ----
+save(agr_suit_df, file=here('data','crop_suitability2.RData'))
 
 #-------------------------------------------------------------------------------
 ## Sedentary animal husbandry suitability data
