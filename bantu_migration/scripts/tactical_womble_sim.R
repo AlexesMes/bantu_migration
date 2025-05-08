@@ -119,7 +119,7 @@ hex_area_win <- hex_area_win %>%
 #For example: A forest in central Africa
 
 hex_area_win <- hex_area_win %>% 
-  mutate(forest_present = case_when(area_ID %in% c(16, 24, 19) ~ 1, TRUE ~ 0), #forest_present = runif(1:n_areas, 0, 1), #assume the forest provides a 400 year delay to expansion
+  mutate(forest_present = case_when(area_ID %in% c(7, 15, 23, 32, 39, 44, 6, 10, 18, 27, 35, 14, 22, 31,26) ~ 1, TRUE ~ 0), #forest_present = runif(1:n_areas, 0, 1), #assume the forest provides a 400 year delay to expansion
          water_present = case_when(area_ID %in% c(12, 37, 25, 27, 24) ~ 1, TRUE ~ 0)) #water_present = runif(1:n_areas, 0, 1)) #presence of water aids arrival time -- makes hex more appealing
 
 ##Visulaise the presence/absence of forests
@@ -140,41 +140,16 @@ y1 <- ggplot(data = hex_area_win) +
 #-------------------------------------------------------------------------------
 ##MODEL ---
 
-##ICAR Simulate --
-sim_model <- nimbleCode({
-  # Simulate spatially correlated data for all k in 1:n_areas
-  for (k in 1:n_areas){
-    a[k] ~ dnorm(nu[k], tau.err);
-    nu[k] <- phi[k] + x1[k]*beta1 + x2[k]*beta2;
-  }
-  phi[1:n_areas] ~ dcar_proper(mu = mu[1:n_areas], adj=adj[1:L], num=num[1:n_areas], tau=tau, gamma=gamma) # ICAR prior to capture spatial random effects
-  d[1:n_areas] ~ dcar_proper(mu = mu2[1:n_areas], adj=adj[1:L], num=num[1:n_areas], tau=tau, gamma=gamma)
-  b[1:n_areas] <- a[1:n_areas] - abs(d[1:n_areas]) #duration must be positive
-  #tau ~ dgamma(2, 0.5)
-
-  for (j in 1:n_sites)
-  {
-    delta[j] ~ dgamma(5,(5-1)/100); #Site duration parameter.
-    alpha[j] ~ dunif(max=a[id_areas[j]], min=b[id_areas[j]]);
-    beta[j] <- alpha[j] - (delta[j] + 1); #The +1 ensures at a minimum where there are two dates at a site there will be 1 year between them.
-    constraint_duration[j] ~ dconstraint(alpha[j]>(delta[j]+1)); #Site can't have have a duration longer than its time of first arrival
-  }
-
-  for (i in 1:n_dates){
-    theta[i] ~ dunif(min=beta[id_sites[i]], max=alpha[id_sites[i]]);
-    cra_constraint[i] ~ dconstraint(theta[i] > 0);
-  }
-})
-
-# #WOA Wave of Advance Simulate --
+# ##ICAR Simulate --
 # sim_model <- nimbleCode({
 #   # Simulate spatially correlated data for all k in 1:n_areas
 #   for (k in 1:n_areas){
-#     a[k] ~ dnorm(nu[k], sd=sigma);
-#     nu[k] <- beta0 - dist[k]/s + x1[k]*beta1 + x2[k]*beta2;
+#     a[k] ~ dnorm(nu[k], tau.err);
+#     nu[k] <- phi[k] + x1[k]*beta1; #+ x2[k]*beta2;
 #   }
-#   d[1:n_areas] ~ dcar_proper(mu = mu3[1:n_areas], adj=adj[1:L], num=num[1:n_areas], tau=tau, gamma=gamma)
-#   b[1:n_areas] <- a[1:n_areas] - abs(d[1:n_areas]*0.5) #duration must be positive
+#   phi[1:n_areas] ~ dcar_proper(mu = mu[1:n_areas], adj=adj[1:L], num=num[1:n_areas], tau=tau, gamma=gamma) # ICAR prior to capture spatial random effects
+#   d[1:n_areas] ~ dcar_proper(mu = mu2[1:n_areas], adj=adj[1:L], num=num[1:n_areas], tau=tau, gamma=gamma)
+#   b[1:n_areas] <- a[1:n_areas] - abs(d[1:n_areas]) #duration must be positive
 #   #tau ~ dgamma(2, 0.5)
 # 
 #   for (j in 1:n_sites)
@@ -191,6 +166,31 @@ sim_model <- nimbleCode({
 #   }
 # })
 
+#WOA Wave of Advance Simulate --
+sim_model <- nimbleCode({
+  # Simulate spatially correlated data for all k in 1:n_areas
+  for (k in 1:n_areas){
+    a[k] ~ dnorm(nu[k], sd=sigma);
+    nu[k] <- beta0 - dist[k]/s + x1[k]*beta1;# + x2[k]*beta2;
+  }
+  d[1:n_areas] ~ dcar_proper(mu = mu3[1:n_areas], adj=adj[1:L], num=num[1:n_areas], tau=tau, gamma=gamma)
+  b[1:n_areas] <- a[1:n_areas] - abs(d[1:n_areas]*0.5) #duration must be positive
+  #tau ~ dgamma(2, 0.5)
+
+  for (j in 1:n_sites)
+  {
+    delta[j] ~ dgamma(5,(5-1)/100); #Site duration parameter.
+    alpha[j] ~ dunif(max=a[id_areas[j]], min=b[id_areas[j]]);
+    beta[j] <- alpha[j] - (delta[j] + 1); #The +1 ensures at a minimum where there are two dates at a site there will be 1 year between them.
+    constraint_duration[j] ~ dconstraint(alpha[j]>(delta[j]+1)); #Site can't have have a duration longer than its time of first arrival
+  }
+
+  for (i in 1:n_dates){
+    theta[i] ~ dunif(min=beta[id_sites[i]], max=alpha[id_sites[i]]);
+    cra_constraint[i] ~ dconstraint(theta[i] > 0);
+  }
+})
+
 #Define constants ----
 sim_constants <- constants
 sim_constants$n_sites <- n_sites
@@ -199,7 +199,7 @@ sim_constants$n_areas  <- constants_sw$n_areas
 sim_constants$id_sites  <- dates$site_id
 sim_constants$id_areas <- sites$area_id
 sim_constants$x1 <- hex_area_win$forest_present
-sim_constants$beta1 <- -550 #magnitude of the effect of the forest covariate
+sim_constants$beta1 <- -400 #magnitude of the effect of the forest covariate
 sim_constants$x2 <- hex_area_win$water_present
 sim_constants$beta2 <- +300 #magnitude of the effect of the water covariate
 sim_constants$mu <- rep(2000, n_areas) #runif(1:sim_constants$n_areas, min = 600, max = 3500) #rep(0, n_areas)
@@ -207,12 +207,12 @@ sim_constants$mu2 <- rep(500, n_areas) #runif(1:sim_constants$n_areas, min = 50,
 sim_constants$tau <- 0.000005
 sim_constants$tau.err <- 0.5
 sim_constants$gamma <- 0.99
-# #WOA constants
-# sim_constants$dist <- hex_area_win$dist_from_origin
-# sim_constants$s  <- 2.5 #Speed of the wave of advance (in km a year)
-# sim_constants$beta0 <- 2600 #off-set -- arrival time in the origin hex
-# sim_constants$sigma <- 50
-# sim_constants$mu3 <- rep(500, n_areas)
+#WOA constants
+sim_constants$dist <- hex_area_win$dist_from_origin
+sim_constants$s  <- 2.5 #Speed of the wave of advance (in km a year)
+sim_constants$beta0 <- 2600 #off-set -- arrival time in the origin hex
+sim_constants$sigma <- 50
+sim_constants$mu3 <- rep(500, n_areas)
 
 #Define constraints, data, and initial values ----
 dat <- list(constraint_uniform = rep(1, sim_constants$n_areas),
@@ -229,8 +229,8 @@ inits <- list(a = init_a,
 set.seed(1223)
 simModel <- nimbleModel(code = sim_model, constants = sim_constants, data = dat, inits = inits)
 
-nodesToSim <- simModel$getDependencies(c("a", "phi", "d", "b", "delta", "alpha", "beta", "theta"), self = T, downstream = T)
-#nodesToSim <- simModel$getDependencies(c("a", "d", "b", "delta", "alpha", "beta", "theta"), self = T, downstream = T) ##WOA
+#nodesToSim <- simModel$getDependencies(c("a", "phi", "d", "b", "delta", "alpha", "beta", "theta"), self = T, downstream = T)
+nodesToSim <- simModel$getDependencies(c("a", "d", "b", "delta", "alpha", "beta", "theta"), self = T, downstream = T) ##WOA
 
 
 simModel$simulate(nodesToSim)
@@ -282,7 +282,7 @@ y2 <- ggplot(data = true_hex_dates) +
         legend.position = "none")
 
 #Output
-pdf(file=here('output','figures','figure40_2covariate_overlap.pdf'), width=15, height=8)
+pdf(file=here('output','figures','figure40_simpractice.pdf'), width=15, height=8)
 grid.arrange(y1, y2, ncol=2, padding=0)
 dev.off()
 

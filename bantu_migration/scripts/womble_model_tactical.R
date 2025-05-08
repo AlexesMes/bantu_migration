@@ -118,7 +118,8 @@ modelW <- nimbleCode({
     constraint_uniform[k] ~ dconstraint(a[k]>b[k]) #In each area, start date of occupation, a_k, must be greater than the end date of occupation, b_k (note: BP dates in the positive direction)
     
     #a[k] ~ dnorm(phi[k], tau.err)
-    a[k] <- phi[k] + x1[k]*beta1 + x2[k]*beta2; 
+    a[k] <- phi[k] + x1[k]*beta1[k]; #+ x2[k]*beta2; 
+    beta1[k] ~ dnorm(0, sd=300);
   }
   
   # ICAR Model prior to capture spatial random effects
@@ -134,8 +135,8 @@ modelW <- nimbleCode({
   
   #Priors
   #beta0 ~ dunif(1000,3000); #dnorm(2000, sd=300); #Intercept
-  beta1 ~ dnorm(0, sd=300); #dunif(-1, 1); #determining strength of forest covariate in each area
-  beta2 ~ dnorm(0, sd=300);
+  #beta1 ~ dnorm(0, sd=300); #dunif(-1, 1); #determining strength of forest covariate in each area
+  #beta2 ~ dnorm(0, sd=300);
   tau1 ~ dgamma(0.8, 0.1);  #weak prior for ICAR model -- spatial autocorrelation precision parameter
   
   #tau.err <- 1/sigma^2;
@@ -172,8 +173,8 @@ modelW <- nimbleCode({
 #Define initial values ----
 dW <- list(theta=sim_df$cra,
            constraint_uniform = rep(1, constants$n_areas),
-           x1 = hex_area_win$forest_present,
-           x2 = hex_area_win$water_present)
+           x1 = hex_area_win$forest_present)
+           #x2 = hex_area_win$water_present)
 
 
 initsW <- list(a=init_a,
@@ -184,8 +185,8 @@ initsW <- list(a=init_a,
                 tau1=rgamma(1, shape = 0.8, rate = 0.1),
                 #sigma= runif(1,0,100),
                 #beta0=runif(1, 1000,3000), #rnorm(1, 2000, 300),
-                beta1=rnorm(1, 0, sd=300), #rnorm(1:constants$n_areas, 0, sd=200), #runif(1:constants$n_areas, min = -1, max = 1)
-                beta2=rnorm(1, 0, sd=300),
+                beta1=rnorm(1:constants$n_areas, 0, sd=300), #rnorm(1:constants$n_areas, 0, sd=200), #runif(1:constants$n_areas, min = -1, max = 1)
+                #beta2=rnorm(1, 0, sd=300),
                 gamma1=10,
                 gamma2=200)
 
@@ -198,7 +199,7 @@ mcmc.samplesW <- nimbleMCMC(code = modelW,
                              nchains = 4,
                              thin= 100,
                              nburnin = 1000000,
-                             monitors = c('a', 'b', 'theta', 'nabla', 'nabla_phi', 'delta', 'alpha', 'phi', 'beta1', 'beta2'), #'beta0'
+                             monitors = c('a', 'b', 'theta', 'nabla', 'nabla_phi', 'delta', 'alpha', 'phi', 'beta1'), #'beta0'
                              inits = initsW,
                              samplesAsCodaMCMC=TRUE)
 
@@ -209,4 +210,4 @@ essW  <- effectiveSize(mcmc.samplesW)
 #-------------------------------------------------------------------------------
 # Save output ----
 save(mcmc.samplesW, rhatW, essW,
-     file=here('output','Womblemodel_tactsim_2covariate_overlap.RData'))
+     file=here('output','Womblemodel_tactsim_south_forest.RData'))

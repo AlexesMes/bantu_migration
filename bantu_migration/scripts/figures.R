@@ -1733,7 +1733,7 @@ anim_save("figure36_animation.gif",
 ###WOMBLE TACTICAL SIMULATION === #Below (figures 37-44) are examples for a simulation with 2 covariates which overlap (change for each simulation)
 
 ##Load Data ----
-load(here("output", "Womblemodel_tactsim_2covariate_overlap.RData"))
+load(here("output", "Womblemodel_tactsim_south_forest.RData"))
 load(here('data', 'tactical_sim_womble.RData')) 
 
 
@@ -1823,7 +1823,7 @@ modi <- ggplot(data = median_hex_dates_mod.i) +
 
 
 #Output
-pdf(file=here('output','figures','figure38_2covariate_overlap.pdf'), width=15, height=8)
+pdf(file=here('output','figures','figure38_south_forest.pdf'), width=15, height=8)
 grid.arrange(modi, ncol=1, padding=0)
 dev.off()
 
@@ -1834,7 +1834,7 @@ dev.off()
 sim_a <- constants$true_a
 sim_b <- constants$true_b
 
-pdf(file=here('output', 'figures','figure39_2covariate_overlap.pdf'), width=14, height=18)
+pdf(file=here('output', 'figures','figure39_south_forest.pdf'), width=14, height=18)
 # Define the layout for the plots
 par(mfrow = c(7, 6))
 
@@ -1914,7 +1914,7 @@ dev.off()
 #----------
 ##FIGURE 42 -- examination of beta parameter values
 
-pdf(file=here('output', 'figures','figure42_2covariate_overlap.pdf'), width=14, height=18)
+pdf(file=here('output', 'figures','figure42_south_forest.pdf'), width=14, height=18)
 
 par(mfrow = c(2, 2))
 
@@ -1955,6 +1955,33 @@ legend('topright', legend=c('Womble ICAR'),
 #        fill= c('darkgreen'))
 
 dev.off()
+# 
+# #Random effect beta parameters
+# 
+# pdf(file=here('output', 'figures','figure42_south_forest.pdf'), width=14, height=18)
+# par(mfrow = c(7, 6))
+# 
+# for (k in 1:47) #all hex areas
+# {
+#   post.model.i <- do.call(rbind, mcmc.samplesW)[ , k+294] %>% round() #selecting beta[k]
+#   
+#   dens.i.beta1 <- density(post.model.i, bw = 5)
+#   med.beta1 <- median(post.model.i)
+#   
+#   # Plot
+#   plot(NULL, xlim=c(med.beta1-500, med.beta1+500), ylim=c(0,0.01), xlab='Cal BP', ylab='Posterior Probability')
+#   polygon(c(dens.i.beta1$x, rev(dens.i.beta1$x)), c(rep(0,length(dens.i.beta1$x)), rev(dens.i.beta1$y)), border=NA, col=rgb(0,0.4,0,0.5))
+#   abline(v=med.beta1,lty=2)
+#   axis(3,at=med.beta1,labels=TeX('$beta1$'))
+#   legend('topright', legend=c('Womble ICAR'),
+#          fill= c('darkgreen'))
+#   title(main = paste("Area", k))
+# }
+# 
+# dev.off()
+
+
+
 
 #----------
 ##FIGURE 43 -- examination of phi parameter values
