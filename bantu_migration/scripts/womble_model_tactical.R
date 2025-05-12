@@ -21,6 +21,12 @@ load(here('data','trig_cont.RData')) #nodes and edges between hex area centroids
 #Combine constants
 constants <- c(constants, constants_trig)
 #-------------------------------------------------------------------------------
+# ##Simulated data summary
+# #Number of dates in area
+# dates_in_areas_summarise <- as.data.frame(table(sites$area_id))
+# #Number of sites in area
+# sites_in_areas_summarise <- sites %>% group_by(area_id) %>% summarize(n_sites =n_distinct(site_id))
+#-------------------------------------------------------------------------------
 ## Initialise Parameters ----
 
 # Initialise regional parameters ----
@@ -119,11 +125,12 @@ modelW <- nimbleCode({
     
     #a[k] ~ dnorm(phi[k], tau.err)
     a[k] <- phi[k] + x1[k]*beta1[k]; #+ x2[k]*beta2; 
-    beta1[k] ~ dnorm(0, sd=300);
+    #beta1[k] ~ dnorm(0, sd=300);
   }
   
   # ICAR Model prior to capture spatial random effects
   phi[1:n_areas] ~ dcar_normal(adj[1:L], weights[1:L], num[1:n_areas], tau1, zero_mean=0)
+  beta1[1:n_areas] ~ dcar_normal(adj[1:L], weights[1:L], num[1:n_areas], tau2, zero_mean=0)
   
   #For Each Boundary
   for (t in 1:n_trans){
@@ -138,6 +145,7 @@ modelW <- nimbleCode({
   #beta1 ~ dnorm(0, sd=300); #dunif(-1, 1); #determining strength of forest covariate in each area
   #beta2 ~ dnorm(0, sd=300);
   tau1 ~ dgamma(0.8, 0.1);  #weak prior for ICAR model -- spatial autocorrelation precision parameter
+  tau2 ~ dgamma(0.1, 0.1);  #weak prior for ICAR model -- spatial autocorrelation precision parameter
   
   #tau.err <- 1/sigma^2;
   #sigma ~ dunif(0,100);
@@ -183,6 +191,7 @@ initsW <- list(a=init_a,
                 delta=delta_init,
                 phi=init_phi,
                 tau1=rgamma(1, shape = 0.8, rate = 0.1),
+                tau2=rgamma(1, shape = 0.1, rate = 0.1),
                 #sigma= runif(1,0,100),
                 #beta0=runif(1, 1000,3000), #rnorm(1, 2000, 300),
                 beta1=rnorm(1:constants$n_areas, 0, sd=300), #rnorm(1:constants$n_areas, 0, sd=200), #runif(1:constants$n_areas, min = -1, max = 1)
@@ -210,4 +219,4 @@ essW  <- effectiveSize(mcmc.samplesW)
 #-------------------------------------------------------------------------------
 # Save output ----
 save(mcmc.samplesW, rhatW, essW,
-     file=here('output','Womblemodel_tactsim_south_forest.RData'))
+     file=here('output','Womblemodel_tactsim_south_forestICAR.RData'))

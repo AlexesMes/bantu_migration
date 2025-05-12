@@ -282,7 +282,7 @@ y2 <- ggplot(data = true_hex_dates) +
         legend.position = "none")
 
 #Output
-pdf(file=here('output','figures','figure40_simpractice.pdf'), width=15, height=8)
+pdf(file=here('output','figures','figure40_south_forest.pdf'), width=15, height=8)
 grid.arrange(y1, y2, ncol=2, padding=0)
 dev.off()
 
