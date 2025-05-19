@@ -1733,7 +1733,7 @@ anim_save("figure36_animation.gif",
 ###WOMBLE TACTICAL SIMULATION === #Below (figures 37-44) are examples for a simulation with 2 covariates which overlap (change for each simulation)
 
 ##Load Data ----
-load(here("output", "Womblemodel_tactsim_south_forestICAR.RData"))
+load(here("output", "Womblemodel_tactsim_woa_zmean.RData"))
 load(here('data', 'tactical_sim_womble.RData')) 
 
 
@@ -1792,7 +1792,7 @@ for (k in 1:length(time_slices)) #all time slices
 }
 
 #Output
-pdf(file=here('output','figures','figure37_south_forestICAR.pdf'), width=15, height=8)
+pdf(file=here('output','figures','figure37_woa_zmean.pdf'), width=15, height=8)
 grid.arrange(grobs=plot_list, ncol=5, nrow=2, padding=0) # Define the layout for the plots
 dev.off()
 
@@ -1823,7 +1823,7 @@ modi <- ggplot(data = median_hex_dates_mod.i) +
 
 
 #Output
-pdf(file=here('output','figures','figure38_south_forestICAR.pdf'), width=15, height=8)
+pdf(file=here('output','figures','figure38_woa_zmean.pdf'), width=15, height=8)
 grid.arrange(modi, ncol=1, padding=0)
 dev.off()
 
@@ -1834,7 +1834,7 @@ dev.off()
 sim_a <- constants$true_a
 sim_b <- constants$true_b
 
-pdf(file=here('output', 'figures','figure39_south_forestICAR.pdf'), width=14, height=18)
+pdf(file=here('output', 'figures','figure39_woa_zmean.pdf'), width=14, height=18)
 # Define the layout for the plots
 par(mfrow = c(7, 6))
 
@@ -1879,7 +1879,7 @@ post.bar <- function(x, i, h, a, col)
 
 
 # Posterior Arrival Times
-pdf(file=here('output','figures','figure39b_2covariate_overlap.pdf'), width=10, height=18, pointsize=4)
+pdf(file=here('output','figures','figure39b_woa_zmean.pdf'), width=10, height=18, pointsize=4)
 plot(NULL, xlim=c(2700, 1000), ylim=c(3,95), xlab=paste('Arrival time,', TeX('$a_k$')), ylab=paste('Area,', TeX('$k$')), cex.lab = 2, axes=F)
 tmp.a = extract(mcmc.samplesW)
 iseq.a = seq(1,by=2,length.out=47)
@@ -1914,7 +1914,7 @@ dev.off()
 #----------
 ##FIGURE 42 -- examination of beta parameter values
 
-pdf(file=here('output', 'figures','figure42_south_forest.pdf'), width=14, height=18)
+pdf(file=here('output', 'figures','figure42_woa_zmean.pdf'), width=14, height=18)
 
 par(mfrow = c(2, 2))
 
@@ -1930,35 +1930,35 @@ axis(3,at=med.beta1,labels=TeX('$beta1$'))
 legend('topright', legend=c('Womble ICAR'),
        fill= c('darkgreen'))
 
-#Beta2
-post.model.i2 <- do.call(rbind, mcmc.samplesW)[,paste0('beta2')]  %>% round() #selecting beta4[k]
-dens.i.beta2 <- density(post.model.i2, bw = 5)
-med.beta2 <- median(post.model.i2)
-# Plot
-plot(NULL, xlim=c(med.beta2-500, med.beta2+500), ylim=c(0,0.025), xlab='Cal BP', ylab='Posterior Probability')
-polygon(c(dens.i.beta2$x, rev(dens.i.beta2$x)), c(rep(0,length(dens.i.beta2$x)), rev(dens.i.beta2$y)), border=NA, col=rgb(0,0.4,0,0.5))
-abline(v=med.beta2,lty=2)
-axis(3,at=med.beta2,labels=TeX('$beta2$'))
-legend('topright', legend=c('Womble ICAR'),
-       fill= c('darkgreen'))
-
-# #Beta0
-# post.model.i0 <- do.call(rbind, mcmc.samplesW)[,paste0('beta0')]  %>% round() #selecting beta4[k]
-# dens.i.beta0 <- density(post.model.i0, bw = 5)
-# med.beta0 <- median(post.model.i0)
+# #Beta2
+# post.model.i2 <- do.call(rbind, mcmc.samplesW)[,paste0('beta2')]  %>% round() #selecting beta4[k]
+# dens.i.beta2 <- density(post.model.i2, bw = 5)
+# med.beta2 <- median(post.model.i2)
 # # Plot
-# plot(NULL, xlim=c(med.beta0-300, med.beta0+300), ylim=c(0,0.04), xlab='Cal BP', ylab='Posterior Probability')
-# polygon(c(dens.i.beta0$x, rev(dens.i.beta0$x)), c(rep(0,length(dens.i.beta0$x)), rev(dens.i.beta0$y)), border=NA, col=rgb(0,0.4,0,0.5))
-# abline(v=med.beta0,lty=2)
-# axis(3,at=med.beta0,labels=TeX('$beta0$'))
+# plot(NULL, xlim=c(med.beta2-500, med.beta2+500), ylim=c(0,0.025), xlab='Cal BP', ylab='Posterior Probability')
+# polygon(c(dens.i.beta2$x, rev(dens.i.beta2$x)), c(rep(0,length(dens.i.beta2$x)), rev(dens.i.beta2$y)), border=NA, col=rgb(0,0.4,0,0.5))
+# abline(v=med.beta2,lty=2)
+# axis(3,at=med.beta2,labels=TeX('$beta2$'))
 # legend('topright', legend=c('Womble ICAR'),
 #        fill= c('darkgreen'))
+
+# #Beta0
+post.model.i0 <- do.call(rbind, mcmc.samplesW)[,paste0('beta0')]  %>% round() #selecting beta4[k]
+dens.i.beta0 <- density(post.model.i0, bw = 5)
+med.beta0 <- median(post.model.i0)
+# Plot
+plot(NULL, xlim=c(med.beta0-300, med.beta0+300), ylim=c(0,0.04), xlab='Cal BP', ylab='Posterior Probability')
+polygon(c(dens.i.beta0$x, rev(dens.i.beta0$x)), c(rep(0,length(dens.i.beta0$x)), rev(dens.i.beta0$y)), border=NA, col=rgb(0,0.4,0,0.5))
+abline(v=med.beta0,lty=2)
+axis(3,at=med.beta0,labels=TeX('$beta0$'))
+legend('topright', legend=c('Womble ICAR'),
+       fill= c('darkgreen'))
 
 dev.off()
 
 #Random effect beta parameters
 
-pdf(file=here('output', 'figures','figure42_south_forestICAR.pdf'), width=14, height=18)
+pdf(file=here('output', 'figures','figure42_woa_zmean.pdf'), width=14, height=18)
 par(mfrow = c(7, 6))
 
 for (k in 1:47) #all hex areas
@@ -1986,7 +1986,7 @@ dev.off()
 #----------
 ##FIGURE 43 -- examination of phi parameter values
 
-pdf(file=here('output', 'figures','figure43_2covariate_overlap.pdf'), width=14, height=18)
+pdf(file=here('output', 'figures','figure43_woa_zmean.pdf'), width=14, height=18)
 
 # Define the layout for the plots
 par(mfrow = c(7, 6))
@@ -2048,7 +2048,7 @@ boundaries <- st_sf(prob_BLV = edge_info.i$prob_BLV,
 st_crs(boundaries) <- 4326  # Set CRS to EPSG:4326 (WGS 84)
   
 #Plot
-pdf(file=here('output','figures','figure41_2covariate_overlap.pdf'))
+pdf(file=here('output','figures','figure41_woa_zmean.pdf'))
 ggplot(data = median_hex_dates_mod.i) +
   geom_sf(data = st_buffer(st_as_sf(sampling_win, crs = 4326), 40000), fill = "grey80", color = "grey40") + #sampling window with coastal buffer
   geom_sf(aes(alpha=0.01), color = "grey60") + scale_alpha(range = c(0, 1)) + #hex grid 
@@ -2098,7 +2098,7 @@ boundaries_phi <- st_sf(prob_BLV = edge_info_phi.i$prob_BLV,
 st_crs(boundaries_phi) <- 4326  # Set CRS to EPSG:4326 (WGS 84)
 
 #Plot
-pdf(file=here('output','figures','figure41_phi_2covariate_overlap.pdf'))
+pdf(file=here('output','figures','figure41_phi_woa_zmean.pdf'))
 ggplot(data = median_hex_dates_mod.i) +
   geom_sf(data = st_buffer(st_as_sf(sampling_win, crs = 4326), 40000), fill = "grey80", color = "grey40") + #sampling window with coastal buffer
   geom_sf(aes(alpha=0.01), color = "grey60") + scale_alpha(range = c(0, 1)) + #hex grid 
@@ -2120,14 +2120,14 @@ dev.off()
 #---------
 ##Traceplot of start of occupation and beat parameters (a[k]) -- FIGURE 44
 
-pdf(file=here('output', 'figures','figure44_2covariate_overlap.pdf'), width=8, height=8)
+pdf(file=here('output', 'figures','figure44_woa_zmean.pdf'), width=8, height=8)
 par(mfrow=c(2,3))
 traceplot(mcmc.samplesW[,'a[24]'], main=TeX('$a[24]$'),smooth=TRUE) #region area 24, as an example
 traceplot(mcmc.samplesW[,'nabla[24]'], main=TeX('$nabla[24]$'),smooth=TRUE)
 traceplot(mcmc.samplesW[,'b[24]'], main=TeX('$b[24]$'),smooth=TRUE)
-#traceplot(mcmc.samplesW[,'beta0'], main=TeX('$beta0$'),smooth=TRUE)
+traceplot(mcmc.samplesW[,'beta0'], main=TeX('$beta0$'),smooth=TRUE)
 traceplot(mcmc.samplesW[,'beta1'], main=TeX('$beta1$'),smooth=TRUE)
-traceplot(mcmc.samplesW[,'beta2'], main=TeX('$beta2$'),smooth=TRUE)
+#traceplot(mcmc.samplesW[,'beta2'], main=TeX('$beta2$'),smooth=TRUE)
 dev.off()
 
 #===============================================================================

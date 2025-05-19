@@ -26,6 +26,16 @@ constants <- c(constants, constants_trig)
 # dates_in_areas_summarise <- as.data.frame(table(sites$area_id))
 # #Number of sites in area
 # sites_in_areas_summarise <- sites %>% group_by(area_id) %>% summarize(n_sites =n_distinct(site_id))
+
+#-------------------------------------------------------------------------------
+#Covariates -- center, standardise and save in a matrix
+
+covariates <- c("distance")
+cov_df <- as.data.frame(hex_area_win$dist_from_origin)
+colnames(cov_df) <- covariates
+cov_scaled <- sapply(cov_df, function (x) x / max(x)) #sapply(cov_df, function(x) (x - mean(x)) / sd(x))
+
+
 #-------------------------------------------------------------------------------
 ## Initialise Parameters ----
 
@@ -72,7 +82,7 @@ init_a  <- init_a[ ,2] + buffer
 init_b  <- init_b[ ,2] - buffer
 
 # Initialise spatial residues
-init_phi <- init_a*1.5 #(use init_a if no intercept (beta0) is included and zero_mean=0)
+init_phi <- init_a #(use init_a if no intercept (beta0) is included and zero_mean=0)
 
 #-------------------------------------------------------------------------------
 #Spatial data ----
@@ -120,17 +130,17 @@ modelW <- nimbleCode({
   
   #For Each Region
   for (k in 1:n_areas){
-    b[k] ~ dunif(50,4000);
-    constraint_uniform[k] ~ dconstraint(a[k]>b[k]) #In each area, start date of occupation, a_k, must be greater than the end date of occupation, b_k (note: BP dates in the positive direction)
+    b[k] ~ dunif(0, 3000);
+    constraint_uniform[k] ~ dconstraint(b[k]<a[k]); #In each area, start date of occupation, a_k, must be greater than the end date of occupation, b_k (note: BP dates in the positive direction)
     
-    #a[k] ~ dnorm(phi[k], tau.err)
-    a[k] <- phi[k] + x1[k]*beta1[k]; #+ x2[k]*beta2; 
-    #beta1[k] ~ dnorm(0, sd=300);
+    a[k] <- beta0[k] + phi[k] + X[k]*beta1; # + x1[k]*beta1[k]; #+ x2[k]*beta2; 
+    #beta1[k] ~ dnorm(0, sd=600);
+    beta0[k] ~ dunif(1000, 3000);
   }
   
   # ICAR Model prior to capture spatial random effects
-  phi[1:n_areas] ~ dcar_normal(adj[1:L], weights[1:L], num[1:n_areas], tau1, zero_mean=0)
-  beta1[1:n_areas] ~ dcar_normal(adj[1:L], weights[1:L], num[1:n_areas], tau2, zero_mean=0)
+  phi[1:n_areas] ~ dcar_normal(adj[1:L], weights[1:L], num[1:n_areas], tau1, zero_mean=1)
+  #beta1[1:n_areas] ~ dcar_normal(adj[1:L], weights[1:L], num[1:n_areas], tau2, zero_mean=0)
   
   #For Each Boundary
   for (t in 1:n_trans){
@@ -141,11 +151,11 @@ modelW <- nimbleCode({
   }
   
   #Priors
-  #beta0 ~ dunif(1000,3000); #dnorm(2000, sd=300); #Intercept
-  #beta1 ~ dnorm(0, sd=300); #dunif(-1, 1); #determining strength of forest covariate in each area
+  #beta0 ~ dunif(1000, 3000); #dnorm(2000, sd=300); #Intercept
+  beta1 ~ dnorm(0, sd=600); #dunif(-1, 1); #determining strength of forest covariate in each area
   #beta2 ~ dnorm(0, sd=300);
   tau1 ~ dgamma(0.8, 0.1);  #weak prior for ICAR model -- spatial autocorrelation precision parameter
-  tau2 ~ dgamma(0.1, 0.1);  #weak prior for ICAR model -- spatial autocorrelation precision parameter
+  #tau2 ~ dgamma(0.8, 0.1);  #weak prior for ICAR model -- spatial autocorrelation precision parameter
   
   #tau.err <- 1/sigma^2;
   #sigma ~ dunif(0,100);
@@ -169,7 +179,7 @@ modelW <- nimbleCode({
 # # Generate a sequence of values for beta0
 # beta1 <- seq(-2000, 2000, length.out = 4000)
 # # Compute the density
-# density1 <- dnorm(beta1, mean = 0, sd =  300) #dtruncnorm(beta1, a=-2000, b=0, mean = 0, sd = 300)
+# density1 <- dnorm(beta1, mean = 0, sd =  600) #dtruncnorm(beta1, a=-2000, b=0, mean = 0, sd = 300)
 # # Plot the density
 # plot(beta1, density1, type = "l",
 #      main = "Density of beta1 ~ N(0, 200²)", xlab = "beta1", ylab = "Density", col = "blue", lwd = 2)
@@ -181,20 +191,20 @@ modelW <- nimbleCode({
 #Define initial values ----
 dW <- list(theta=sim_df$cra,
            constraint_uniform = rep(1, constants$n_areas),
-           x1 = hex_area_win$forest_present)
+           X = as.data.frame(cov_scaled)$distance)
+           #x1 = hex_area_win$forest_present)
            #x2 = hex_area_win$water_present)
 
 
-initsW <- list(a=init_a,
+initsW <- list(#a=init_a,
                 b=init_b,
                 alpha=alpha_init,
                 delta=delta_init,
                 phi=init_phi,
                 tau1=rgamma(1, shape = 0.8, rate = 0.1),
-                tau2=rgamma(1, shape = 0.1, rate = 0.1),
-                #sigma= runif(1,0,100),
-                #beta0=runif(1, 1000,3000), #rnorm(1, 2000, 300),
-                beta1=rnorm(1:constants$n_areas, 0, sd=300), #rnorm(1:constants$n_areas, 0, sd=200), #runif(1:constants$n_areas, min = -1, max = 1)
+                #tau2=rgamma(1, shape = 0.8, rate = 0.1),
+                beta0=runif(1:constants$n_areas, 1000, 3000), #rnorm(1, 2000, 300),
+                beta1=rnorm(1, 0, sd=300),  #rnorm(1:constants$n_areas, 0, sd=200), #runif(1:constants$n_areas, min = -1, max = 1)
                 #beta2=rnorm(1, 0, sd=300),
                 gamma1=10,
                 gamma2=200)
@@ -204,11 +214,11 @@ initsW <- list(a=init_a,
 mcmc.samplesW <- nimbleMCMC(code = modelW,
                              constants = constants,
                              data = dW,
-                             niter = 2000000,
+                             niter = 200000,
                              nchains = 4,
                              thin= 100,
-                             nburnin = 1000000,
-                             monitors = c('a', 'b', 'theta', 'nabla', 'nabla_phi', 'delta', 'alpha', 'phi', 'beta1'), #'beta0'
+                             nburnin = 100000,
+                             monitors = c('a', 'b', 'theta', 'nabla', 'nabla_phi', 'delta', 'alpha', 'phi', 'beta0', 'beta1'), 
                              inits = initsW,
                              samplesAsCodaMCMC=TRUE)
 
@@ -219,4 +229,4 @@ essW  <- effectiveSize(mcmc.samplesW)
 #-------------------------------------------------------------------------------
 # Save output ----
 save(mcmc.samplesW, rhatW, essW,
-     file=here('output','Womblemodel_tactsim_south_forestICAR.RData'))
+     file=here('output','Womblemodel_tactsim_woa_zmean.RData'))

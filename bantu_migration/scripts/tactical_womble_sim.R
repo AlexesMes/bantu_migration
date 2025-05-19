@@ -125,9 +125,9 @@ hex_area_win <- hex_area_win %>%
 ##Visulaise the presence/absence of forests
 y1 <- ggplot(data = hex_area_win) +
   geom_sf(data = st_buffer(st_as_sf(sampling_win_outline, crs = 4326), 40000), aes(color = "grey50")) + #sampling window with coastal buffer
-  #geom_sf(aes(fill = "grey50")) + #uncomment this line (and comment out the two below) if no covariate is present
-  geom_sf(aes(fill = factor(forest_present))) +  #color hex grid by binary variable
-  scale_fill_manual(values = c("0" = "grey90", "1" = "green")) + # Define color #
+  geom_sf(aes(fill = "grey50")) + #uncomment this line (and comment out the two below) if no covariate is present
+  #geom_sf(aes(fill = factor(forest_present))) +  #color hex grid by binary variable
+  #scale_fill_manual(values = c("0" = "grey90", "1" = "green")) + # Define color #
   geom_sf(data = as(sites, 'sf'), size=2, alpha=0.5) + #sites
   geom_sf_label(aes(label = area_ID)) + #hex grid labels
   theme(panel.background = element_rect(fill = "lightblue",
@@ -171,7 +171,7 @@ sim_model <- nimbleCode({
   # Simulate spatially correlated data for all k in 1:n_areas
   for (k in 1:n_areas){
     a[k] ~ dnorm(nu[k], sd=sigma);
-    nu[k] <- beta0 - dist[k]/s + x1[k]*beta1;# + x2[k]*beta2;
+    nu[k] <- beta0 - dist[k]/s;# + x1[k]*beta1;# + x2[k]*beta2;
   }
   d[1:n_areas] ~ dcar_proper(mu = mu3[1:n_areas], adj=adj[1:L], num=num[1:n_areas], tau=tau, gamma=gamma)
   b[1:n_areas] <- a[1:n_areas] - abs(d[1:n_areas]*0.5) #duration must be positive
@@ -282,7 +282,7 @@ y2 <- ggplot(data = true_hex_dates) +
         legend.position = "none")
 
 #Output
-pdf(file=here('output','figures','figure40_south_forest.pdf'), width=15, height=8)
+pdf(file=here('output','figures','figure40_woa.pdf'), width=15, height=8)
 grid.arrange(y1, y2, ncol=2, padding=0)
 dev.off()
 
