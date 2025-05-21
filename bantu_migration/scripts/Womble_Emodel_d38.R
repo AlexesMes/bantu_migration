@@ -12,14 +12,14 @@ rm(list = ls())
 
 #-------------------------------------------------------------------------------
 ## Data Setup ----
-load(here('data', 'eastc14_d44.RData')) #East and Southern Africa
+load(here('data', 'eastc14.RData')) #East and Southern Africa
 
-load(here('data','trig_d44.RData')) #nodes and edges between hex area centroids
+load(here('data','trig_d38.RData')) #nodes and edges between hex area centroids
 
 #Environmental data
-load(here('data','crop_suitability2.RData')) #load(here('data','crop_suitability2.RData'))
-load(here('data','animal_hus_suitability.RData'))
-load(here('data','elevation.RData'))
+#load(here('data','crop_suitability2.RData')) #load(here('data','crop_suitability2.RData'))
+#load(here('data','animal_hus_suitability.RData'))
+#load(here('data','elevation.RData'))
 
 #Combine constants
 constants <- c(constants, constants_trig)
@@ -29,10 +29,10 @@ constants <- c(constants, constants_trig)
 dat <- list(cra = dateInfo$cra, #theta=sim_df$cra
             cra_error = dateInfo$cra_error,
             constraint_uniform = rep(1, constants$n_areas),
-            cra_constraint = rep(1, constants$n_dates), # Set-up constraint for ignoring inference outside calibration range
-            x1 = agr_suit_df$mean_agr_suit, #agg_crop_suitability$max_crop_suit, #crop-suitability data
-            x2 = amimal_hus_df$mean_animal_hus_suit, #animal-husbandry-suitability data
-            x3 = mean_hex_elv$norm_mean_elv) #elevation
+            cra_constraint = rep(1, constants$n_dates)) # Set-up constraint for ignoring inference outside calibration range
+            #x1 = agr_suit_df$mean_agr_suit, #agg_crop_suitability$max_crop_suit, #crop-suitability data
+            #x2 = amimal_hus_df$mean_animal_hus_suit, #animal-husbandry-suitability data
+            #x3 = mean_hex_elv$norm_mean_elv) #elevation
             
 #Calibration curve
 constants$cc <- as.numeric(as.factor(dateInfo$calCurve)) #intcal20==1 and shcal20==2
@@ -107,7 +107,7 @@ constants <- constants[names(constants) %!in% c("dist_mat",
                                                 "dist_org", 
                                                 "center_coords",
                                                 "countries",
-                                                #"eastEIAcountries",
+                                                "eastEIAcountries",
                                                 "origin_point")] #remove constants which aren't used
 
 #-------------------------------------------------------------------------------
@@ -139,11 +139,10 @@ modelW <- function(seed, d, theta_init, alpha_init, delta_init, init_a, init_b, 
     
     #For Each Region
     for (k in 1:n_areas){
-      b[k] ~ dunif(50,5000);
+      b[k] ~ dunif(50, 5000);
       constraint_uniform[k] ~ dconstraint(a[k]>b[k]) #In each area, start date of occupation, a_k, must be greater than the end date of occupation, b_k (note: BP dates in the positive direction)
       
-      #a[k] ~ dnorm(phi[k], tau.err)
-      a[k] <- x3[k]*beta3 + phi[k]; #+ beta0 #x1[k]*beta1 + x2[k]*beta2 + 
+      a[k] <- phi[k]; #+ beta0 #x1[k]*beta1 + x2[k]*beta2 + x3[k]*beta3 
     }
     
     # ICAR Model prior to capture spatial random effects
@@ -161,11 +160,8 @@ modelW <- function(seed, d, theta_init, alpha_init, delta_init, init_a, init_b, 
     #beta0 ~ dunif(1000,3000); #dnorm(2000, sd=300); #Intercept
     #beta1 ~ dnorm(0, sd=300); #determining strength of the covariate
     #beta2 ~ dnorm(0, sd=300); 
-    beta3 ~ dnorm(0, sd=300);
+    #beta3 ~ dnorm(0, sd=300);
     tau1 ~ dgamma(1, 0.1);  #weak prior for ICAR model -- spatial autocorrelation precision parameter
-    
-    #tau.err <- 1/sigma^2;
-    #sigma ~ dunif(0,100);
     
     # Hyperprior for duration
     gamma1 ~ dunif(1,20) #Hyperprior for rate
@@ -179,11 +175,11 @@ modelW <- function(seed, d, theta_init, alpha_init, delta_init, init_a, init_b, 
                 phi=init_phi,
                 alpha=alpha_init, 
                 delta=delta_init, 
-                tau=rgamma(1, shape = 1, rate = 0.1),
+                tau1=rgamma(1, shape = 1, rate = 0.1),
                 #beta0=runif(1, 1000,3000), #rnorm(1, 2000, 300),
                 #beta1=rnorm(1, 0, sd=300), #rnorm(1:constants$n_areas, 0, sd=200), #runif(1:constants$n_areas, min = -1, max = 1)
                 #beta2=rnorm(1, 0, sd=300),
-                beta3=rnorm(1, 0, sd=300),
+                #beta3=rnorm(1, 0, sd=300),
                 gamma1=10,
                 gamma2=200)
   
@@ -191,7 +187,7 @@ modelW <- function(seed, d, theta_init, alpha_init, delta_init, init_a, init_b, 
   model <- nimbleModel(model, constants=constants, data=d, inits=inits)
   cModel <- compileNimble(model)
   conf <- configureMCMC(model, control=list(adaptInterval=20000, adaptFactorExponent=0.1))
-  conf$addMonitors(c('a','b','nabla', 'nabla_phi','theta','delta','alpha','beta3')) #'beta1', 'beta2',
+  conf$addMonitors(c('a','b','nabla','nabla_phi','theta','delta','alpha')) #'beta1', 'beta2','beta3'
   MCMC <- buildMCMC(conf)
   cMCMC <- compileNimble(MCMC)
   results <- runMCMC(cMCMC, niter = niter, thin = thin, nburnin = nburnin, samplesAsCodaMCMC = T, setSeed = seed) 
@@ -240,4 +236,4 @@ save(out_womble_model,
      rhat_womble_model, 
      ess_womble_model, 
      agg_womble_model, 
-     file=here('output','Womble_Emodel_d44_elev_covariate.RData'))
+     file=here('output','Womble_Emodel_d38.RData'))

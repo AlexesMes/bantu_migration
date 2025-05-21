@@ -5,6 +5,7 @@ library(sf)
 library(rnaturalearth)
 library(stringr)
 library(dplyr)
+library(readr)
 library(tidyr)
 library(readxl)
 library(here)
@@ -16,6 +17,12 @@ library(geodata)
 library(terra)
 library(stars)
 library(raster)
+library(gridExtra)
+library(grid)
+library(gridBase)
+library(rnaturalearthdata)
+library(RColorBrewer)
+library(cowplot)
 
 rm(list = ls())
 
@@ -130,41 +137,57 @@ SARD_df <- SARD_dat %>%
   filter(labCode != "Beta-11112") #Marine shell -- several centuries before EIA communities arrived in region
 
 
-##Left join
-#X_df <- merge(wanyika_df, collected_df, by="labCode")
+##Filter out dates in collected_df which already exist in the wanyika and SARD databases ----
+overlap_labID_wc <- merge(wanyika_df, collected_df, by="labCode")$labCode
+collected_df <- collected_df %>% filter(labCode %!in% overlap_labID_wc)
 
-## Combine datasets ----
-bantu_sites_df <- bind_rows(SARD_df, wanyika_df, collected_df) %>% 
+overlap_labID_sc <- merge(SARD_df, collected_df, by="labCode")$labCode
+collected_df <- collected_df %>% filter(labCode %!in% overlap_labID_sc)
+
+##Combine datasets ----
+ea_bantu_sites_df <- bind_rows(SARD_df, wanyika_df, collected_df) %>% 
+  filter(country %in% eastEIA_countries) %>% 
   mutate(dataorigin=as.factor(dataorigin)) %>% 
   filter((c14date != 0) & (c14std != 0)) %>% #Apparently some of these datasets had modern dates (indicated with c14 date and error of 0), we remove these
   filter((c14date <=7000) & (c14date >=246)) #Dates earlier than this are assumed to not be of Bantu origin #TODO: build some flexibility into this... #Further, we assume the Dutch arrival in the Cape (1652) as the cut-off. Dates after this point of colonial contact are not considered.
 
-# Assign ID ----
-bantu_sites_df <- bantu_sites_df %>% mutate(ID = row_number())
+#Assign ID
+ea_bantu_sites_df <- ea_bantu_sites_df %>% mutate(ID = row_number()) 
+#Assign Site ID 
+ea_bantu_sites_df$siteID  <- as.numeric(factor(ea_bantu_sites_df$siteName))
 
-# Assign Site ID ----
-bantu_sites_df$siteID  <- as.numeric(factor(bantu_sites_df$siteName))
+#Save sites
+sites <- st_as_sf(ea_bantu_sites_df, coords = c('long','lat'))
+st_crs(sites)  <- 4326 
+
+#===============================================================================
+##Examine Wanyika
+#Dated material
+wanyika_material <- table(as.factor(Wanyika_dat$"Dated Material"))
+
+#Presence/absence of traits
+crops <- c("Indet Millet", "Finger Millet (Eleusine coracana)", "Pearl Millet (Pennisetum glaucum)", "Sorghum (Sorghum bicolor)",                                                 
+            "Lablab (Lablab purpureus)", "Vigna sp.", "Mung Bean (Vigna radiata)", "Cowpea (Vigna unguiculata)", "Rice (Oryza sativa)",                                                       
+            "Peas (Pisum)", "Triticoid", "Wheat (Triticum sp.)", "Legumes Beans?", "Red Dates (Ziziphus jujuba)", "Indet. Nuts",                                                               
+            "Coconuts (Cocos nucifera)", "Fig (Ficus sp.)", "Baobab (Adansonia digitata)", "Cotton (Gossypium sp.)")
+animals <- c("Wild Terrestrial Fauna", "Avian Fauna", "Aquatic Fauna", "Indet. Bones", "Bovids", "Cattle (Bos taurus/indicus)",                                               
+            "Sheep (Ovis aries)", "Goat (Capra hircus)", "Sheep/Goat (Ovis/Capra Indet.)", "Camel (Camelus dromedarius)", 
+            "Donkey (Equus asinus)", "Chicken (Gallus gallus)") 
+eia_package <- c("Iron Smelting", "Iron Use", "Ceramics")
+
+traits <- c(crops, animals, eia_package)
+
+wanyika_traits <- Wanyika_dat[traits] #select trait columns from wanyika database
+wanyika_traits <- wanyika_traits %>% mutate(across(everything(), ~ ifelse(is.na(.), 0, 1))) #change to binary 
+wanyika_traits <- wanyika_traits %>% 
+                    summarise(across(everything(), ~ sum(.))) %>% #count observations
+                    pivot_longer(everything())
 
 
+#Pottery styles
+wanyika_pottery <- table(as.factor(Wanyika_dat$"Ceramic Phase (Pottery Ware)"))
 
-
-
-
-
-
-
-## Data preparation ----
-
-#Sampling window without internal boundaries
-countries <- constants$countries #eastEIAcountries
-#cntry_sampling_win <- ne_countries(continent = "Africa", country = countries, returnclass = "sf")
-cntry_sampling_win <- ne_countries(country = countries, returnclass = "sf") %>%
-  filter(name_en %!in% c("Madagascar","Sudan")) #We focus on mainland sub-Saharan Africa (also, there is something wrong with the geometry of Sudan -- remove country since we have no iron age dates there anyway)
-
-EA_cntry_sampling_win <- ne_countries(country = countries, returnclass = "sf") %>%
-  filter(name_en %in% constants$eastEIAcountries) 
-
-#-------------------------------------------------------------------------------
+#===============================================================================
 ## Plot Data  ---- FIGURE figure_map
 
 world <- rnaturalearth::ne_countries(scale = "medium", returnclass = "sf")
@@ -207,8 +230,6 @@ basemap <- function(){
   return(plt)
 }
 
-#sites <- sites %>% filter(dataorigin %in% c("aDRAC", "SARD"))
-
 #Ploting sites with basemap ----
 plt.main <- basemap() +
   geom_sf(data = sites,
@@ -216,7 +237,6 @@ plt.main <- basemap() +
           size = 2,
           alpha=0.5) +
   geom_point() +
-  #geom_point(aes(x=constants$origin_point[1], y=constants$origin_point[2]), colour="purple", size=3) +
   ggsn::north(data = sites, location="bottomright", anchor = c(x = 43, y = -31)) + 
   ggsn::scalebar(sites,
                  location  = "bottomright",
@@ -233,14 +253,14 @@ plt.main <- basemap() +
            ylim = c(-35, 6.5)) +
   scale_x_continuous(breaks = seq(8, 50, 2)) +
   labs(colour="Original dataset") +
-  scale_colour_discrete(labels = c("aDRAC", "Collected", "SARD")) + #c(Collected", "SARD")
+  scale_colour_discrete(labels = c("Collected","SARD","Wanyika")) +
   theme_few() +
   theme(axis.title = element_blank(),
         plot.background = element_rect(color = NA,
                                        fill = NA))
 
 
-pdf(file=here('output','figures','figure_map_cont.pdf'), width=8.5, height=7)
+pdf(file=here('output','figures','figure_map_east.pdf'), width=8.5, height=7)
 cowplot::ggdraw() +
   draw_plot(plt.main) +
   draw_plot(minimap, 

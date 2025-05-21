@@ -12,11 +12,11 @@ library(ggplot2)
 library(ggthemes)
 library(parallel)
 library(units)
-#library(p3k14c)
 library(geodata)
 library(terra)
 library(stars)
 library(raster)
+library(readr)
 
 rm(list = ls())
 
@@ -39,6 +39,7 @@ subSahara_countries <- c("South Africa",
                          "Mozambique",
                          "Malawi",
                          "Madagascar",
+                         "Comoros",
                          "Tanzania", "United Republic of Tanzania",
                          "Rwanda",
                          "Burundi",
@@ -60,19 +61,21 @@ subSahara_countries <- c("South Africa",
 
 ## List of countries associated with eastern EIA stream ----
 eastEIA_countries <- c("South Africa", 
-                         "Lesotho", 
-                         "Eswatini", "eSwatini", "Swaziland", 
-                         "Botswana",
-                         "Zimbabwe",
-                         "Zambia",
-                         "Mozambique",
-                         "Malawi",
-                         "Tanzania", "United Republic of Tanzania",
-                         "Rwanda",
-                         "Burundi",
-                         "Kenya",
-                         "Uganda")
-  
+                       "Lesotho", 
+                       "Eswatini", "eSwatini", "Swaziland", 
+                       "Botswana",
+                       "Zimbabwe",
+                       "Zambia",
+                       "Mozambique",
+                       "Malawi",
+                       "Tanzania", "United Republic of Tanzania",
+                       "Rwanda",
+                       "Burundi",
+                       "Kenya",
+                       "Uganda", 
+                       "Madagascar",
+                       "Comoros")
+
 #-------------------------------------------------------------------------------
 ## Data sources ----
 
@@ -89,12 +92,17 @@ eastEIA_countries <- c("South Africa",
 ##Collected dates 
 #Compiled dates covering Eastern and Southern Africa
 
+##Wanyika database
+#Eastern africa radiocarbon dates from Kenya, Tanzania, the Comoros Islands, and Madagascar
+#https://pandoradata.earth/dataset/wanyika
+
 #-------------------------------------------------------------------------------
 ## Read data sets  ----
 SARD_dat <- read.csv(here("data", "SARD_Mar2021_14C.csv"))
 HumActCA_dat <- read.csv(here("data", "HumActCA_Dec2020_14C.csv"))
 aDRAC_dat <- read.csv(here("data", "aDRAC_Feb2024_14C.csv"))#This is a more up-to-date version of HumActCA_dat, but not all the dates in aDRAC_dat are iron age, whereas all dates in the HumActCA are
 Collected_EIA_dat <- read_excel(here("data", "collected_dates.xlsx"), sheet = "Collected_dates_final") 
+Wanyika_dat <- read_csv("data/wanyika_chronological_database.csv")
 
 #-------------------------------------------------------------------------------
 ## Data filtering and cleaning ----
@@ -127,36 +135,49 @@ SARD_dat <- SARD_dat %>%
   mutate(Archaeological.Period = case_when(Lab.ID %in% c("Pta-1818", "Pta-1959", "Pta-1961") ~ "Iron Age", .default = Archaeological.Period)) #see "SOME RECENT RADIOCARBON DATES FROM SOUTHERN AFRICA", M. HALL AND J. C. VOGEL, 1980
 
 #Filter dates
-SARD_sum_df <- SARD_dat %>%
+SARD_df <- SARD_dat %>%
   filter(Archaeological.Period=="Iron Age") %>% 
-  dplyr::select(Lab.ID, X.Site, DecdegE, DecdegS, Date, Uncertainty, refcode, Material.dated, Country) %>%
-  rename(labCode=Lab.ID, siteName=X.Site, lat=DecdegS, long=DecdegE, c14date=Date, c14std=Uncertainty, reference=refcode, material=Material.dated, country=Country) %>%
+  dplyr::select(Lab.ID, X.Site, DecdegE, DecdegS, Date, Uncertainty, Material.dated, Country) %>%
+  rename(labCode=Lab.ID, siteName=X.Site, lat=DecdegS, long=DecdegE, c14date=Date, c14std=Uncertainty, material=Material.dated, country=Country) %>%
   mutate(c14date = as.numeric(c14date), c14std=as.numeric(c14std), dataorigin="SARD")  %>%
   filter(!is.na(lat) & !is.na(long) & !is.na(c14std) & !is.na(c14date)) %>% 
   filter(siteName !="Bambata Cave") %>% #Bambata designated pre-bantu (references given in Isern and Fort 2019, Suplementary Material S1, https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0215573) 
   filter(labCode != "Beta-11112") #Marine shell -- several centuries before EIA communities arrived in region
 
-Collected_sum_df <- Collected_EIA_dat %>%
-  dplyr::select(LabID, Age, Error, Long, Lat, SiteName, Reference, Material, Country) %>%
-  rename(labCode=LabID, siteName=SiteName, lat=Lat, long=Long, c14date=Age, c14std=Error, reference=Reference, material=Material, country=Country) %>%
+collected_df <- Collected_EIA_dat %>%
+  dplyr::select(LabID, Age, Error, Long, Lat, SiteName,  Material, Country) %>%
+  rename(labCode=LabID, siteName=SiteName, lat=Lat, long=Long, c14date=Age, c14std=Error, material=Material, country=Country) %>%
   mutate(c14date = as.numeric(c14date), c14std=as.numeric(c14std), dataorigin="Collected")  %>%
   filter(!is.na(lat) & !is.na(long) & !is.na(c14std) & !is.na(c14date)) 
 
 aDRAC_sum_df <- aDRAC_dat %>% #To find extra dates not in HumActCA
-  dplyr::select(LABNR, SITE, LAT, LONG, C14AGE, C14STD, PHASE, CLASS, IRON, SOURCE, MATERIAL, COUNTRY) %>%
-  rename(labCode= LABNR, siteName=SITE, lat=LAT, long=LONG, c14date=C14AGE, c14std=C14STD, reference=SOURCE, material=MATERIAL, country=COUNTRY) %>%
+  dplyr::select(LABNR, SITE, LAT, LONG, C14AGE, C14STD, PHASE, CLASS, IRON, MATERIAL, COUNTRY) %>%
+  rename(labCode= LABNR, siteName=SITE, lat=LAT, long=LONG, c14date=C14AGE, c14std=C14STD, material=MATERIAL, country=COUNTRY) %>%
   filter(!is.na(lat) & !is.na(long) & !is.na(c14std) & !is.na(c14date)) %>%
   mutate(c14date = as.numeric(c14date), c14std=as.numeric(c14std), dataorigin="aDRAC") %>%
   filter(siteName %in% HumActCA_dat$SITE | PHASE %in% c("N; EIA", "LIA", "EIA", "Iron Age") | !is.na(IRON)) %>% #All dates in HumActCA_dat should be associated with Bantu pottery finds
   filter(CLASS %!in% c('IIa', 'IIb', 'IIc', 'IIIa', 'IIIb', 'IIIc')) %>% #Filter for unreliable class of dates III and irrelevant (according to Seidensticker et al.) dates II
   dplyr::select(-PHASE, -CLASS, -IRON)
 
+wanyika_df <- Wanyika_dat %>%
+  dplyr::select("Labcode", "Date BP", "Date BP SD", "Longitude", "Latitude", "Site Name", "Dated Material", "Country") %>%
+  rename(labCode="Labcode", siteName="Site Name", lat="Latitude", long="Longitude", c14date="Date BP", c14std="Date BP SD", material="Dated Material", country="Country") %>%
+  mutate(c14date = as.numeric(c14date), c14std=as.numeric(c14std), dataorigin="Wanyika")  %>%
+  filter(!is.na(lat) & !is.na(long) & !is.na(c14std) & !is.na(c14date)) 
+
+##Filter out dates in collected_df which already exist in the wanyika and SARD databases ----
+overlap_labID_wc <- merge(wanyika_df, collected_df, by="labCode")$labCode
+collected_df <- collected_df %>% filter(labCode %!in% overlap_labID_wc)
+
+overlap_labID_sc <- merge(SARD_df, collected_df, by="labCode")$labCode
+collected_df <- collected_df %>% filter(labCode %!in% overlap_labID_sc)
+
 ##------------
 ## Combine datasets ----
-bantu_sites_df <- bind_rows(SARD_sum_df, aDRAC_sum_df, Collected_sum_df) %>% 
+bantu_sites_df <- bind_rows(SARD_df, wanyika_df, aDRAC_sum_df, collected_df) %>% 
   mutate(dataorigin=as.factor(dataorigin)) %>% 
   filter((c14date != 0) & (c14std != 0)) %>% #Apparently some of these datasets had modern dates (indicated with c14 date and error of 0), we remove these
-  filter((c14date <=3357) & (c14date >=246)) #We assume an approximate origin at Ngoume, date 3357 +- 95BP (see later in this script). Dates earlier than this are assumed to not be of Bantu origin #TODO: build some flexibility into this... #Further, we assume the Dutch arrival in the Cape (1652) as the cut-off. Dates after this point of colonial contact are not considered.
+  filter((c14date <=7000) & (c14date >=246)) #Dates earlier than this are assumed to not be of Bantu origin #TODO: build some flexibility into this... #Further, we assume the Dutch arrival in the Cape (1652) as the cut-off. Dates after this point of colonial contact are not considered.
   
 # Assign ID ----
 bantu_sites_df <- bantu_sites_df %>% mutate(ID = row_number())
@@ -176,7 +197,6 @@ eastEIA_sites_df <- bantu_sites_df %>%
 write.csv(bantu_sites_df, here('data','bantu_dataset.csv'), row.names = FALSE)
 write.csv(eastEIA_sites_df, here('data','eastEIA_dataset.csv'), row.names = FALSE)
 
-
 #===============================================================================
 ##FROM HERE ONWARDS WE USE THE EASTERN EIA STREAM
 #But can easily add back in western EIA and rainforest pottery-using (aDRAC) 
@@ -185,8 +205,8 @@ write.csv(eastEIA_sites_df, here('data','eastEIA_dataset.csv'), row.names = FALS
 ## Determining which calibration curve should be used----
 
 #Remove unnecessary information
-eastEIA_sites_df <- bantu_sites_df %>% #eastEIA_sites_df %>% #
-  dplyr::select(-reference, -material, -country)
+eastEIA_sites_df <- eastEIA_sites_df %>% #bantu_sites_df %>% 
+  dplyr::select(-material, -country)
 
 #Assign calibration curve ----
 eastEIA_sites_df$calCurve <- ifelse((eastEIA_sites_df$lat>=0), 'intcal20', 'shcal20') #Assign the calibration curve to use based on the site's position relative to the equator #TODO: refine this -- weird to have a hard step-change between calibration curves at the equator -- maybe use a gradient change function? Mixed Curve? Or is there perhaps better regional calibration curves to use?
@@ -277,10 +297,10 @@ dist_org  <-  as.vector(set_units(st_distance(x=sites, y=origin_point), 'km')) #
 # filter(name_en %!in% c("Madagascar","Sudan"))) #We focus on mainland sub-Saharan Africa (also, there is something wrong with the geometry of Sudan -- remove country since we have no iron age dates there anyway)
 
 #Sampling window: Eastern Sub-Saharan Africa ----
-sampling_win <- ne_countries(continent = "Africa", country = eastEIA_countries, returnclass = "sf")
+sampling_win <- ne_countries(continent = "Africa", country = eastEIA_countries, returnclass = "sf", scale="large") #the detailed resolution (scale='large') ensures the Comoros islands are included
 
 #Generate Spatial Hexagons ---- ##see code block below to determine hex diameter, cell_d 
-hex_area_win <- hex_areas(sampling_win, cell_d = 4.4) #for eastern sub-Saharan africa study region used cell diameter = 5.4
+hex_area_win <- hex_areas(sampling_win, cell_d = 3.8)
 
 #Remove spatial hexagons where the Bantu Expansion didn't reach
 #Sub-Saharan Africa, cell-diameter 6.2
@@ -295,34 +315,37 @@ hex_area_win <- hex_areas(sampling_win, cell_d = 4.4) #for eastern sub-Saharan a
 # hex_area_win <- hex_area_win %>% 
 #  filter(area_ID %!in% c(1, 3, 9, 19, 30, 35, 25, 14, 20, 40, 48, 53, 55, 54, 51, 44, 10, 15)) %>%
 #  mutate(area_ID = row_number())
-# #East Africa, cell-diameter 5.4
+#East Africa, cell-diameter 2.7
 # hex_area_win <- hex_area_win %>%
-#   filter(area_ID %!in% c(1,2,3,4,7)) %>%
+#   filter(area_ID %!in% c(1,2,3,4,5,9,6,10,15,20,97,122,127,121,116)) %>%
 #   mutate(area_ID = row_number())
-# #East Africa, cell-diameter 4.4
+# #East Africa, cell-diameter 3.8
 hex_area_win <- hex_area_win %>%
-  filter(area_ID %!in% c(1,2,3,5)) %>%
+  filter(area_ID %!in% c(1,2,3,4,5,7,11,15,47,58)) %>%
   mutate(area_ID = row_number())
-# #East Africa, cell-diameter 6.4
+# #East Africa, cell-diameter 5.7
 # hex_area_win <- hex_area_win %>%
-#   filter(area_ID %!in% c(1,2,6)) %>%
+#   filter(area_ID %!in% c(1,2,3,6,30)) %>%
 #   mutate(area_ID = row_number())
 
 ##CHECK -- plot hexs and sites
-# ggplot(data = hex_area_win) +
-#   geom_sf(data = st_buffer(st_as_sf(sampling_win, crs = 4326), 40000), aes(color = "grey50")) + #sampling window with coastal buffer
-#   geom_sf() + #hex grid
-#   geom_sf(data = as(sites, 'sf'), size=2, alpha=0.5) + #sites
-#   geom_sf_label(aes(label = area_ID)) + #hex grid labels
-#   #geom_sf(data = hex_area_win$area_center, size=2, alpha=1, aes(color = "purple")) + #hex-origins
-#   theme(panel.background = element_rect(fill = "lightblue",
-#                                         colour = "lightblue",
-#                                         size = 0.5,
-#                                         linetype = "solid"),
-#         legend.position = "none")
+ggplot(data = hex_area_win) +
+  geom_sf(data = st_buffer(st_as_sf(sampling_win, crs = 4326), 40000), aes(color = "grey50")) + #sampling window with coastal buffer
+  geom_sf() + #hex grid
+  geom_sf(data = as(sites, 'sf'), size=2, alpha=0.5) + #sites
+  geom_sf_label(aes(label = area_ID),size=3) + #hex grid labels
+  #geom_sf(data = hex_area_win$area_center, size=2, alpha=1, aes(color = "purple")) + #hex-origins
+  theme(panel.background = element_rect(fill = "lightblue",
+                                        colour = "lightblue",
+                                        size = 0.5,
+                                        linetype = "solid"),
+        legend.position = "none")
 
 #Assign hex area id to each site ----
 siteInfo$area_id <- as.integer(st_within(sites$geometry, hex_area_win$geometry))
+siteInfo$area_id[siteInfo$siteName=="Dembeni"] <- 65 #Impute area_ID for site=Dembeni on the far east of Comoros islands
+
+
 #Assign hex area id to each date ----
 dateInfo$area_id <- siteInfo$area_id[match(dateInfo$siteID, siteInfo$siteID)]
 
@@ -331,8 +354,8 @@ area_freq  <- plyr::count(siteInfo, 'area_id') ##See how many sites fall in each
 #In order to check that this lines up visually with how many sites are in each hex area see map_figure2
 
 #--------------------------------
-# ## Determining hex size ---
-# #Under changing hex size, determine the proportion of areal hex units in the sampling window with sites
+## Determining hex size ---
+#Under changing hex size, determine the proportion of areal hex units in the sampling window with sites
 # prop_units_df <- data.frame(d = numeric(), prop_with_sites = numeric())
 # 
 # for (d in seq(1, 15, 0.1)){
@@ -348,7 +371,7 @@ area_freq  <- plyr::count(siteInfo, 'area_id') ##See how many sites fall in each
 # }
 # 
 # # Plot results
-# pdf(here('output','figures','figure_hexsize_cont.pdf'),height=5,width=5.5)
+# pdf(here('output','figures','figure_hexsize2.pdf'),height=5,width=5.5)
 # ggplot(prop_units_df, aes(x = d, y = prop_with_sites)) +
 #   geom_line() +
 #   geom_point() +
@@ -356,7 +379,7 @@ area_freq  <- plyr::count(siteInfo, 'area_id') ##See how many sites fall in each
 #   labs(x = "Hexagon Size (d)", y = "Proportion of Hexagons with Sites", title = "Effect of Hexagon Size on Site Coverage") +
 #   theme_minimal()
 # dev.off()
-#-------------------------------------------------------------------------------
+# #-------------------------------------------------------------------------------
 ## Create list with constants and data ----
 
 # Data
@@ -386,7 +409,6 @@ constants$C14err  <- cbind(intcal20$C14Age.sigma, shcal20$C14Age.sigma)
 ## Save everything on a R image file ----
 save(sites, constants, eastEIA_dat, siteInfo, dateInfo, sampling_win, hex_area_win, file=here('data','eastc14.RData')) #c14.RData
 
-
 #-------------------------------------------------------------------------------
 ## Save sampling window specific information separately ----
  
@@ -398,7 +420,7 @@ constants_sw$calBP <- constants$calBP
 constants_sw$C14BP  <- constants$C14BP 
 constants_sw$C14err  <- constants$C14err
 
-save(constants_sw, sampling_win, hex_area_win, file=here('data','sample_window_cont.RData'))
+save(constants_sw, sampling_win, hex_area_win, file=here('data','sample_window.RData'))
 
 #-------------------------------------------------------------------------------
 ## Elevation Data
