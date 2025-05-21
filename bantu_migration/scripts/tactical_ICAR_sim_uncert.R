@@ -15,6 +15,7 @@ rm(list = ls())
 set.seed(123)
 
 ##SCRIPT TO SIMULATE DATA FOR ICAR MODEL WITH ERRORS (i.e. uncalibrated radiocarbon dates with associated errors)
+##Note: This needs to be looked at again using the updated code in tactical_ICAR_sim.R!
 
 # Load sample window data ----
 load(here('data','sample_window.RData'))

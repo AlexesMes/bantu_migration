@@ -171,7 +171,7 @@ sim_model <- nimbleCode({
   # Simulate spatially correlated data for all k in 1:n_areas
   for (k in 1:n_areas){
     a[k] ~ dnorm(nu[k], sd=sigma);
-    nu[k] <- beta0 - dist[k]/s;# + x1[k]*beta1;# + x2[k]*beta2;
+    nu[k] <- beta0 - dist[k]/s + x1[k]*beta1; # + x2[k]*beta2;
   }
   d[1:n_areas] ~ dcar_proper(mu = mu3[1:n_areas], adj=adj[1:L], num=num[1:n_areas], tau=tau, gamma=gamma)
   b[1:n_areas] <- a[1:n_areas] - abs(d[1:n_areas]*0.5) #duration must be positive
@@ -282,9 +282,9 @@ y2 <- ggplot(data = true_hex_dates) +
         legend.position = "none")
 
 #Output
-pdf(file=here('output','figures','figure40_woa.pdf'), width=15, height=8)
-grid.arrange(y1, y2, ncol=2, padding=0)
-dev.off()
+#pdf(file=here('output','figures','figure40_woa_sumtozero.pdf'), width=15, height=8)
+#grid.arrange(y1, y2, ncol=2, padding=0)
+#dev.off()
 
 #-----------------------------------------------
 # Combine data ---- ##Note: no model uncertainty has yet been added in... generates dates, not uncalibrated radiocarbon dates with associated error (for this see tactical_ICAR_sim_uncert.R)

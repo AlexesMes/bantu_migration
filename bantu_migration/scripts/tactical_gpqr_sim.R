@@ -11,26 +11,22 @@ library(rcarbon)
 
 source(here('src','gpqrSim.R'))
 
-# Load data (to access constants) ----
-load(here('data','eastc14.RData'))
-
 #-------------------------------------------------------------------------------
 ## List of countries ----
-subSahara_countries <- constants$countries #sub-Saharan Africa
-eastEIA_countries <- constants$eastEIAcountries #Eastern Sub-Saharan Africa 
+eastEIA_countries <- c("Tanzania", "Rwanda", "United Republic of Tanzania", "Kenya", "Madagascar", "Comoros") #Eastern Sub-Saharan Africa 
 
 #-------------------------------------------------------------------------------
 # Generate Spatial Window for Analyses----
 sf::sf_use_s2(FALSE) #turn off spherical co-ordinates
-sampling_win <-  sampling_win %>%
+sampling_win <- ne_countries(continent = "Africa", country = eastEIA_countries, returnclass = "sf", scale="large") %>%
   st_make_valid() %>%
   st_union()
 sf::sf_use_s2(TRUE) #turn on spherical co-ordinates
 
 # Target Parameters ----
 true_param  <- list()
-true_param$n  <- 400 #number of sites & dates
-true_param$origin_point <- st_sfc(st_point(c(-1.45, 31.77))) #dispersal origin point -- approximately at Katuruka
+true_param$n  <- 3 #number of sites & dates
+true_param$origin_point <- st_sfc(st_point(c(-2, 35))) #dispersal origin point 
 true_param$beta0 <- 2500 #approximate mean date at origin point
 true_param$beta1 <- 1 #reciprocal of dispersal rate 
 true_param$sigma <- 100 

@@ -329,17 +329,17 @@ hex_area_win <- hex_area_win %>%
 #   mutate(area_ID = row_number())
 
 ##CHECK -- plot hexs and sites
-ggplot(data = hex_area_win) +
-  geom_sf(data = st_buffer(st_as_sf(sampling_win, crs = 4326), 40000), aes(color = "grey50")) + #sampling window with coastal buffer
-  geom_sf() + #hex grid
-  geom_sf(data = as(sites, 'sf'), size=2, alpha=0.5) + #sites
-  geom_sf_label(aes(label = area_ID),size=3) + #hex grid labels
-  #geom_sf(data = hex_area_win$area_center, size=2, alpha=1, aes(color = "purple")) + #hex-origins
-  theme(panel.background = element_rect(fill = "lightblue",
-                                        colour = "lightblue",
-                                        size = 0.5,
-                                        linetype = "solid"),
-        legend.position = "none")
+# ggplot(data = hex_area_win) +
+#   geom_sf(data = st_buffer(st_as_sf(sampling_win, crs = 4326), 40000), aes(color = "grey50")) + #sampling window with coastal buffer
+#   geom_sf() + #hex grid
+#   geom_sf(data = as(sites, 'sf'), size=2, alpha=0.5) + #sites
+#   geom_sf_label(aes(label = area_ID),size=3) + #hex grid labels
+#   #geom_sf(data = hex_area_win$area_center, size=2, alpha=1, aes(color = "purple")) + #hex-origins
+#   theme(panel.background = element_rect(fill = "lightblue",
+#                                         colour = "lightblue",
+#                                         size = 0.5,
+#                                         linetype = "solid"),
+#         legend.position = "none")
 
 #Assign hex area id to each site ----
 siteInfo$area_id <- as.integer(st_within(sites$geometry, hex_area_win$geometry))

@@ -187,6 +187,46 @@ wanyika_traits <- wanyika_traits %>%
 #Pottery styles
 wanyika_pottery <- table(as.factor(Wanyika_dat$"Ceramic Phase (Pottery Ware)"))
 
+
+
+#--------------------------
+##Examine Iron trait
+
+wanyika_iron_df <- Wanyika_dat %>% 
+  rename(iron_use = "Iron Use", iron_smelting="Iron Smelting") %>% 
+  filter(iron_use=="Yes" | iron_smelting=="Yes") %>% 
+  dplyr::select("Labcode", "Date BP", "Date BP SD", "Longitude", "Latitude", "Site Name", "Dated Material", "Country") %>%
+  rename(labCode="Labcode", siteName="Site Name", lat="Latitude", long="Longitude", c14date="Date BP", c14std="Date BP SD", material="Dated Material", country="Country") %>%
+  mutate(c14date = as.numeric(c14date), c14std=as.numeric(c14std), dataorigin="Wanyika")  %>%
+  filter(!is.na(lat) & !is.na(long) & !is.na(c14std) & !is.na(c14date)) 
+
+#Create sf object of iron sites
+wanyika_iron_sites <- st_as_sf(wanyika_iron_df, coords = c('long','lat'))
+st_crs(wanyika_iron_sites)  <- 4326 
+
+#Sampling window: Eastern Sub-Saharan Africa ----
+sf_use_s2(FALSE)
+sampling_win_wanyika <- ne_countries(continent = "Africa", country = c("Tanzania", "Rwanda", "United Republic of Tanzania", "Kenya", "Madagascar", "Comoros"), returnclass = "sf", scale="large") #the detailed resolution (scale='large') ensures the Comoros islands are included
+sampling_win_africa <- st_union(st_make_valid((ne_countries(continent = "Africa", returnclass = "sf"))))
+sf_use_s2(TRUE)
+
+#Plot
+pdf(file=here('output','figures','figure_map_ironsites.pdf'), width=8.5, height=7)
+ggplot() +
+  geom_sf(data = st_as_sf(sampling_win_africa, crs = 4326), aes(color = "grey80")) +
+  geom_sf(data = st_buffer(st_as_sf(sampling_win_wanyika, crs = 4326), 4000), fill = "lightgreen", colour="red") + #sampling window with coastal buffer
+  geom_sf(data = as(wanyika_iron_sites, 'sf'), size=2, alpha=0.5) + #sites
+  coord_sf(xlim = st_bbox(sampling_win_wanyika)[c("xmin", "xmax")],
+           ylim = st_bbox(sampling_win_wanyika)[c("ymin", "ymax")],
+           expand = TRUE) +
+  theme(panel.background = element_rect(fill = "lightblue",
+                                        colour = "lightblue",
+                                        size = 0.5,
+                                        linetype = "solid"),
+        legend.position = "none") +
+  ggtitle("Archaeological sites with evidence of iron smelting or use")
+dev.off()
+
 #===============================================================================
 ## Plot Data  ---- FIGURE figure_map
 
