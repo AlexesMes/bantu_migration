@@ -20,7 +20,8 @@ source(here('src','hex_areas.R'))
 # Generate Spatial Window for Analyses: Box same size as Europe ----
 
 #-------------------------------------------------------------------------------
-##List of countries in europe (excluding france and norway which need to be added separately) ---
+##Sampling window: Europe ----
+#List of countries in europe (excluding france and norway which need to be added separately if needed) ---
 europe_countries <- c("Albania", "Latvia", "Andorra", "Liechtenstein",
                       "Armenia", "Lithuania", "Austria", "Luxembourg",
                       "Azerbaijan", "Malta", "Belarus", "Moldova",
@@ -36,10 +37,7 @@ europe_countries <- c("Albania", "Latvia", "Andorra", "Liechtenstein",
 ##Generate Spatial Window for Analyses
 #Sampling window: Bounding box roughly the centered on mainland Europe ----
 
-sf::sf_use_s2(FALSE)
-sampling_europe_win <- st_union(st_make_valid(ne_countries(country=europe_countries, returnclass = "sf")),
-                                st_make_valid(ne_countries(geounit = c("france", "norway"), type = "map_units", returnclass = "sf"))) # France filter map_units by geounit to exclude French Guiana. Similar problem for Norway
-sf::sf_use_s2(TRUE)
+sampling_europe_win <- ne_countries(country=europe_countries, returnclass = "sf")
 
 #Create bounding box in correct CRS
 sampling_win_proj <- st_transform(sampling_europe_win, crs = 3035) #project to CRS for LAEA Europe
