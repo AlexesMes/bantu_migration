@@ -1,0 +1,66 @@
+##Functions to plot the magnitude and direction of gradients
+
+#Extract gradient distribution information
+extract_gradinfo <- function(x)
+{
+  tmp = do.call(rbind, x)
+  tmp2 = tmp[ , grep('^nabla\\[',colnames(tmp))]
+  return(tmp2)
+}
+
+#Determine proportion of distribution which is positive
+prop_gthan_zero <- function(data) {
+  # Count the number of elements greater than zero
+  count_positive <- sum(data > 0)
+  # Calculate the proportion
+  proportion <- count_positive / length(data)
+  return(proportion)
+}
+
+#Determine proportion of distribution which is above a specified time threshold
+prop_gthan_threshold <- function(data, threshold) {
+  # Count the number of elements greater than zero
+  count_positive <- sum(data > threshold)
+  # Calculate the proportion
+  proportion <- count_positive / length(data)
+  return(proportion)
+}
+
+# Define a custom function to plot arrows
+plot_arrows <- function(edges, scale_par=1, ...) {
+  for (i in 1:nrow(edges)) {
+    
+    ##Determine which is the start node and which is the end node
+    mag_grad <- edges$mean_gradient[i] #Multiply by scaling parameter for plotting purposes -- relative magnitude of gradient is what is important
+    if(mag_grad >= 0){
+      x_start = edges$region1_x[i]
+      y_start = edges$region1_y[i]
+      x_end = edges$region2_x[i]
+      y_end = edges$region2_y[i] } else {
+        x_start = edges$region2_x[i]
+        y_start = edges$region2_y[i]
+        x_end = edges$region1_x[i]
+        y_end = edges$region1_y[i]
+      }
+    
+    ##Determine the angle of the edge
+    #Calculate the differences in x and y coordinates
+    delta_x <- x_end - x_start
+    delta_y <- y_end - y_start
+    
+    # Calculate the angle in radians using the arctangent function (atan2)
+    angle_rad <- atan2(delta_y, delta_x)
+    
+    # Define the length of the arrow
+    arrow_length <- abs(mag_grad)*scale_par
+    
+    # Calculate the coordinates of the arrow head
+    arrow_head_x <- x_start + arrow_length * cos(angle_rad)
+    arrow_head_y <- y_start + arrow_length * sin(angle_rad)
+    
+    # Define alpha transparency value (0 to 1) depending on uncertainty in gradient
+    alpha <- edges$uncertainty[i] #the proportion of the distribution in this direction
+    
+    arrows(x0 = x_start, y0 = y_start, x1 = arrow_head_x, y1 = arrow_head_y, col = rgb(0, 0, 1, alpha), ...)
+  }
+}

@@ -34,193 +34,91 @@ europe_countries <- c("Albania", "Latvia", "Andorra", "Liechtenstein",
                       "Italy", "Ukraine", "Kosovo", "United Kingdom")
 #-------------------------------------------------------------------------------
 ##Generate Spatial Window for Analyses
-#Sampling window: Europe ----
+#Sampling window: Bounding box roughly the centered on mainland Europe ----
 
 sf::sf_use_s2(FALSE)
 sampling_europe_win <- st_union(st_make_valid(ne_countries(country=europe_countries, returnclass = "sf")),
                                 st_make_valid(ne_countries(geounit = c("france", "norway"), type = "map_units", returnclass = "sf"))) # France filter map_units by geounit to exclude French Guiana. Similar problem for Norway
 sf::sf_use_s2(TRUE)
 
-sampling_win <- st_as_sfc(st_bbox(sampling_europe_win, crs = 4326))
+#Create bounding box in correct CRS
+sampling_win_proj <- st_transform(sampling_europe_win, crs = 3035) #project to CRS for LAEA Europe
+sampling_win_proj <- st_as_sfc(st_bbox(sampling_win_proj))
 
-#Generate Spatial Hexagons --
-hex_areas <- function(win, cell_d = 6){
-  cell_diameter <- cell_d
-  hex_grid <- st_make_grid(win, square=FALSE,  cellsize = cell_diameter) #makes an hexagonal grid (default: what = "polygons)
-  
-  #Projection ----
-  st_crs(hex_grid)  <- 4326
-  
-  #Clip to sampling window with coastal buffer ---
-  #coastal_buffer_win <- st_as_sf(win, crs = 4326)
-  #hex_grid_clipped <- st_intersection(st_as_sf(hex_grid), coastal_buffer_win)
-  
-  #Assign hex IDs ----
-  hex_grid <- st_as_sf(hex_grid) %>%
-    rename(geometry = x) %>%
-    mutate(area_ID = row_number(),
-           area_center = st_centroid(hex_grid))
-  
-  #Return Output ----
-  return(hex_grid)
-}  
-
-hex_area_win <- hex_areas(sampling_win, cell_d = 5) 
+hex_area_win_proj <- hex_areas(sampling_win_proj, cell_d = 600000) #hex_areas of 600km in diameter #for mapping: CRS for LAEA Europe (crs=3035)
 
 ##Plot sample window and hex areal units
-ggplot(data = hex_area_win) +
-  geom_sf(data = sampling_win, aes(color = "grey50"), lwd=1) + #internal country borders
+ggplot(data = hex_area_win_proj) +
+  #geom_sf(data = sampling_win_proj, aes(color = "grey50"), lwd=1) + #See sampling_win
   geom_sf() + #hex grid
+  geom_sf(data = hex_area_win_proj$area_center, color="purple", size=1.5, alpha=0.7) +
+  geom_sf_text(data = hex_area_win_proj$area_center, aes(label=hex_area_win_proj$area_ID), size=4, color="black") +
+  coord_sf(crs=st_crs(3035)) +
   theme(panel.background = element_rect(fill = "lightblue",
                                         colour = "lightblue",
                                         size = 0.5,
                                         linetype = "solid"),
         legend.position = "none")
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-#Assign hex area id to each site ----
-siteInfo$area_id <- as.integer(st_within(sites$geometry, hex_area_win$geometry))
-#Assign hex area id to each date ----
-dateInfo$area_id <- siteInfo$area_id[match(dateInfo$siteID, siteInfo$siteID)]
-
-# #CHECK ---
-area_freq  <- plyr::count(siteInfo, 'area_id') ##See how many sites fall in each hex area. Also make sure there are no 'NA' entries
-#In order to check that this lines up visually with how many sites are in each hex area see map_figure2
-
-#--------------------------------
-# ## Determining hex size ---
-# #Under changing hex size, determine the proportion of areal hex units in the sampling window with sites
-# prop_units_df <- data.frame(d = numeric(), prop_with_sites = numeric())
-# 
-# for (d in seq(1, 15, 0.1)){
-#   hex_area_win <- hex_areas(sampling_win, cell_d = d)
-#   siteInfo$area_id <- as.integer(st_within(sites$geometry, hex_area_win$geometry))
-# 
-#   hex_with_sites <- length(unique(siteInfo$area_id))
-#   all_hex <- length(hex_area_win$area_ID)
-# 
-#   prop_with_sites <- hex_with_sites/all_hex
-# 
-#   prop_units_df <- rbind(prop_units_df, data.frame(d = d, prop_with_sites = prop_with_sites))
-# }
-# 
-# # Plot results
-# pdf(here('output','figures','figure_hexsize_cont.pdf'),height=5,width=5.5)
-# ggplot(prop_units_df, aes(x = d, y = prop_with_sites)) +
-#   geom_line() +
-#   geom_point() +
-#   scale_x_continuous(breaks=seq(0,15,by=1))+
-#   labs(x = "Hexagon Size (d)", y = "Proportion of Hexagons with Sites", title = "Effect of Hexagon Size on Site Coverage") +
-#   theme_minimal()
-# dev.off()
-
-
-
-
-
-
-
-#Convert to sf objects
-eastEIA_sites_sf <- sf::st_as_sf(siteInfo, 
-                                 coords = c("long", "lat"), 
-                                 remove = F, 
-                                 crs = 4326, 
-                                 na.fail = F)
-
-#Sampling window
-sampling_win <- st_as_sf(sampling_win, crs = 4326)
-#Sampling window without internal boundaries (and added coastal buffer)
-sf::sf_use_s2(FALSE) #turn off spherical co-ordinates
-sampling_win_ext <-  sampling_win %>%
-  st_make_valid() %>%
-  st_union() 
-sf::sf_use_s2(TRUE) #turn on spherical co-ordinates
-
-sampling_win_ext <- st_buffer(st_as_sf(sampling_win_ext, crs = 4326), 40000)
-
 #-------------------------------------------------------------------------------
-## Compute Great-Arc Distances in km between area centers ---
-#We take the center of each area k to be a point representing that whole area
-hex_area_centers <- st_as_sf(hex_area_win$area_center)
-st_crs(hex_area_centers)  <- 4326
-hex_dist_mat <- set_units(st_distance(hex_area_centers), 'km') #Inter-area distance matrix in km: each area's distance from every other area.
-
-
-##Delaunay triangulation between hex centers
-center_coords <- st_coordinates(hex_area_centers) #TODO: Uncomment
-del <- deldir(center_coords, id=hex_area_win$area_ID)
+##Delaunay triangulation between hex centers --- 
+#Note: should not be done in WGS84, because deldir() assumes Euclidean geometry
+hex_area_centers_proj <- st_as_sf(hex_area_win_proj$area_center)
+center_coords <- st_coordinates(hex_area_centers_proj) 
+del <- deldir(center_coords, id=hex_area_win_proj$area_ID)
 tiles <- tile.list(del)
-##Selecting 3 triangles of interest -- TEST CASE
-# center_coords <- st_coordinates(hex_area_centers[c(13, 18, 22), ])
-# del <- deldir(center_coords, id=c(1, 2, 3)) #Relabel ids for nimble (must be sequential from 1) 13 -> 1, 14 -> 2, 18 -> 3
-# tiles <- tile.list(del)
 
-
-##Remove external edges that are outside sampling window ---
-
-#EITHER...
-# #Remove boundary transitions
-# average_trans <- mean(transitions$distance)
-# transitions <- transitions %>% filter(distance < average_trans)
-
-#OR....
-
-#Create edges as linestrings
-st_segment <- function(r){st_linestring(t(matrix(unlist(r), 2, 2)))}
-edges_coords <- del$delsgs[ , 1:4]
-edges_coords$geom <- st_sfc(sapply(1:nrow(edges_coords), 
-                                   function(i){st_segment(edges_coords[i,])}, simplify=FALSE))
-st_crs(edges_coords$geom)  <- 4326
-#Check if edges are external
-check_edges_ext <- st_within(edges_coords$geom, sampling_win_ext)
-ind_ext_edges <- which(is.na(as.numeric(check_edges_ext))) # indices of edges which are external -- to be removed if we aren't considering ocean movement
-##Check
-#internal_edges <- edges_coords[-ind_ext_edges, ]
-#plot(sampling_win_ext)
-#plot(internal_edges$geom, add=T) #compare to plot(edges_coords$geom, add=T)
-
-# Add center_coords in constants
+##Add center_coords in constants
 constants_trig <- list()
 constants_trig$center_coords <- center_coords
 
-# ##Plot delaunay triangulation
-# #ggplot(data = hex_area_win[c(13, 18, 22),]) +
-# ggplot(data = hex_area_win) + #TODO: Uncomment
-#   geom_sf(data = st_buffer(sampling_win, 40000), aes(color = "grey50")) + #sampling window with coastal buffer
-#   geom_sf() + #hex grid
-#   geom_sf_text(aes(label = area_ID), size=4, alpha=0.8) + #hex grid labels #aes(label =  c('1','2','3'))
-#   geom_sf(data = hex_area_win$area_center, size=2, alpha=1, aes(color = "purple")) + #hex-origins
-#   geom_delaunay_segment(aes(x=center_coords[,1], y=center_coords[,2]),
-#                         alpha=0.5,
-#                         colour='purple',
-#                         size=0.8) +
-#   labs(x = "Longitude", y = "Latitude") +
-#   theme(panel.background = element_rect(fill = "lightblue",
-#                                         colour = "lightblue",
-#                                         size = 0.5,
-#                                         linetype = "solid"),
-#         legend.position = "none")
+##Remove external edges that are outside sampling window ---
+#Create edges as linestrings
+st_segment <- function(r){st_linestring(t(matrix(unlist(r), 2, 2)))} #function to make LINESTRINGs from Delaunay segments
+edges_coords <- del$delsgs[ , 1:4]
+edges_coords$geom <- st_sfc(sapply(1:nrow(edges_coords), 
+                                   function(i){st_segment(edges_coords[i,])}, simplify=FALSE), crs = 3035) #create sf object of segments (in projected CRS)
+
+
+#Filter edges to those within the sampling window (projected) 
+check_edges_ext <- st_within(edges_coords$geom, st_buffer(sampling_win_proj, dist=60000)) #check if edges are inside the (buffered) sampling window
+ind_ext_edges <- which(is.na(as.numeric(check_edges_ext))) # indices of edges which are external -- to be removed if we aren't considering ocean movement
+##Check
+if (length(ind_ext_edges > 0)){
+    internal_edges <- edges_coords[-ind_ext_edges, ]
+  } else {
+    internal_edges <- edges_coords} #if there are no external edges, retain all the original edges
+plot(sampling_win_proj)
+plot(internal_edges$geom, add=T) #compare to plot(edges_coords$geom, add=T)
+
+
+##Plot delaunay triangulation ---
+ggplot() +
+  geom_sf(data = st_buffer(sampling_win_proj, 40000), fill=NA, color = "grey50", linewidth=1) + #sampling window with coastal buffer
+  geom_sf(data = hex_area_win_proj) + #hex grid
+  geom_sf_text(data = hex_area_win_proj, aes(label = area_ID), size=4, alpha=0.8) + #hex grid labels 
+  geom_sf(data = hex_area_win_proj$area_center, size=2, alpha=1, color = "purple") + #hex-origins
+  geom_delaunay_segment(aes(x=center_coords[,1], y=center_coords[,2]),
+                        alpha=0.3,
+                        colour='purple',
+                        size=0.8) +
+  labs(x = "Longitude", y = "Latitude") +
+  theme(panel.background = element_rect(fill = "lightblue",
+                                        colour = "lightblue",
+                                        size = 0.5,
+                                        linetype = "solid"),
+        legend.position = "none")
+
+#-------------------------------------------------------------------------------
+# ##Compute Great-Arc Distances in km between area centers ---
+# #We take the center of each area k to be a point representing that whole area
+# hex_area_win <- st_transform(hex_area_win_proj, crs = 4326) ##returns WGS84 projection -- NB: to be used for calculations
+# sampling_win <- st_transform(sampling_win_proj, crs = 4326)
+# hex_area_centers <- st_transform(hex_area_centers_proj, crs = 4326)
+# hex_dist_mat <- set_units(st_distance(hex_area_centers), 'km') #Inter-area distance matrix in km: each area's distance from every other area.
+
+##Compute Distances in km between area centers ---
+hex_dist_mat  <- set_units(st_distance(hex_area_centers_proj), 'km') #in crs=3035
 
 #-------------------------------------------------------------------------------
 ##Transitions dataframe --
@@ -234,9 +132,13 @@ transitions <- del$delsgs %>%
   mutate(region1_id = as.integer(region1_id), 
          region2_id = as.integer(region2_id)) %>% 
   rowwise() %>% 
-  mutate(distance = hex_dist_mat[region1_id, region2_id]) #Great-arc distance between transitions in km
+  mutate(distance = hex_dist_mat[region1_id, region2_id]) %>% #Great-arc distance between transitions in km
+  filter(distance < set_units(610, "km")) #remove transitions between hexs which aren't adjacent #note: change depending on chosen hex size 
 
-transitions <- transitions[-ind_ext_edges,] #remove transitions outside the sampling window
+if (length(ind_ext_edges > 0)){
+  transitions <- transitions[-ind_ext_edges,] #remove transitions outside the sampling window
+} else {
+  transitions <- transitions} #if there are no external edges, retain all the transitions
 
 #Transform transitions into usable format to save in constants
 edge_info <- as.data.frame(transitions)
@@ -246,15 +148,18 @@ constants_trig$edge_id2 <- edge_info$region2_id
 constants_trig$edge_dist <- edge_info$distance
 
 
-
 #-------------------------------------------------------------------------------
 ## Save everything on a R image file ----
-save(del, 
-     tiles,
+#Save transitions between hex areas
+save(#del, 
+     #tiles,
      edge_info,
      constants_trig,
-     file=here('data','trig_cont.RData')) #'trig.RData'
+     file=here('data','trig.RData')) 
 
-save(edge_info,
-     constants_trig,
-     file=here('data','boundary_edges.RData'))
+#Save sampling window separately
+constants<- list()
+constants$countries <- c(europe_countries, "France", "Norway")
+constants$n_areas  <- nrow(hex_area_win_proj)
+
+save(constants, sampling_win_proj, hex_area_win_proj, file=here('data','sample_window.RData'))
