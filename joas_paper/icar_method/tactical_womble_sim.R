@@ -14,9 +14,9 @@ library(patchwork)
 
 rm(list = ls())
 `%!in%` <- Negate(`%in%`)
-set.seed(123)
+set.seed(1223)
 
-##SCRIPT TO SIMULATE DATA (WITH UNDERLYING SPATIAL AUTOCORRELATED STRUCTURE) FOR ICAR MODEL WITHOUT ERRORS
+##SCRIPT TO SIMULATE DATA (WITH UNDERLYING SPATIAL AUTOCORRELATED STRUCTURE) FOR ICAR MODEL WITH ERRORS (i.e. uncalibrated radiocarbon dates with associated errors)
 
 # Load sample window data ----
 load(here('data','sample_window.RData'))
@@ -24,7 +24,7 @@ load(here('data','trig.RData')) #nodes and edges between hex area centroids
 
 #-------------------------------------------------------------------------------
 # Target Parameters ----
-n_sites  <- 500
+n_sites  <- 550
 n_dates  <- 1200 
 origin_point_proj <- st_transform(st_sfc(st_point(c(-5, 63)),crs=4326), crs=3035) #choose dispersal origin point -- approximately in hex 29
 k <- 0.3 #clustering strength: 0 = random, 1 = very clustered
@@ -35,6 +35,7 @@ library(spdep)
 nb_areas <- poly2nb(as(hex_area_win_proj, 'Spatial'), queen=FALSE, row.names = hex_area_win_proj$area_ID) #neighboring areas using sp library 
 nbInfo <- nb2WB(nb_areas) #transform into iCAR inputs: adjacent matrix, weights, number of neighbors (for WinBUGS)
 
+constants <- constants_sw
 constants$adj <- nbInfo$adj
 constants$weights <- nbInfo$weights
 constants$num <- nbInfo$num
@@ -44,11 +45,6 @@ constants$L <-length(nbInfo$adj)
 #Simulate Data ----
 
 #Generate sites and calculate distances from origin ---
-
-#For random sampling
-#sites <- st_sample(sampling_win_proj,  size = n_sites, type = 'random') 
-#st_crs(sites) <- 3035
-#sites <- st_as_sf(sites) %>% rename(geometry = x)
 
 #Controlling level of clustering in generated sites
 sample_clustered_points <- function(sampling_win_proj, n_sites, k,
@@ -72,10 +68,19 @@ sample_clustered_points <- function(sampling_win_proj, n_sites, k,
 
       #Generate clustered points
       pp <- rThomas(kappa = kappa, sigma = sigma, mu = mu, win = win_spat)
+      pts <- as.data.frame(pp)[, c("x", "y")]
+      
+      #Enforce exactly n_sites
+      if (nrow(pts) > n_sites) {
+        pts <- pts[sample(nrow(pts), n_sites), ]
+      } else if (nrow(pts) < n_sites) {
+        extra <- as.data.frame(runifpoint(n_sites - nrow(pts), win = win_spat))[, c("x", "y")] #Top up with uniform random points
+        pts <- rbind(pts, extra)
+      }
     }
 
   #Convert to sf
-  st_as_sf(as.data.frame(pp), coords = c("x", "y"), crs = 3035) %>%
+  st_as_sf(as.data.frame(pts), coords = c("x", "y"), crs = 3035) %>%
     mutate(site_id = row_number())
 }
 
@@ -111,16 +116,16 @@ origin_area <- as.integer(st_within(origin_point_proj, hex_area_win_proj$geometr
 origin_area_center <- hex_area_win_proj[hex_area_win_proj$area_ID==origin_area, "area_center"]
 
 #Distance in km from origin area to hex centers
-hex_area_win_proj <- hex_area_win_proj %>% 
-  mutate(dist_from_origin = as.vector(set_units(st_distance(x=area_center, y=origin_area_center), 'km'))) 
+hex_area_win_proj <- hex_area_win_proj %>%
+  mutate(dist_from_origin = as.vector(set_units(st_distance(x=area_center, y=origin_area_center), 'km')))
 
 
 #-------------------------------------------------------------------------------
-##Create environmental variables --
-# hex_area_win_proj <- hex_area_win_proj %>% 
+#Create environmental variables -- ##For ICAR simulation
+# hex_area_win_proj <- hex_area_win_proj %>%
 #   mutate(
-#     forest_present = if_else(area_ID %in% c(7, 15, 23, 32, 39, 44, 6, 10, 18, 27, 35, 14, 22, 31, 26), 1, 0),
-#     water_present  = if_else(area_ID %in% c(33, 45, 39, 51, 44, 63, 57, 56, 52), 1, 0),
+#     forest_present = if_else(area_ID %in% c(7, 15, 23, 32, 39, 44, 6, 10, 18, 27, 35, 14, 31), 1, 0),
+#     water_present  = if_else(area_ID %in% c(25, 39, 51, 44, 63, 57, 56, 52), 1, 0),
 #     env_type = case_when(
 #       forest_present == 1 & water_present == 1 ~ "Forest & Water",
 #       forest_present == 1 & water_present == 0 ~ "Forest Only",
@@ -131,8 +136,8 @@ hex_area_win_proj <- hex_area_win_proj %>%
 environ_plot <- ggplot(data = hex_area_win_proj) +
   geom_sf(data = sampling_win_proj, color = "grey50") +  # sampling window border
   geom_sf() +
-  #geom_sf(aes(fill = env_type)) + # color by combined type
-  #scale_fill_manual(
+  # geom_sf(aes(fill = env_type)) + # color by combined type
+  # scale_fill_manual(
   #  values = c("Neither" = "grey90", "Forest Only" = "forestgreen", "Water Only" = "skyblue", "Forest & Water" = "hotpink4")) +
   geom_sf(data = as(sites, 'sf'), size = 2, alpha = 0.5) +  # sites
   geom_sf_label(aes(label = area_ID)) +                     # area labels
@@ -146,12 +151,12 @@ print(environ_plot)
 #-------------------------------------------------------------------------------
 ##MODEL ---
 
-# ##ICAR Simulate --
+##ICAR Simulate --
 # sim_model <- nimbleCode({
 #   # Simulate spatially correlated data for all k in 1:n_areas
 #   for (k in 1:n_areas){
 #     a[k] ~ dnorm(nu[k], tau.err);
-#     nu[k] <- phi[k] + x1[k]*beta1; #+ x2[k]*beta2;
+#     nu[k] <- phi[k] + x1[k]*beta1 + x2[k]*beta2;
 #   }
 #   phi[1:n_areas] ~ dcar_proper(mu = mu[1:n_areas], adj=adj[1:L], num=num[1:n_areas], tau=tau, gamma=gamma) # ICAR prior to capture spatial random effects
 #   d[1:n_areas] ~ dcar_proper(mu = mu2[1:n_areas], adj=adj[1:L], num=num[1:n_areas], tau=tau, gamma=gamma)
@@ -172,17 +177,17 @@ print(environ_plot)
 #   }
 # })
 
-#WOA Wave of Advance Simulate --
+##WOA Wave of Advance Simulate --
 sim_model <- nimbleCode({
   # Simulate spatially correlated data for all k in 1:n_areas
   for (k in 1:n_areas){
     a[k] ~ dnorm(nu[k], sd=sigma);
-    nu[k] <- beta0 - dist[k]/s# + x1[k]*beta1 + x2[k]*beta2;
+    nu[k] <- beta0 - dist[k]/s; # + x1[k]*beta1 + x2[k]*beta2;
   }
   d[1:n_areas] ~ dcar_proper(mu = mu3[1:n_areas], adj=adj[1:L], num=num[1:n_areas], tau=tau, gamma=gamma)
   b[1:n_areas] <- a[1:n_areas] - abs(d[1:n_areas]*0.5) #duration must be positive
   #tau ~ dgamma(2, 0.5)
-  
+
   for (j in 1:n_sites)
   {
     delta[j] ~ dgamma(5,(5-1)/100); #Site duration parameter.
@@ -190,7 +195,7 @@ sim_model <- nimbleCode({
     beta[j] <- alpha[j] - (delta[j] + 1); #The +1 ensures at a minimum where there are two dates at a site there will be 1 year between them.
     constraint_duration[j] ~ dconstraint(alpha[j]>(delta[j]+1)); #Site can't have have a duration longer than its time of first arrival
   }
-  
+
   for (i in 1:n_dates){
     theta[i] ~ dunif(min=beta[id_sites[i]], max=alpha[id_sites[i]]);
     cra_constraint[i] ~ dconstraint(theta[i] > 0);
@@ -205,18 +210,18 @@ sim_constants$n_areas  <- constants$n_areas
 sim_constants$id_sites  <- dates$site_id
 sim_constants$id_areas <- sites$area_id
 sim_constants$x1 <- hex_area_win_proj$forest_present
-sim_constants$beta1 <- -400 #magnitude of the effect of the forest covariate
+sim_constants$beta1 <- -300 #magnitude of the effect of the forest covariate
 sim_constants$x2 <- hex_area_win_proj$water_present
-sim_constants$beta2 <- +300 #magnitude of the effect of the water covariate
-sim_constants$mu <- rep(2000, constants$n_areas) #runif(1:sim_constants$n_areas, min = 600, max = 3500) #rep(0, n_areas)
+sim_constants$beta2 <- +250 #magnitude of the effect of the water covariate
+sim_constants$mu <- rep(5500, constants$n_areas) #runif(1:sim_constants$n_areas, min = 600, max = 3500) #rep(0, n_areas)
 sim_constants$mu2 <- rep(500, constants$n_areas) #runif(1:sim_constants$n_areas, min = 50, max = 600)
 sim_constants$tau <- 0.000005
 sim_constants$tau.err <- 0.5
 sim_constants$gamma <- 0.99
 #WOA constants
 sim_constants$dist <- hex_area_win_proj$dist_from_origin
-sim_constants$s  <- 2.5 #Speed of the wave of advance (in km a year)
-sim_constants$beta0 <- 2600 #off-set -- arrival time in the origin hex
+sim_constants$s  <- 2 #Speed of the wave of advance (in km a year)
+sim_constants$beta0 <- 6500 #off-set -- arrival time in the origin hex
 sim_constants$sigma <- 50
 sim_constants$mu3 <- rep(500, constants$n_areas)
 
@@ -225,14 +230,13 @@ dat <- list(constraint_uniform = rep(1, sim_constants$n_areas),
             constraint_duration = rep(1, n_sites),
             cra_constraint = rep(1, n_dates))
 
-init_a <- runif(1:sim_constants$n_areas, min = 600, max = 3500)
+init_a <- runif(1:sim_constants$n_areas, min = 4000, max = 6400)
 init_b <- init_a - runif(1:sim_constants$n_areas, min = 50, max = 600)
 inits <- list(a = init_a,
               b = init_b)
 #              tau = 2)
 
 #Simulate ----
-set.seed(1223)
 simModel <- nimbleModel(code = sim_model, constants = sim_constants, data = dat, inits = inits)
 
 #nodesToSim <- simModel$getDependencies(c("a", "phi", "d", "b", "delta", "alpha", "beta", "theta"), self = T, downstream = T)
@@ -270,7 +274,7 @@ simModel$simulate(nodesToSim)
 
 #Extract simulated arrival times
 true_hex_dates <- hex_area_win_proj %>% 
-  filter(area_ID %in% 1:143) %>% 
+  filter(area_ID %in% 1:constants$n_areas) %>% 
   mutate(true_a = simModel$a)
 
 #Plot
@@ -287,6 +291,7 @@ sim_arival_plot <- ggplot(data = true_hex_dates) +
                                         size = 0.5,
                                         linetype = "solid"),
         legend.position = "none")
+print(sim_arival_plot)
 
 #Output
 ggsave(file=here('output','figures','figure_woa_sim.pdf'), 
@@ -296,9 +301,12 @@ ggsave(file=here('output','figures','figure_woa_sim.pdf'),
 
 
 #-----------------------------------------------
-##Combine data ---- ##Note: no model uncertainty has yet been added in... generates dates, not uncalibrated radiocarbon dates with associated error
-cra = round(simModel$theta)
+##Combine data ---- ##Note: uncalibrated radiocarbon dates with associated error
+cra = uncalibrate(round(simModel$theta))$rCRA 
+cra_error = rep(20,length(cra))
+
 sim_df <- list(cra = cra,
+               cra_error = cra_error,
                site_id = id_sites)
 
 ##Collect site level information ----
@@ -332,4 +340,4 @@ constants$true_alpha <- simModel$alpha
 constants$true_beta <- simModel$beta
 
 ##Store output ----
-save(sites, siteInfo, sim_df, constants, sampling_win_proj, hex_area_win_proj, file=here('data','tactical_sim_woa.RData'))
+save(sites, sites_sf, siteInfo, sim_df, constants, sampling_win_proj, hex_area_win_proj, file=here('data','tactical_sim_woa.RData'))

@@ -84,7 +84,7 @@ dev.off()
 site_map <- ggplot(data = hex_area_win_proj) +
     geom_sf(data = sampling_win_proj, color = "grey50") +  # sampling window border
     geom_sf() +
-    geom_sf(data = as(sites, 'sf'), size = 2, alpha = 0.5) +  # sites
+    geom_sf(data = sites_sf, size = 2, alpha = 0.5) +  # sites
     geom_sf_label(aes(label = area_ID)) +                     # area labels
     theme(
       panel.background = element_rect(fill = "lightblue", colour = "lightblue"),
@@ -99,11 +99,11 @@ dev.off()
 #------------
 ##FIGURE 3 -- Map of Inferred arrival times
 out.comb.tac_icar.model  <- do.call(rbind, mcmc.samplesW)
-post.a.model.i  <- out.comb.tac_icar.model[,paste0('a[',1:143,']')]  %>% round() 
+post.a.model.i  <- out.comb.tac_icar.model[,paste0('a[',1:81,']')]  %>% round() 
 med.model.i  <- apply(post.a.model.i, 2, median) #Extract arrival times for tactical icar model
 
 median_hex_dates_mod.i <- hex_area_win_proj %>% 
-  filter(area_ID %in% 1:143) %>% 
+  filter(area_ID %in% 1:81) %>% 
   mutate(median_date = med.model.i,
          contains_sites = as.factor(case_when(area_ID %in% Hex_with_sites ~ 1, area_ID %in% Hex_without_sites ~ 0))) 
 
@@ -155,18 +155,18 @@ post.bar <- function(x, i, h, a, col)
 pdf(file=here('output','figures','sim1_posteriors.pdf'), width=10, height=18, pointsize=4)
 plot(NULL, xlim=c(2700, 1000), ylim=c(3,95), xlab=paste('Arrival time,', TeX('$a_k$')), ylab=paste('Area,', TeX('$k$')), cex.lab = 2, axes=F)
 tmp.a = extract(mcmc.samplesW)
-iseq.a = seq(1,by=2,length.out=143)
-abline(h=seq(2,by=2,length.out=143), col='darkgrey',lty=2)
+iseq.a = seq(1,by=2,length.out=81)
+abline(h=seq(2,by=2,length.out=81), col='darkgrey',lty=2)
 
 counter <- 1 #indexing counter
-for (i in c(1:143)) #all relevant hex areas
+for (i in c(1:81)) #all relevant hex areas
 {
   #Plot bar in area i
   post.bar(tmp.a[,i], i=iseq.a[counter], h=0.9, a= sim_a[[i]], col='lightblue')
   counter <- counter + 1
 }
 
-axis(2, at=iseq.a+0.5, labels = paste0(c(1:143)), las=2, cex.axis=1.7)
+axis(2, at=iseq.a+0.5, labels = paste0(c(1:81)), las=2, cex.axis=1.7)
 axis(1, at = BCADtoBP(c(-900, -700, -500, -300, -100, 100, 300, 500, 700, 900)), labels=c('900BC','700BC', '500BC', '300BC', '100BC', '100AD', '300AD', '500AD', '700AD', '900AD'), tck=-0.01, cex.axis=1.7)
 axis(3, at = seq(2700, 1000, -200), labels=paste0(seq(2700, 1000, -200),'BP'), tck=-0.01, cex.axis=1.7)
 axis(1, at = BCADtoBP(c(-600, -400, -200, 1, 200, 400, 600)), labels=NA, tck=-0.01) #Minor tick marks
@@ -189,25 +189,25 @@ dev.off()
 ##FIGURE 5 -- Map of Wombling Boundaries (highlighting significant boundaries)
 
 #With the tactical simulation data from hierarchical wombling model
-post.model.tac_womble_nab  <- out.comb.tac_icar.model[,paste0('nabla[',1:383,']')]  %>% round()
+post.model.tac_womble_nab  <- out.comb.tac_icar.model[,paste0('nabla[',1:208,']')]  %>% round()
 
 #Extract differences in arrival times for tactical wombling model
 med.model.tac_womble_nab  <- apply(post.model.tac_womble_nab, 2, median)
 
 #Extract proportion of MCMC sample differences which are significant over a specified time difference
-prop_model_tac_womble_nab  <- data.frame(x = 1:383,
+prop_model_tac_womble_nab  <- data.frame(x = 1:208,
                                          y = sapply(as.data.frame(post.model.tac_womble_nab), 
                                                     prop_gthan_threshold, 
-                                                    threshold = 400))
+                                                    threshold = 600))
 
 #Add info to edges dataframe
 edge_info.i <- edge_info %>%
   mutate(mean_gradient = med.model.tac_womble_nab, #50% quantile
          prob_BLV = prop_model_tac_womble_nab$y, #% of distribution > specified threshold
          boundary = mapply(function(a, b) {intersection <- st_intersection(hex_area_win_proj$geometry[[a]], hex_area_win_proj$geometry[[b]])
-         if (st_is_empty(intersection) || st_is(intersection, "MULTILINESTRING")) return(st_linestring()) else return(intersection)}, 
-         edge_info$region1_id, 
-         edge_info$region2_id)) #shared boundary between two subareas 
+                                          if (st_is_empty(intersection) || st_is(intersection, "MULTILINESTRING")) return(st_linestring()) else return(intersection)}, 
+                           edge_info$region1_id, 
+                           edge_info$region2_id, SIMPLIFY = FALSE)) #shared boundary between two subareas 
 
 #Create nodes
 nodes <- st_coordinates(hex_area_win_proj$area_center)

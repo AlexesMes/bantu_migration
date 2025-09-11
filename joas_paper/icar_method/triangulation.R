@@ -156,8 +156,8 @@ save(#del,
      file=here('data','trig.RData')) 
 
 #Save sampling window separately
-constants<- list()
-constants$countries <- c(europe_countries, "France", "Norway")
-constants$n_areas  <- nrow(hex_area_win_proj)
+constants_sw<- list()
+constants_sw$countries <- c(europe_countries, "France", "Norway")
+constants_sw$n_areas  <- nrow(hex_area_win_proj)
 
-save(constants, sampling_win_proj, hex_area_win_proj, file=here('data','sample_window.RData'))
+save(constants_sw, sampling_win_proj, hex_area_win_proj, file=here('data','sample_window.RData'))
