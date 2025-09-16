@@ -257,7 +257,7 @@ rhat_womble_model  <- gelman.diag(out_womble_model, multivariate = FALSE)
 ess_womble_model  <- effectiveSize(out_womble_model)
 agg_womble_model <- agreementIndex(dat$cra,
                                    dat$cra_error,
-                                   calCurve = dateInfo$calCurve,
+                                   calCurve = "intcal20",
                                    theta = out_womble_model[[1]][ , grep("theta", colnames(out_womble_model[[1]]))],
                                    verbose = F)
 

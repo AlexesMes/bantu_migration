@@ -14,7 +14,7 @@ library(patchwork)
 
 rm(list = ls())
 `%!in%` <- Negate(`%in%`)
-set.seed(1223)
+set.seed(1223) #set.seed(1563) for Halstatt Plateau simulation
 
 ##SCRIPT TO SIMULATE DATA (WITH UNDERLYING SPATIAL AUTOCORRELATED STRUCTURE) FOR ICAR MODEL WITH ERRORS (i.e. uncalibrated radiocarbon dates with associated errors)
 
@@ -24,8 +24,8 @@ load(here('data','trig.RData')) #nodes and edges between hex area centroids
 
 #-------------------------------------------------------------------------------
 # Target Parameters ----
-n_sites  <- 550
-n_dates  <- 1200 
+n_sites  <- 2000 #550
+n_dates  <- 3*n_sites #1200 
 origin_point_proj <- st_transform(st_sfc(st_point(c(-5, 63)),crs=4326), crs=3035) #choose dispersal origin point -- approximately in hex 29
 k <- 0.3 #clustering strength: 0 = random, 1 = very clustered
 
@@ -124,8 +124,8 @@ hex_area_win_proj <- hex_area_win_proj %>%
 #Create environmental variables -- ##For ICAR simulation
 # hex_area_win_proj <- hex_area_win_proj %>%
 #   mutate(
-#     forest_present = if_else(area_ID %in% c(7, 15, 23, 32, 39, 44, 6, 10, 18, 27, 35, 14, 31), 1, 0),
-#     water_present  = if_else(area_ID %in% c(25, 39, 51, 44, 63, 57, 56, 52), 1, 0),
+#     forest_present = if_else(area_ID %in% c(7, 15, 23, 32, 39, 44, 6, 10, 18, 27, 35, 14, 31), 1, 0), #Set-up for Halstatt sim: c(61, 70,65, 52, 48,57, 31,22,26)
+#     water_present  = if_else(area_ID %in% c(25, 39, 51, 44, 63, 57, 56, 52), 1, 0), #Set-up for Halstatt sim: c(26, 25,67, 10,19)
 #     env_type = case_when(
 #       forest_present == 1 & water_present == 1 ~ "Forest & Water",
 #       forest_present == 1 & water_present == 0 ~ "Forest Only",
