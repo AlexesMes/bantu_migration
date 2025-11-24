@@ -16,7 +16,7 @@ set.seed(123)
 
 #-------------------------------------------------------------------------------
 ## Data Setup ----
-load(here('data', 'tactical_sim_icar_withinplat.RData')) #tactical_sim_icar_withoutplat.Rdata
+load(here('data', 'tactical_sim_woa_cov_errors.RData')) #tactical_sim_icar_withoutplat.Rdata
 load(here('data','trig.RData')) #nodes and edges between hex area centroids
 
 #Combine constants
@@ -27,6 +27,24 @@ constants <- c(constants, constants_trig)
 dates_in_areas_summarise <- as.data.frame(table(sites$area_id))
 #Number of sites in area
 sites_in_areas_summarise <- sites %>% group_by(area_id) %>% summarize(n_sites =n_distinct(site_id))
+
+#-------------------------------------------------------------------------------
+# #Plot
+# hex_area_win_proj <- hex_area_win_proj %>% mutate(true_a = constants$true_a)
+# sim_arival_plot <- ggplot(data = hex_area_win_proj) +
+#   geom_sf(data = sampling_win_proj, color = "grey50") +  # sampling window border
+#   geom_sf(aes(fill = true_a)) + 
+#   scale_fill_viridis_c(option="F", direction=-1) +
+#   scale_alpha_manual(values=c(0.45, 1)) +
+#   xlab('Longitude') +
+#   ylab('Latitude') +
+#   geom_sf_label(aes(label = paste0(round(true_a), "BP")), label.size  = NA, alpha = 0.4, size=3.5) + 
+#   theme(panel.background = element_rect(fill = "lightblue",
+#                                         colour = "lightblue",
+#                                         size = 0.5,
+#                                         linetype = "solid"),
+#         legend.position = "none")
+# print(sim_arival_plot)
 
 #-------------------------------------------------------------------------------
 ## Initialise Parameters ----
@@ -146,7 +164,7 @@ modelW <- function(seed, d, theta_init, alpha_init, delta_init, init_a, init_b, 
     
     #For Each Region
     for (k in 1:n_areas){
-      b[k] ~ dunif(50, 10000);
+      b[k] ~ dunif(2000, 6300);
       constraint_uniform[k] ~ dconstraint(b[k]<a[k]); #In each area, start date of occupation, a_k, must be greater than the end date of occupation, b_k (note: BP dates in the positive direction)
       
       a[k] <- phi[k];
@@ -199,8 +217,8 @@ modelW <- function(seed, d, theta_init, alpha_init, delta_init, init_a, init_b, 
 ncores  <-  4
 cl <- makeCluster(ncores)
 seeds <- c(12, 34, 56, 78)
-niter  <- 2000000
-nburnin  <- 1000000
+niter  <- 500000
+nburnin  <- 250000
 thin  <-100
 
 #Hierarchical Womble Model 
@@ -235,4 +253,6 @@ save(out_womble_model,
      rhat_womble_model, 
      ess_womble_model, 
      agg_womble_model, 
-     file=here('output','Womblemodel_tactical_withplat_errors.RData'))
+     file=here('output','Womblemodel_tactical_woa_cov_errors.RData'))
+
+

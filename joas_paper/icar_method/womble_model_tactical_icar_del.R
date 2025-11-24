@@ -12,7 +12,7 @@ rm(list = ls())
 
 set.seed(123)
 
-##ICAR model tactical simulation with errors (i.e. using dates that have an associated error and need calibration)
+##ICAR model tactical simulation with calibrated radiocarbon dates
 
 #-------------------------------------------------------------------------------
 ## Data Setup ----
@@ -29,10 +29,28 @@ dates_in_areas_summarise <- as.data.frame(table(sites$area_id))
 sites_in_areas_summarise <- sites %>% group_by(area_id) %>% summarize(n_sites =n_distinct(site_id))
 
 #-------------------------------------------------------------------------------
+# #Plot
+# hex_area_win_proj <- hex_area_win_proj %>% mutate(true_a = constants$true_a)
+# sim_arival_plot <- ggplot(data = hex_area_win_proj) +
+#   geom_sf(data = sampling_win_proj, color = "grey50") +  # sampling window border
+#   geom_sf(aes(fill = true_a)) +
+#   scale_fill_viridis_c(option="F", direction=-1) +
+#   scale_alpha_manual(values=c(0.45, 1)) +
+#   xlab('Longitude') +
+#   ylab('Latitude') +
+#   geom_sf_label(aes(label = paste0(round(true_a), "BP")), label.size  = NA, alpha = 0.4, size=3.5) +
+#   theme(panel.background = element_rect(fill = "lightblue",
+#                                         colour = "lightblue",
+#                                         size = 0.5,
+#                                         linetype = "solid"),
+#         legend.position = "none")
+# print(sim_arival_plot)
+
+#-------------------------------------------------------------------------------
 ## Initialise Parameters ----
 
 #Initialise regional parameters
-buffer <- 20
+buffer <- 100
 delta_init <- siteInfo$diff + buffer
 alpha_init <- siteInfo$earliest + buffer/2
 
@@ -74,7 +92,7 @@ init_a  <- init_a[ ,2] + buffer
 init_b  <- init_b[ ,2] - buffer
 
 # Initialise spatial residues
-init_phi <- init_a #(use init_a if no intercept (beta0) is included and zero_mean=0)
+init_phi <- init_a
 
 #-------------------------------------------------------------------------------
 #Spatial data ----
@@ -146,17 +164,14 @@ modelW <- function(seed, d, theta_init, alpha_init, delta_init, init_a, init_b, 
     
     #For Each Region
     for (k in 1:n_areas){
-      b[k] ~ dunif(0, 3000);
+      b[k] ~ dunif(50, 2300);
       constraint_uniform[k] ~ dconstraint(b[k]<a[k]); #In each area, start date of occupation, a_k, must be greater than the end date of occupation, b_k (note: BP dates in the positive direction)
       
-      a[k] <- phi[k] # + x1[k]*beta1[k]; #beta0[k] + phi[k] + X[k]*beta1; # + x1[k]*beta1[k]; #+ x2[k]*beta2; 
-      #beta1[k] ~ dnorm(0, sd=300);
-      #beta0[k] ~ dunif(1000, 3000);
+      a[k] <- phi[k];
     }
     
     # ICAR Model prior to capture spatial random effects
     phi[1:n_areas] ~ dcar_normal(adj[1:L], weights[1:L], num[1:n_areas], tau1, zero_mean=0)
-    #beta1[1:n_areas] ~ dcar_normal(adj[1:L], weights[1:L], num[1:n_areas], tau2, zero_mean=0)
     
     #For Each Boundary
     for (t in 1:n_trans){
@@ -167,14 +182,7 @@ modelW <- function(seed, d, theta_init, alpha_init, delta_init, init_a, init_b, 
     }
     
     #Priors
-    #beta0 ~ dunif(1000, 3000); #dnorm(2000, sd=300); #Intercept
-    #beta1 ~ dnorm(0, sd=300); #dunif(-1, 1); #determining strength of forest covariate in each area
-    #beta2 ~ dnorm(0, sd=300);
     tau1 ~ dgamma(0.8, 0.1);  #weak prior for ICAR model -- spatial autocorrelation precision parameter
-    #tau2 ~ dgamma(0.8, 0.1);  #weak prior for ICAR model -- spatial autocorrelation precision parameter
-    
-    #tau.err <- 1/sigma^2;
-    #sigma ~ dunif(0,100);
     
     # Hyperprior for duration
     gamma1 ~ dunif(1,20); #Hyperprior for rate
@@ -190,10 +198,6 @@ modelW <- function(seed, d, theta_init, alpha_init, delta_init, init_a, init_b, 
                 theta=d$cra, #theta_init
                 phi=init_phi,
                 tau1=rgamma(1, shape = 0.8, rate = 0.1),
-                #tau2=rgamma(1, shape = 0.8, rate = 0.1),
-                #beta0=runif(1:constants$n_areas, 1000, 3000), #rnorm(1, 2000, 300),
-                #beta1=rnorm(1:constants$n_areas, 0, sd=300),  #rnorm(1:constants$n_areas, 0, sd=200), #runif(1:constants$n_areas, min = -1, max = 1)
-                #beta2=rnorm(1, 0, sd=300),
                 gamma1=10,
                 gamma2=200)
   
@@ -202,40 +206,20 @@ modelW <- function(seed, d, theta_init, alpha_init, delta_init, init_a, init_b, 
   model <- nimbleModel(model, constants=constants, data=d, inits=inits)
   cModel <- compileNimble(model)
   conf <- configureMCMC(model, control=list(adaptInterval=20000, adaptFactorExponent=0.1))
-  conf$addMonitors(c('a','b','nabla','nabla_phi','theta','delta','alpha')) #'beta1', 'beta2','beta3'
+  conf$addMonitors(c('a','b','nabla','nabla_phi','theta','delta','alpha'))
   MCMC <- buildMCMC(conf)
   cMCMC <- compileNimble(MCMC)
   results <- runMCMC(cMCMC, niter = niter, thin = thin, nburnin = nburnin, samplesAsCodaMCMC = T, setSeed = seed) 
 }
-
-
-# # Generate a sequence of values for beta0
-# beta0 <- seq(0, 4000, length.out = 4000)
-# # Compute the density
-# density0 <- dnorm(beta0, mean = 2000, sd = 300)
-# # Plot the density
-# plot(beta0, density0, type = "l",
-#      main = "Density of beta0 ~ N(2000, 400²)", xlab = "beta0", ylab = "Density", col = "blue", lwd = 2)
-# grid()
-
-# # Generate a sequence of values for beta0
-# beta1 <- seq(-2000, 2000, length.out = 4000)
-# # Compute the density
-# density1 <- dnorm(beta1, mean = 0, sd =  600) #dtruncnorm(beta1, a=-2000, b=0, mean = 0, sd = 300)
-# # Plot the density
-# plot(beta1, density1, type = "l",
-#      main = "Density of beta1 ~ N(0, 200²)", xlab = "beta1", ylab = "Density", col = "blue", lwd = 2)
-# grid()
-
 
 #-------------------------------------------------------------------------------
 # MCMC Setup
 ncores  <-  4
 cl <- makeCluster(ncores)
 seeds <- c(12, 34, 56, 78)
-niter  <- 1000000
-nburnin  <- 500000
-thin  <- 100
+niter  <- 500000
+nburnin  <- 250000
+thin  <-100
 
 #Hierarchical Womble Model 
 out_womble_model <-  parLapply(cl = cl, 
@@ -243,7 +227,7 @@ out_womble_model <-  parLapply(cl = cl,
                                fun = modelW, 
                                d = dat, 
                                constants = constants, 
-                               theta_init=dat$cra, #theta_init
+                               theta_init=dat$cra,
                                init_a = init_a, 
                                init_b = init_b, 
                                alpha_init = alpha_init, 

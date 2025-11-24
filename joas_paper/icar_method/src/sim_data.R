@@ -1,6 +1,7 @@
 ##SCRIPT TO SIMULATE DATA (with underlying ICAR structure)
-sim_data <- function(with_calbration = FALSE, #use calibrated or uncalibrated radiocarbon dates
+sim_data <- function(with_calibration = FALSE, #use calibrated or uncalibrated radiocarbon dates
                      #structure = 'ICAR', 
+                     seed=123,
                      k = 0.3, #clustering strength: 0 = random, 1 = very clustered
                      n_sites = 500, 
                      n_dates = 1200){
@@ -16,6 +17,8 @@ sim_data <- function(with_calbration = FALSE, #use calibrated or uncalibrated ra
   library(rcarbon)
   library(units)
   library(patchwork)
+  
+  set.seed(seed)
   
   # Load sample window data ----
   load(here('data','sample_window.RData'))
@@ -107,21 +110,21 @@ sim_data <- function(with_calbration = FALSE, #use calibrated or uncalibrated ra
   sim_constants$id_sites  <- dates$site_id
   sim_constants$id_areas <- sites$area_id
   sim_constants$x1 <- hex_area_win_proj$forest_present
-  sim_constants$beta1 <- -300 #magnitude of the effect of the forest covariate
+  sim_constants$beta1 <- -400 #magnitude of the effect of the forest covariate
   sim_constants$x2 <- hex_area_win_proj$water_present
-  sim_constants$beta2 <- +250 #magnitude of the effect of the water covariate
-  sim_constants$mu <- rep(5500, constants$n_areas) 
+  sim_constants$beta2 <- +300 #magnitude of the effect of the water covariate
+  sim_constants$mu <- rep(5000, constants$n_areas) 
   sim_constants$mu2 <- rep(500, constants$n_areas)
-  sim_constants$tau <- 0.000005
+  sim_constants$tau <- 1/(500^2)
   sim_constants$tau.err <- 0.5
-  sim_constants$gamma <- 0.99
+  sim_constants$gamma <- 0.95
   
   #Define constraints, data, and initial values ----
   dat <- list(constraint_uniform = rep(1, sim_constants$n_areas),
               constraint_duration = rep(1, n_sites),
               cra_constraint = rep(1, n_dates))
   
-  init_a <- runif(1:sim_constants$n_areas, min = 4000, max = 6400)
+  init_a <- runif(1:sim_constants$n_areas, min = 3500, max = 6500)
   init_b <- init_a - runif(1:sim_constants$n_areas, min = 50, max = 600)
   inits <- list(a = init_a,
                 b = init_b)
@@ -135,11 +138,11 @@ sim_data <- function(with_calbration = FALSE, #use calibrated or uncalibrated ra
 
   #-----------------------------------------------------------------------------
   ##Combine data ---- 
-  cra = uncalibrate(round(simModel$theta))$rCRA 
-  cra_error = rep(20,length(cra))
+  cra = round(simModel$theta) #uncalibrate(round(simModel$theta))$rCRA  #uncomment if simulating calibrated dates
+  #cra_error = rep(20,length(cra)) #uncomment if simulating calibrated dates
   
   sim_df <- list(cra = cra,
-                 cra_error = cra_error,
+                 #cra_error = cra_error,
                  site_id = id_sites)
   
   ##Collect site level information ----

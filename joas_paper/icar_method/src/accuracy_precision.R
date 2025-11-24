@@ -18,10 +18,21 @@ accuracy <- function(sim_values, credible_interval_df){
   return(sum(in_ci_range)/length(in_ci_range))
 }
 
+accuracy_in_each_area <- function(sim_values, credible_interval_df){
+  in_ci_range <- (sim_values >= credible_interval_df[1,] & sim_values <= credible_interval_df[2,])
+  
+  return(in_ci_range)
+}
+
 #Precision
 precision <- function(sim_values, credible_interval_df){
   #sim_date_range <- max(sim_values)-min(sim_values)
   average_ci_width <- mean(credible_interval_df[2,]-credible_interval_df[1,])
   
   return(average_ci_width) #sim_date_range
+}
+
+precision_in_each_area <- function(sim_values, credible_interval_df){
+  ci_width <- credible_interval_df[2,]-credible_interval_df[1,]
+  return(ci_width)
 }

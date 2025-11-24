@@ -14,7 +14,7 @@ library(patchwork)
 
 rm(list = ls())
 `%!in%` <- Negate(`%in%`)
-set.seed(1223) #set.seed(1563) for Halstatt Plateau simulation
+set.seed(10) #set.seed(10) for Halstatt Plateau simulation
 
 ##SCRIPT TO SIMULATE DATA (WITH UNDERLYING SPATIAL AUTOCORRELATED STRUCTURE) FOR ICAR MODEL WITH ERRORS (i.e. uncalibrated radiocarbon dates with associated errors)
 
@@ -24,8 +24,8 @@ load(here('data','trig.RData')) #nodes and edges between hex area centroids
 
 #-------------------------------------------------------------------------------
 # Target Parameters ----
-n_sites  <- 2000 #550
-n_dates  <- 3*n_sites #1200 
+n_sites  <- 800
+n_dates  <- 3*n_sites
 origin_point_proj <- st_transform(st_sfc(st_point(c(-5, 63)),crs=4326), crs=3035) #choose dispersal origin point -- approximately in hex 29
 k <- 0.3 #clustering strength: 0 = random, 1 = very clustered
 
@@ -56,7 +56,7 @@ sample_clustered_points <- function(sampling_win_proj, n_sites, k,
   win_spat <- as.owin(sampling_win_proj)
 
   if (k <= 0) {
-    pp <- runifpoint(n_sites, win = win_spat) #random sampling
+    pts <- runifpoint(n_sites, win = win_spat) #random sampling
     } else {
       #Map k to parameters -- k controls number of clusters and the tightness of those clusters
       n_clusters <- round(min_clusters + (max_clusters - min_clusters) * k) #interpolate number of clusters (1 = random, many = clustered)
@@ -110,7 +110,7 @@ for(i in 2:n_dates){ #populate 'dates' with repeated sites
 site_freq  <- plyr::count(dates, 'site_id') #Observations at each site
 area_freq  <- plyr::count(dates, 'area_id') #Observations in each hex area
 
-#-------------------------------------------------------------------------------
+# #-------------------------------------------------------------------------------
 #Identify origin area -- this section is only needed if ##WOA is being simulated
 origin_area <- as.integer(st_within(origin_point_proj, hex_area_win_proj$geometry))
 origin_area_center <- hex_area_win_proj[hex_area_win_proj$area_ID==origin_area, "area_center"]
@@ -122,23 +122,24 @@ hex_area_win_proj <- hex_area_win_proj %>%
 
 #-------------------------------------------------------------------------------
 #Create environmental variables -- ##For ICAR simulation
-# hex_area_win_proj <- hex_area_win_proj %>%
-#   mutate(
-#     forest_present = if_else(area_ID %in% c(7, 15, 23, 32, 39, 44, 6, 10, 18, 27, 35, 14, 31), 1, 0), #Set-up for Halstatt sim: c(61, 70,65, 52, 48,57, 31,22,26)
-#     water_present  = if_else(area_ID %in% c(25, 39, 51, 44, 63, 57, 56, 52), 1, 0), #Set-up for Halstatt sim: c(26, 25,67, 10,19)
-#     env_type = case_when(
-#       forest_present == 1 & water_present == 1 ~ "Forest & Water",
-#       forest_present == 1 & water_present == 0 ~ "Forest Only",
-#       forest_present == 0 & water_present == 1 ~ "Water Only",
-#       TRUE ~ "Neither"))
+hex_area_win_proj <- hex_area_win_proj %>%
+  mutate(
+    forest_present = if_else(area_ID %in% c(1,10,19,6,2,11,20,24,15), 1, 0),  #c(43, 48, 52, 57,53, 44, 62, 66, 58) #####Set-up for Halstatt sim
+    env_type = case_when(
+      #forest_present == 1 & water_present == 1 ~ "Forest & Water",
+      #forest_present == 1 & water_present == 0 ~ "Forest Only",
+      #forest_present == 0 & water_present == 1 ~ "Water Only",
+      forest_present == 1 ~ "Forest",
+      TRUE ~ "No forest"))
 
 ##Visualize the presence/absence of forests
 environ_plot <- ggplot(data = hex_area_win_proj) +
   geom_sf(data = sampling_win_proj, color = "grey50") +  # sampling window border
   geom_sf() +
-  # geom_sf(aes(fill = env_type)) + # color by combined type
-  # scale_fill_manual(
-  #  values = c("Neither" = "grey90", "Forest Only" = "forestgreen", "Water Only" = "skyblue", "Forest & Water" = "hotpink4")) +
+  geom_sf(aes(fill = env_type)) + # color by combined type
+  scale_fill_manual(
+    values = c("No forest" = "grey90", "Forest" = "forestgreen")) +
+  #values = c("Neither" = "grey90", "Forest Only" = "forestgreen", "Water Only" = "skyblue", "Forest & Water" = "hotpink4")) +
   geom_sf(data = as(sites, 'sf'), size = 2, alpha = 0.5) +  # sites
   geom_sf_label(aes(label = area_ID)) +                     # area labels
   theme(
@@ -151,41 +152,16 @@ print(environ_plot)
 #-------------------------------------------------------------------------------
 ##MODEL ---
 
-##ICAR Simulate --
-# sim_model <- nimbleCode({
-#   # Simulate spatially correlated data for all k in 1:n_areas
-#   for (k in 1:n_areas){
-#     a[k] ~ dnorm(nu[k], tau.err);
-#     nu[k] <- phi[k] + x1[k]*beta1 + x2[k]*beta2;
-#   }
-#   phi[1:n_areas] ~ dcar_proper(mu = mu[1:n_areas], adj=adj[1:L], num=num[1:n_areas], tau=tau, gamma=gamma) # ICAR prior to capture spatial random effects
-#   d[1:n_areas] ~ dcar_proper(mu = mu2[1:n_areas], adj=adj[1:L], num=num[1:n_areas], tau=tau, gamma=gamma)
-#   b[1:n_areas] <- a[1:n_areas] - abs(d[1:n_areas]) #duration must be positive
-#   #tau ~ dgamma(2, 0.5)
-# 
-#   for (j in 1:n_sites)
-#   {
-#     delta[j] ~ dgamma(5,(5-1)/100); #Site duration parameter.
-#     alpha[j] ~ dunif(max=a[id_areas[j]], min=b[id_areas[j]]);
-#     beta[j] <- alpha[j] - (delta[j] + 1); #The +1 ensures at a minimum where there are two dates at a site there will be 1 year between them.
-#     constraint_duration[j] ~ dconstraint(alpha[j]>(delta[j]+1)); #Site can't have have a duration longer than its time of first arrival
-#   }
-# 
-#   for (i in 1:n_dates){
-#     theta[i] ~ dunif(min=beta[id_sites[i]], max=alpha[id_sites[i]]);
-#     cra_constraint[i] ~ dconstraint(theta[i] > 0);
-#   }
-# })
-
-##WOA Wave of Advance Simulate --
+#ICAR Simulate --
 sim_model <- nimbleCode({
   # Simulate spatially correlated data for all k in 1:n_areas
   for (k in 1:n_areas){
-    a[k] ~ dnorm(nu[k], sd=sigma);
-    nu[k] <- beta0 - dist[k]/s; # + x1[k]*beta1 + x2[k]*beta2;
+    a[k] ~ dnorm(nu[k], tau.err);
+    nu[k] <- phi[k] + x1[k]*beta1;# + x2[k]*beta2;
   }
-  d[1:n_areas] ~ dcar_proper(mu = mu3[1:n_areas], adj=adj[1:L], num=num[1:n_areas], tau=tau, gamma=gamma)
-  b[1:n_areas] <- a[1:n_areas] - abs(d[1:n_areas]*0.5) #duration must be positive
+  phi[1:n_areas] ~ dcar_proper(mu = mu[1:n_areas], adj=adj[1:L], num=num[1:n_areas], tau=tau, gamma=gamma) # ICAR prior to capture spatial random effects
+  d[1:n_areas] ~ dcar_proper(mu = mu2[1:n_areas], adj=adj[1:L], num=num[1:n_areas], tau=tau, gamma=gamma)
+  b[1:n_areas] <- a[1:n_areas] - abs(d[1:n_areas]) #duration must be positive
   #tau ~ dgamma(2, 0.5)
 
   for (j in 1:n_sites)
@@ -202,6 +178,31 @@ sim_model <- nimbleCode({
   }
 })
 
+# #WOA Wave of Advance Simulate --
+# sim_model <- nimbleCode({
+#   # Simulate spatially correlated data for all k in 1:n_areas
+#   for (k in 1:n_areas){
+#     a[k] ~ dnorm(nu[k], sd=sigma);
+#     nu[k] <- beta0 - dist[k]/s + x1[k]*beta1 + x2[k]*beta2;
+#   }
+#   d[1:n_areas] ~ dcar_proper(mu = mu3[1:n_areas], adj=adj[1:L], num=num[1:n_areas], tau=tau, gamma=gamma)
+#   b[1:n_areas] <- a[1:n_areas] - abs(d[1:n_areas]*0.5) #duration must be positive
+#   #tau ~ dgamma(2, 0.5)
+# 
+#   for (j in 1:n_sites)
+#   {
+#     delta[j] ~ dgamma(5,(5-1)/100); #Site duration parameter.
+#     alpha[j] ~ dunif(max=a[id_areas[j]], min=b[id_areas[j]]);
+#     beta[j] <- alpha[j] - (delta[j] + 1); #The +1 ensures at a minimum where there are two dates at a site there will be 1 year between them.
+#     constraint_duration[j] ~ dconstraint(alpha[j]>(delta[j]+1)); #Site can't have have a duration longer than its time of first arrival
+#   }
+# 
+#   for (i in 1:n_dates){
+#     theta[i] ~ dunif(min=beta[id_sites[i]], max=alpha[id_sites[i]]);
+#     cra_constraint[i] ~ dconstraint(theta[i] > 0);
+#   }
+# })
+
 #Define constants ----
 sim_constants <- constants
 sim_constants$n_sites <- n_sites
@@ -210,37 +211,36 @@ sim_constants$n_areas  <- constants$n_areas
 sim_constants$id_sites  <- dates$site_id
 sim_constants$id_areas <- sites$area_id
 sim_constants$x1 <- hex_area_win_proj$forest_present
-sim_constants$beta1 <- -300 #magnitude of the effect of the forest covariate
-sim_constants$x2 <- hex_area_win_proj$water_present
-sim_constants$beta2 <- +250 #magnitude of the effect of the water covariate
-sim_constants$mu <- rep(5500, constants$n_areas) #runif(1:sim_constants$n_areas, min = 600, max = 3500) #rep(0, n_areas)
+sim_constants$beta1 <- -500 #magnitude of the effect of the forest covariate
+#sim_constants$x2 <- hex_area_win_proj$water_present
+#sim_constants$beta2 <- +300 #magnitude of the effect of the water covariate
+sim_constants$mu <- rep(1500, constants$n_areas) #runif(1:sim_constants$n_areas, min = 600, max = 3500) #rep(0, n_areas)
 sim_constants$mu2 <- rep(500, constants$n_areas) #runif(1:sim_constants$n_areas, min = 50, max = 600)
-sim_constants$tau <- 0.000005
+sim_constants$tau <- 1/(500^2) #Precision (not standardised) #Affects spatial correlation (as gamma does) #Fixed tau chosen to target ~600-year marginal SD
 sim_constants$tau.err <- 0.5
-sim_constants$gamma <- 0.99
-#WOA constants
-sim_constants$dist <- hex_area_win_proj$dist_from_origin
-sim_constants$s  <- 2 #Speed of the wave of advance (in km a year)
-sim_constants$beta0 <- 6500 #off-set -- arrival time in the origin hex
-sim_constants$sigma <- 50
-sim_constants$mu3 <- rep(500, constants$n_areas)
+sim_constants$gamma <- 0.95 #smaller gamma weaken spatial dependence -- areas become less correlated 
+# #WOA constants
+# sim_constants$dist <- hex_area_win_proj$dist_from_origin
+# sim_constants$s  <- 2.5 #Speed of the wave of advance (in km a year)
+# sim_constants$beta0 <- 6500 #off-set -- arrival time in the origin hex
+# sim_constants$sigma <- 50
+# sim_constants$mu3 <- rep(500, constants$n_areas)
 
 #Define constraints, data, and initial values ----
 dat <- list(constraint_uniform = rep(1, sim_constants$n_areas),
             constraint_duration = rep(1, n_sites),
             cra_constraint = rep(1, n_dates))
 
-init_a <- runif(1:sim_constants$n_areas, min = 4000, max = 6400)
+init_a <- runif(1:sim_constants$n_areas, min = 0, max = 3000) #min=0, max=3000 halstat sim
 init_b <- init_a - runif(1:sim_constants$n_areas, min = 50, max = 600)
 inits <- list(a = init_a,
               b = init_b)
-#              tau = 2)
 
 #Simulate ----
 simModel <- nimbleModel(code = sim_model, constants = sim_constants, data = dat, inits = inits)
 
-#nodesToSim <- simModel$getDependencies(c("a", "phi", "d", "b", "delta", "alpha", "beta", "theta"), self = T, downstream = T)
-nodesToSim <- simModel$getDependencies(c("a", "d", "b", "delta", "alpha", "beta", "theta"), self = T, downstream = T) ##WOA
+nodesToSim <- simModel$getDependencies(c("a", "phi", "d", "b", "delta", "alpha", "beta", "theta"), self = T, downstream = T)
+#nodesToSim <- simModel$getDependencies(c("a", "d", "b", "delta", "alpha", "beta", "theta"), self = T, downstream = T) ##WOA
 
 
 simModel$simulate(nodesToSim)
@@ -294,7 +294,7 @@ sim_arival_plot <- ggplot(data = true_hex_dates) +
 print(sim_arival_plot)
 
 #Output
-ggsave(file=here('output','figures','figure_woa_sim.pdf'), 
+ggsave(file=here('output','figures','figure_icar_sim.pdf'), 
        plot=environ_plot + sim_arival_plot + plot_layout(ncol=2),
        width=15, 
        height=8)
@@ -302,7 +302,7 @@ ggsave(file=here('output','figures','figure_woa_sim.pdf'),
 
 #-----------------------------------------------
 ##Combine data ---- ##Note: uncalibrated radiocarbon dates with associated error
-cra = uncalibrate(round(simModel$theta))$rCRA 
+cra = uncalibrate(round(simModel$theta))$rCRA #round(simModel$theta)
 cra_error = rep(20,length(cra))
 
 sim_df <- list(cra = cra,
@@ -340,4 +340,4 @@ constants$true_alpha <- simModel$alpha
 constants$true_beta <- simModel$beta
 
 ##Store output ----
-save(sites, sites_sf, siteInfo, sim_df, constants, sampling_win_proj, hex_area_win_proj, file=here('data','tactical_sim_woa.RData'))
+save(sites, sites_sf, siteInfo, sim_df, constants, sampling_win_proj, hex_area_win_proj, file=here('data','tactical_sim_icar.RData'))

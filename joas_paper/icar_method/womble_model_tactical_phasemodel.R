@@ -12,11 +12,11 @@ rm(list = ls())
 
 set.seed(123)
 
-##ICAR model tactical simulation within the Halstatt Plateau with calibrated radiocarbon dates
+##Phase model tactical simulation with calibrated radiocarbon dates
 
 #-------------------------------------------------------------------------------
 ## Data Setup ----
-load(here('data', 'tactical_sim_icar_withinplat.RData')) #tactical_sim_icar_withoutplat.Rdata
+load(here('data', 'tactical_sim_icar.RData')) #tactical_sim_icar_withoutplat.Rdata
 load(here('data','trig.RData')) #nodes and edges between hex area centroids
 
 #Combine constants
@@ -67,7 +67,6 @@ for (t in 1:constants$n_trans){
   
   init_nabla[t] <- (init_a$earliest[init_a$area_id==m] - init_a$earliest[init_a$area_id==n])
 }
-init_nabla_phi <- init_nabla*0.5
 
 #Add buffer
 init_a  <- init_a[ ,2] + buffer
@@ -89,8 +88,6 @@ dat <- list(cra=sim_df$cra,
             cra_error=sim_df$cra_error,
             constraint_uniform = rep(1, constants$n_areas),
             cra_constraint = rep(1, constants$n_dates)) # Set-up constraint for ignoring inference outside calibration range
-#x1 = hex_area_win_proj$forest_present)
-#x2 = hex_area_win_proj$water_present)
 
 theta_init <- medCal(calibrate(dat$cra, dat$cra_error, verbose=FALSE)) #initialize theta parameter
 
@@ -120,7 +117,7 @@ constants$C14err <- c(1000, intcal20$C14Age.sigma, 1000)
 # #-------------------------------------------------------------------------------
 ## Model W: ICAR and wombling integrating sample interdependence, i.e. the addition of a hierarchical model ----
 
-modelW <- function(seed, d, theta_init, alpha_init, delta_init, init_a, init_b, init_phi, constants, nburnin, thin, niter)
+modelW <- function(seed, d, theta_init, alpha_init, delta_init, init_a, init_b, constants, nburnin, thin, niter)
 {
   #Load Library
   library(nimbleCarbon)
@@ -146,21 +143,15 @@ modelW <- function(seed, d, theta_init, alpha_init, delta_init, init_a, init_b, 
     
     #For Each Region
     for (k in 1:n_areas){
-      b[k] ~ dunif(50, 10000);
+      a[k] ~ dunif(50, 4000);
+      b[k] ~ dunif(50, 2300);
       constraint_uniform[k] ~ dconstraint(b[k]<a[k]); #In each area, start date of occupation, a_k, must be greater than the end date of occupation, b_k (note: BP dates in the positive direction)
-      
-      a[k] <- phi[k];
     }
-    
-    # ICAR Model prior to capture spatial random effects
-    phi[1:n_areas] ~ dcar_normal(adj[1:L], weights[1:L], num[1:n_areas], tau1, zero_mean=0)
     
     #For Each Boundary
     for (t in 1:n_trans){
       #nabla defines the difference in arrival time across a boundary
       nabla[t] <- abs(a[edge_id1[t]] - a[edge_id2[t]]) #edge t: select first area, m, and second area, n
-      #nabla_phi defines the difference in spatial residues across a boundary
-      nabla_phi[t] <- abs(phi[edge_id1[t]] - phi[edge_id2[t]])
     }
     
     #Priors
@@ -178,7 +169,6 @@ modelW <- function(seed, d, theta_init, alpha_init, delta_init, init_a, init_b, 
                 alpha=alpha_init,
                 delta=delta_init,
                 theta=d$cra, #theta_init
-                phi=init_phi,
                 tau1=rgamma(1, shape = 0.8, rate = 0.1),
                 gamma1=10,
                 gamma2=200)
@@ -188,7 +178,7 @@ modelW <- function(seed, d, theta_init, alpha_init, delta_init, init_a, init_b, 
   model <- nimbleModel(model, constants=constants, data=d, inits=inits)
   cModel <- compileNimble(model)
   conf <- configureMCMC(model, control=list(adaptInterval=20000, adaptFactorExponent=0.1))
-  conf$addMonitors(c('a','b','nabla','nabla_phi','theta','delta','alpha'))
+  conf$addMonitors(c('a','b','nabla','theta','delta','alpha'))
   MCMC <- buildMCMC(conf)
   cMCMC <- compileNimble(MCMC)
   results <- runMCMC(cMCMC, niter = niter, thin = thin, nburnin = nburnin, samplesAsCodaMCMC = T, setSeed = seed) 
@@ -199,8 +189,8 @@ modelW <- function(seed, d, theta_init, alpha_init, delta_init, init_a, init_b, 
 ncores  <-  4
 cl <- makeCluster(ncores)
 seeds <- c(12, 34, 56, 78)
-niter  <- 2000000
-nburnin  <- 1000000
+niter  <- 500000
+nburnin  <- 250000
 thin  <-100
 
 #Hierarchical Womble Model 
@@ -214,7 +204,6 @@ out_womble_model <-  parLapply(cl = cl,
                                init_b = init_b, 
                                alpha_init = alpha_init, 
                                delta_init = delta_init,
-                               init_phi = init_phi,
                                niter = niter, 
                                nburnin = nburnin,
                                thin = thin)
@@ -235,4 +224,4 @@ save(out_womble_model,
      rhat_womble_model, 
      ess_womble_model, 
      agg_womble_model, 
-     file=here('output','Womblemodel_tactical_withplat_errors.RData'))
+     file=here('output','Womblemodel_tactical_phasemodel.RData'))
