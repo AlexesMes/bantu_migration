@@ -12,11 +12,17 @@ rm(list = ls())
 
 set.seed(123)
 
-##ICAR model tactical simulation within the Halstatt Plateau with calibrated radiocarbon dates
+##ICAR Model with calibrated radiocarbon dates
 
 #-------------------------------------------------------------------------------
 ## Data Setup ----
-load(here('data', 'tactical_sim_icar_withoutplat.RData')) #tactical_sim_icar_withoutplat.Rdata
+
+##ICAR model tactical simulation with calibrated radiocarbon dates (sim 2)
+load(here('data', 'tactical_sim_icar.RData')) #For ICAR sim
+
+#In an Out Plateau simulations with calibrated radiocarbon dates (sim 3 and sim 5)
+#load(here('data', 'tactical_sim_icar_withoutplat.RData')) #For Out Plateau simulated data ##UNCOMMENT
+#load(here('data', 'tactical_sim_icar_withinplat.RData')) #For In Plateau simulated data ##UNCOMMENT
 load(here('data','trig.RData')) #nodes and edges between hex area centroids
 
 #Combine constants
@@ -27,24 +33,6 @@ constants <- c(constants, constants_trig)
 dates_in_areas_summarise <- as.data.frame(table(sites$area_id))
 #Number of sites in area
 sites_in_areas_summarise <- sites %>% group_by(area_id) %>% summarize(n_sites =n_distinct(site_id))
-
-#-------------------------------------------------------------------------------
-# #Plot
-# hex_area_win_proj <- hex_area_win_proj %>% mutate(true_a = constants$true_a)
-# sim_arival_plot <- ggplot(data = hex_area_win_proj) +
-#   geom_sf(data = sampling_win_proj, color = "grey50") +  # sampling window border
-#   geom_sf(aes(fill = true_a)) +
-#   scale_fill_viridis_c(option="F", direction=-1) +
-#   scale_alpha_manual(values=c(0.45, 1)) +
-#   xlab('Longitude') +
-#   ylab('Latitude') +
-#   geom_sf_label(aes(label = paste0(round(true_a), "BP")), label.size  = NA, alpha = 0.4, size=3.5) +
-#   theme(panel.background = element_rect(fill = "lightblue",
-#                                         colour = "lightblue",
-#                                         size = 0.5,
-#                                         linetype = "solid"),
-#         legend.position = "none")
-# print(sim_arival_plot)
 
 #-------------------------------------------------------------------------------
 ## Initialise Parameters ----
@@ -107,8 +95,6 @@ dat <- list(cra=sim_df$cra,
             cra_error=sim_df$cra_error,
             constraint_uniform = rep(1, constants$n_areas),
             cra_constraint = rep(1, constants$n_dates)) # Set-up constraint for ignoring inference outside calibration range
-#x1 = hex_area_win_proj$forest_present)
-#x2 = hex_area_win_proj$water_present)
 
 theta_init <- medCal(calibrate(dat$cra, dat$cra_error, verbose=FALSE)) #initialize theta parameter
 
@@ -164,7 +150,7 @@ modelW <- function(seed, d, theta_init, alpha_init, delta_init, init_a, init_b, 
     
     #For Each Region
     for (k in 1:n_areas){
-      b[k] ~ dunif(50, 2300);
+      b[k] ~ dunif(50, 10000); #b[k] ~ dunif(50, 2300)
       constraint_uniform[k] ~ dconstraint(b[k]<a[k]); #In each area, start date of occupation, a_k, must be greater than the end date of occupation, b_k (note: BP dates in the positive direction)
       
       a[k] <- phi[k];
@@ -217,8 +203,8 @@ modelW <- function(seed, d, theta_init, alpha_init, delta_init, init_a, init_b, 
 ncores  <-  4
 cl <- makeCluster(ncores)
 seeds <- c(12, 34, 56, 78)
-niter  <- 500000
-nburnin  <- 250000
+niter  <- 2000000
+nburnin  <- 1000000
 thin  <-100
 
 #Hierarchical Womble Model 
@@ -253,4 +239,6 @@ save(out_womble_model,
      rhat_womble_model, 
      ess_womble_model, 
      agg_womble_model, 
-     file=here('output','Womblemodel_tactical_withoutplat_errors.RData'))
+     file=here('output','Womblemodel_tactical_icar.RData'))
+#'Womblemodel_tactical_withoutplat_errors.RData' ##UNCOMMENT for Out Plateau
+#'Womblemodel_tactical_withplat_errors.RData' ##UNCOMMENT for In Plateau

@@ -12,11 +12,12 @@ rm(list = ls())
 
 set.seed(123)
 
-##ICAR model tactical simulation outside the Halstatt Plateau with uncalibrated dates
+##ICAR model with uncalibrated/calendar dates
 
 #-------------------------------------------------------------------------------
 ## Data Setup ----
-load(here('data', 'tactical_sim_icar_withoutplat_noerror.RData')) 
+load(here('data', 'tactical_sim_woa_noerror.RData')) #For Wave of Advance Simulation
+#load(here('data', 'tactical_sim_icar_withinplat_noerror.RData')) #For In Plateau with calendar dates Simulation ##UNCOMMENT
 load(here('data','trig.RData')) #nodes and edges between hex area centroids
 
 #Combine constants
@@ -74,7 +75,7 @@ init_a  <- init_a[ ,2] + buffer
 init_b  <- init_b[ ,2] - buffer
 
 # Initialise spatial residues
-init_phi <- init_a
+init_phi <- init_a #or try: init_a*1.5
 
 #-------------------------------------------------------------------------------
 #Spatial data ----
@@ -123,7 +124,7 @@ modelW <- nimbleCode({
   #For Each Region
   for (k in 1:n_areas){
     a[k] <- phi[k];
-    b[k] ~ dunif(50, 2300);
+    b[k] ~ dunif(50, 10000); #b[k] ~ dunif(50, 6500);
     constraint_uniform[k] ~ dconstraint(b[k]<a[k]); #In each area, start date of occupation, a_k, must be greater than the end date of occupation, b_k (note: BP dates in the positive direction)
   }
   
@@ -166,10 +167,10 @@ initsW <- list(b=init_b,
 out_womble_model <- nimbleMCMC(code = modelW,
                                constants = constants,
                                data = dW,
-                               niter = 500000,
+                               niter = 2000000,
                                nchains = 4,
                                thin= 100,
-                               nburnin = 250000,
+                               nburnin = 1000000,
                                monitors = c('a', 'b', 'theta', 'nabla', 'nabla_phi', 'delta', 'alpha', 'phi'), 
                                inits = initsW,
                                samplesAsCodaMCMC=TRUE)
@@ -183,4 +184,5 @@ ess_womble_model  <- effectiveSize(out_womble_model)
 save(out_womble_model,
      rhat_womble_model,
      ess_womble_model,
-     file=here('output','Womblemodel_tactical_withoutplat_noerrors.RData'))
+     file=here('output','Womblemodel_tactical_woa_noerrors.RData')) #'Womblemodel_tactical_withplat_noerrors.RData' ##UNCOMMENT
+
