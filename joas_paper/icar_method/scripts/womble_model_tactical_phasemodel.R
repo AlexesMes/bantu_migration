@@ -15,12 +15,41 @@ set.seed(123)
 ##Phase model tactical simulation with calibrated radiocarbon dates
 
 #-------------------------------------------------------------------------------
-## Data Setup ----
-load(here('data', 'tactical_sim_icar.RData'))
+## Data and Functions Setup ----
+source(here('src', 'sim_data.R'))
 load(here('data','trig.RData')) #nodes and edges between hex area centroids
+
+# Generate simulated data set
+sim_dataset <- sim_data(with_calibration = TRUE,
+                        seed=10,
+                        structure="CAR",
+                        k = 0.3,
+                        n_sites = 800,
+                        n_dates = 3*800,
+                        beta1=-500, 
+                        beta2=0, 
+                        x1_areas=c(1,2,6,10,11,15,19,20,24), 
+                        x2_areas=0,
+                        a_min=0,
+                        a_max=3000,
+                        mu1=1500)
+
+# Save output
+save(sim_dataset, file=here('data','tactical_sim_icar.RData'))
+
+#-------------------------------------------------------------------------------
+#Combine constants
+sites <- sim_dataset$sites
+sites_sf <- sim_dataset$sites_sf
+siteInfo <- sim_dataset$siteInfo
+sim_df <- sim_dataset$sim_df
+constants <- sim_dataset$constants
+sampling_win_proj <- sim_dataset$sampling_win_proj
+hex_area_win_proj <-sim_dataset$hex_area_win_proj
 
 #Combine constants
 constants <- c(constants, constants_trig)
+
 #-------------------------------------------------------------------------------
 ##Simulated data summary
 #Number of dates in area

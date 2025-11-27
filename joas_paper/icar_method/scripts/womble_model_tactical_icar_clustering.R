@@ -26,8 +26,18 @@ output_varyclusterdeg_models <- list()
 #Varying sample intensity (clustering in simulated data)
 for (c in seq(0,1,0.1)){
   #Generate simulated data set
-  sim_dataset <- sim_data(with_calibration = FALSE, seed=123, k = c, n_sites = 800, n_dates = 2400)
-
+  sim_dataset <- sim_data(with_calibration = FALSE, 
+                          seed=123, 
+                          structure = 'CAR',
+                          k = c, 
+                          n_sites = 800, 
+                          n_dates = 2400,
+                          x1_areas = c(7, 15, 23, 32, 39, 44, 6, 10, 18, 27, 35, 14, 31),
+                          x2_areas = c(25, 39, 51, 44, 63, 57, 56, 52), 
+                          beta1 = -400, 
+                          beta2 = 300)
+  
+  
   sites <- sim_dataset$sites
   sites_sf <- sim_dataset$sites_sf
   siteInfo <- sim_dataset$siteInfo

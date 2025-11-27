@@ -15,13 +15,59 @@ set.seed(123)
 ##ICAR model with uncalibrated/calendar dates
 
 #-------------------------------------------------------------------------------
-## Data Setup ----
-load(here('data', 'tactical_sim_woa_noerror.RData')) #For Wave of Advance Simulation
-#load(here('data', 'tactical_sim_icar_withinplat_noerror.RData')) #For In Plateau with calendar dates Simulation ##UNCOMMENT
+## Data and Functions Setup ----
+source(here('src', 'sim_data.R'))
 load(here('data','trig.RData')) #nodes and edges between hex area centroids
+
+# For Wave of Advance Simulation --
+# Generate simulated data set
+sim_dataset <- sim_data(with_calibration = FALSE,
+                        seed=10,
+                        structure="WoA",
+                        k = 0.5,
+                        n_sites = 800,
+                        n_dates = 3*800,
+                        beta1=0, beta2=0, x1_areas=0, x2_areas=0,
+                        a_min=3500,
+                        a_max=6500,
+                        mu1=5000)
+
+# Save output
+save(sim_dataset, file=here('data','tactical_sim_woa_noerror.RData'))
+
+
+##UNCOMMENT
+# #For In Plateau with calendar dates Simulation 
+# #Generate simulated data set
+# sim_dataset <- sim_data(with_calibration = FALSE,
+#                         seed=10,
+#                         structure="CAR",
+#                         k = 0.3,
+#                         n_sites = 800,
+#                         n_dates = 3*800,
+#                         beta1=-400,
+#                         beta2=300,
+#                         x1_areas=c(22,26,31,48,52,57,61,65,70),
+#                         x2_areas=c(10,19,25,26,67),
+#                         a_min=1000,
+#                         a_max=4000,
+#                         mu1=2500)
+# # Save output
+# save(sim_dataset, file=here('data','tactical_sim_icar_withinplat_noerror.RData'))
+
+#-------------------------------------------------------------------------------
+#Combine constants
+sites <- sim_dataset$sites
+sites_sf <- sim_dataset$sites_sf
+siteInfo <- sim_dataset$siteInfo
+sim_df <- sim_dataset$sim_df
+constants <- sim_dataset$constants
+sampling_win_proj <- sim_dataset$sampling_win_proj
+hex_area_win_proj <-sim_dataset$hex_area_win_proj
 
 #Combine constants
 constants <- c(constants, constants_trig)
+
 #-------------------------------------------------------------------------------
 ##Simulated data summary
 #Number of dates in area
@@ -124,7 +170,7 @@ modelW <- nimbleCode({
   #For Each Region
   for (k in 1:n_areas){
     a[k] <- phi[k];
-    b[k] ~ dunif(50, 10000); #b[k] ~ dunif(50, 6500);
+    b[k] ~ b[k] ~ dunif(50, 6500);
     constraint_uniform[k] ~ dconstraint(b[k]<a[k]); #In each area, start date of occupation, a_k, must be greater than the end date of occupation, b_k (note: BP dates in the positive direction)
   }
   
@@ -148,7 +194,6 @@ modelW <- nimbleCode({
   
 })
 
-
 #Define initial values ----
 dW <- list(theta=sim_df$cra, 
            constraint_uniform = rep(1, constants$n_areas))
@@ -161,7 +206,6 @@ initsW <- list(b=init_b,
                tau1=rgamma(1, shape = 0.8, rate = 0.1),
                gamma1=10,
                gamma2=200)
-
 
 #Run MCMC ----
 out_womble_model <- nimbleMCMC(code = modelW,

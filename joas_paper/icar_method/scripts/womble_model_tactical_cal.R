@@ -15,18 +15,102 @@ set.seed(123)
 ##ICAR Model with calibrated radiocarbon dates
 
 #-------------------------------------------------------------------------------
-## Data Setup ----
-
-##ICAR model tactical simulation with calibrated radiocarbon dates (sim 2)
-load(here('data', 'tactical_sim_icar.RData')) #For ICAR sim
-
-#In an Out Plateau simulations with calibrated radiocarbon dates (sim 3 and sim 5)
-#load(here('data', 'tactical_sim_icar_withoutplat.RData')) #For Out Plateau simulated data ##UNCOMMENT
-#load(here('data', 'tactical_sim_icar_withinplat.RData')) #For In Plateau simulated data ##UNCOMMENT
+## Data and Functions Setup ----
+source(here('src', 'sim_data.R'))
 load(here('data','trig.RData')) #nodes and edges between hex area centroids
+
+## ICAR model tactical simulation with calibrated radiocarbon dates (sim 2) --
+# Generate simulated data set
+sim_dataset <- sim_data(with_calibration = TRUE,
+                        seed=10,
+                        structure="CAR",
+                        k = 0.3,
+                        n_sites = 800,
+                        n_dates = 3*800,
+                        beta1=-500, 
+                        beta2=0, 
+                        x1_areas=c(1,2,6,10,11,15,19,20,24), 
+                        x2_areas=0,
+                        a_min=0,
+                        a_max=3000,
+                        mu1=1500)
+
+# Save output
+save(sim_dataset, file=here('data','tactical_sim_icar.RData'))
+
+##UNCOMMENT
+## Out Plateau simulations with calibrated radiocarbon dates (sim 3) --
+# Generate simulated data set
+# sim_dataset <- sim_data(with_calibration = TRUE,
+#                         seed=10,
+#                         structure="CAR",
+#                         k = 0.3,
+#                         n_sites = 800,
+#                         n_dates = 3*800,
+#                         beta1=-400,
+#                         beta2=300,
+#                         x1_areas=c(22,26,31,48,52,57,61,65,70),
+#                         x2_areas=c(10,19,25,26,67),
+#                         a_min=0,
+#                         a_max=3000,
+#                         mu1=1500)
+# 
+# # Save output
+# save(sim_dataset, file=here('data','tactical_sim_icar_withoutplat.RData'))
+
+
+
+##UNCOMMENT
+#In Plateau simulations with calibrated radiocarbon dates (sim 5) --
+# Generate simulated data set
+# sim_dataset <- sim_data(with_calibration = TRUE,
+#                         seed=10,
+#                         structure="CAR",
+#                         k = 0.3,
+#                         n_sites = 800,
+#                         n_dates = 3*800,
+#                         beta1=-400,
+#                         beta2=300,
+#                         x1_areas=c(22,26,31,48,52,57,61,65,70),
+#                         x2_areas=c(10,19,25,26,67),
+#                         a_min=1000,
+#                         a_max=4000,
+#                         mu1=2500)
+# # Save output
+# save(sim_dataset, file=here('data','tactical_sim_icar_withinplat.RData'))
+
+#-------------------------------------------------------------------------------
+#Combine constants
+sites <- sim_dataset$sites
+sites_sf <- sim_dataset$sites_sf
+siteInfo <- sim_dataset$siteInfo
+sim_df <- sim_dataset$sim_df
+constants <- sim_dataset$constants
+sampling_win_proj <- sim_dataset$sampling_win_proj
+hex_area_win_proj <-sim_dataset$hex_area_win_proj
 
 #Combine constants
 constants <- c(constants, constants_trig)
+
+#-------------
+# #CHECK: Plot simulated arrival times
+# library(ggplot2)
+# library(viridis)
+# true_hex_dates <- hex_area_win_proj %>%
+#   filter(area_ID %in% 1:constants$n_areas) %>%
+#   mutate(true_a = constants$true_a)
+# 
+# ggplot(data = true_hex_dates) +
+#   geom_sf(data = sampling_win_proj, color = "grey50") +  # sampling window border
+#   geom_sf(aes(fill = true_a)) +
+#   scale_fill_viridis_c(option="F", direction=-1) +
+#   scale_alpha_manual(values=c(0.45, 1)) +
+#   xlab('Longitude') +
+#   ylab('Latitude') +
+#   geom_sf_label(aes(label = paste0(round(true_a), "BP")), label.size  = NA, alpha = 0.4, size=3.5) +
+#   theme(panel.background = element_rect(fill = "lightblue",colour = "lightblue",size = 0.5,linetype = "solid"),
+#         legend.position = "none")
+
 #-------------------------------------------------------------------------------
 ##Simulated data summary
 #Number of dates in area

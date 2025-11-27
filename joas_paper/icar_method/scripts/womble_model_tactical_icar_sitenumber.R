@@ -26,7 +26,16 @@ output_varysitenumber_models <- list()
 #Varying sample intensity (clustering in simulated data)
 for (n in seq(200,2000,200)){
   #Generate simulated data set
-  sim_dataset <- sim_data(with_calibration = FALSE, seed=123, k = 0.5, n_sites = n, n_dates = 3*n)
+  sim_dataset <- sim_data(with_calibration = FALSE, 
+                          seed=123,
+                          structure = 'CAR',
+                          k = 0.5, 
+                          n_sites = n, 
+                          n_dates = 3*n,
+                          x1_areas = c(7, 15, 23, 32, 39, 44, 6, 10, 18, 27, 35, 14, 31),
+                          x2_areas = c(25, 39, 51, 44, 63, 57, 56, 52), 
+                          beta1 = -400, 
+                          beta2 = 300)
   
   sites <- sim_dataset$sites
   sites_sf <- sim_dataset$sites_sf
