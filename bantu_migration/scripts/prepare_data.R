@@ -72,9 +72,9 @@ eastEIA_countries <- c("South Africa",
                        "Rwanda",
                        "Burundi",
                        "Kenya",
-                       "Uganda", 
-                       "Madagascar",
-                       "Comoros")
+                       "Uganda") 
+                       #"Madagascar",
+                       #"Comoros")
 
 #-------------------------------------------------------------------------------
 ## Data sources ----
@@ -160,10 +160,14 @@ aDRAC_sum_df <- aDRAC_dat %>% #To find extra dates not in HumActCA
   dplyr::select(-PHASE, -CLASS, -IRON)
 
 wanyika_df <- Wanyika_dat %>%
-  dplyr::select("Labcode", "Date BP", "Date BP SD", "Longitude", "Latitude", "Site Name", "Dated Material", "Country") %>%
-  rename(labCode="Labcode", siteName="Site Name", lat="Latitude", long="Longitude", c14date="Date BP", c14std="Date BP SD", material="Dated Material", country="Country") %>%
+  dplyr::select("Labcode", "Date BP", "Date BP SD", "Longitude", "Latitude", "Site Name", "Dated Material", "Country", "Regional Cultural Phase (Eastern Africa)", "MEAN GRADE: Chrono Hygiene 1 and 2 (Stratigraphic integrity  +  SD scores)") %>%
+  rename(labCode="Labcode", siteName="Site Name", lat="Latitude", long="Longitude", c14date="Date BP", c14std="Date BP SD", material="Dated Material", country="Country", grade="MEAN GRADE: Chrono Hygiene 1 and 2 (Stratigraphic integrity  +  SD scores)", phase="Regional Cultural Phase (Eastern Africa)") %>%
   mutate(c14date = as.numeric(c14date), c14std=as.numeric(c14std), dataorigin="Wanyika")  %>%
-  filter(!is.na(lat) & !is.na(long) & !is.na(c14std) & !is.na(c14date)) 
+  filter(phase %in% c("EIA","MIA", "LIA","EIA/MIA","MIA/LIA","EIA/MIA/LIA")) %>% #grade %in% c("A","B")
+  filter(!is.na(lat) & !is.na(long) & !is.na(c14std) & !is.na(c14date)) %>% 
+  filter(labCode %!in% c("Pta-8527", "Pta-8522", "Ua-38476","OxA-18870")) %>% #These dates from "Ukunju Cave","Makangale","Wei wei Valley" are questioned
+  dplyr::select(-grade, -phase)
+  
 
 ##Filter out dates in collected_df which already exist in the wanyika and SARD databases ----
 overlap_labID_wc <- merge(wanyika_df, collected_df, by="labCode")$labCode
@@ -171,6 +175,11 @@ collected_df <- collected_df %>% filter(labCode %!in% overlap_labID_wc)
 
 overlap_labID_sc <- merge(SARD_df, collected_df, by="labCode")$labCode
 collected_df <- collected_df %>% filter(labCode %!in% overlap_labID_sc)
+
+##Dates to check
+#collected_df_prefilter <- collected_df %>% filter(labCode %!in% overlap_labID_wc)
+#dates_to_check <- anti_join(collected_df, collected_df_prefilter, by="labCode")
+#write.csv(dates_to_check, here('dates_to_check.csv'), row.names = FALSE)
 
 ##------------
 ## Combine datasets ----
@@ -223,7 +232,7 @@ eastEIA_sites_df$median_dates = medCal(calibrate(eastEIA_sites_df$c14date,
 
 
 # Collect site level information ----
-earliest_dates <- aggregate(median_dates ~ siteID, data = eastEIA_sites_df, FUN = max) #Earliest medCal Date for Each Site 
+earliest_dates <- aggregate(median_dates ~ siteID, data=eastEIA_sites_df, FUN = max) #Earliest medCal Date for Each Site 
 latest_dates <- aggregate(median_dates ~ siteID, data=eastEIA_sites_df, FUN=min) #Latest medCal Date for Each Site
 n_dates <- aggregate(median_dates ~ siteID, data=eastEIA_sites_df, FUN=length) #Number of medCal Date for Each Site
 
@@ -248,6 +257,7 @@ dateInfo <- unique(dplyr::select(eastEIA_sites_df,
                                   ID,
                                   labCode,
                                   siteID,
+                                  siteName,
                                   cra=c14date,
                                   cra_error=c14std,
                                   median_dates=median_dates,
@@ -277,7 +287,7 @@ for (i in unique(siteInfo$siteID))
 #   slice(1L)
 # #Additional note: Recent linguistic origin used ('Exploring the relationships between genetic, linguistic and geographic distances in Bantu-speaking populations', Gonzalez-Santos, 2022) was that of the Lemande population: (lat, long) = (4.50, 11.08)
 
-# Possible start-point (oldest date) in easter_EIA dataset
+# Possible start-point (oldest date) in eastEIA dataset
 possible_origin_dat <- eastEIA_sites_df %>%
   slice_max(c14date, n=1)
 
@@ -302,39 +312,35 @@ sampling_win <- ne_countries(continent = "Africa", country = eastEIA_countries, 
 #Generate Spatial Hexagons ---- ##see code block below to determine hex diameter, cell_d 
 hex_area_win <- hex_areas(sampling_win, cell_d = 3.8)
 
-#Remove spatial hexagons where the Bantu Expansion didn't reach
-#Sub-Saharan Africa, cell-diameter 6.2
+#Remove spatial hexagons which are sample window edges or where EIA didn't reach
+
+##East Africa, cell-diameter 2.9
 # hex_area_win <- hex_area_win %>%
-#   filter(area_ID %!in% c(13, 25, 12, 24, 18, 30, 41, 3, 11, 23, 35, 46, 54, 61, 65, 66, 64, 57, 63)) %>%
-#   mutate(area_ID = row_number())
-#Sub-Saharan Africa, cell-diameter 5.2
-# hex_area_win <- hex_area_win %>%
-#  filter(area_ID %!in% c(18, 25, 39, 24, 17, 38, 31, 45, 51, 23, 37, 4, 11, 88, 86, 87, 84, 83, 81, 73, 77, 68, 63)) %>%
-#  mutate(area_ID = row_number())
-#Sub-Saharan Africa, cell-diameter 7.2
-# hex_area_win <- hex_area_win %>% 
-#  filter(area_ID %!in% c(1, 3, 9, 19, 30, 35, 25, 14, 20, 40, 48, 53, 55, 54, 51, 44, 10, 15)) %>%
-#  mutate(area_ID = row_number())
-#East Africa, cell-diameter 2.7
-# hex_area_win <- hex_area_win %>%
-#   filter(area_ID %!in% c(1,2,3,4,5,9,6,10,15,20,97,122,127,121,116)) %>%
-#   mutate(area_ID = row_number())
-# #East Africa, cell-diameter 3.8
-hex_area_win <- hex_area_win %>%
-  filter(area_ID %!in% c(1,2,3,4,5,7,11,15,47,58)) %>%
-  mutate(area_ID = row_number())
-# #East Africa, cell-diameter 5.7
-# hex_area_win <- hex_area_win %>%
-#   filter(area_ID %!in% c(1,2,3,6,30)) %>%
+#   filter(area_ID %!in% c(1,2,3,4,5,6,8,9,10,13,14,18,19,24,77,78,90,100,102)) %>%
 #   mutate(area_ID = row_number())
 
+##East Africa, cell-diameter 3.8
+hex_area_win <- hex_area_win %>%
+  filter(area_ID %!in% c(1,2,3,4,5,8,9,12,13,25,38,44,50,55,59,60,64)) %>%
+  mutate(area_ID = row_number())
+
+##East Africa, cell-diameter 5.2
+hex_area_win <- hex_area_win %>%
+  filter(area_ID %!in% c(1,2,7,6,27,31)) %>%
+  mutate(area_ID = row_number())
+
 ##CHECK -- plot hexs and sites
+#interest_sites <- eastEIA_sites_df %>% filter(siteName %in% c("University Campus","Kamukombe","Zitundo","Caimane"))
+#interest_sites$points <- st_geometry(st_as_sf(interest_sites, coords = c("long","lat"), crs=4326))
+
 # ggplot(data = hex_area_win) +
-#   geom_sf(data = st_buffer(st_as_sf(sampling_win, crs = 4326), 40000), aes(color = "grey50")) + #sampling window with coastal buffer
-#   geom_sf() + #hex grid
+#   geom_sf(data = st_buffer(st_as_sf(sampling_win, crs = 4326), 2000), aes(color = "grey50"),lwd=1.5) + #sampling window with coastal buffer
+#   geom_sf(aes(alpha=0.2)) + #hex grid
 #   geom_sf(data = as(sites, 'sf'), size=2, alpha=0.5) + #sites
 #   geom_sf_label(aes(label = area_ID),size=3) + #hex grid labels
-#   #geom_sf(data = hex_area_win$area_center, size=2, alpha=1, aes(color = "purple")) + #hex-origins
+#   #geom_sf(data = interest_sites$points, size=2, alpha=1, color = "purple") +
+#   #geom_sf_label(data = interest_sites$points, aes(label = interest_sites$siteName),size=3) + #hex grid labels
+#   #geom_sf_label(data = sampling_win, aes(label = admin, alpha=0.6), color="darkred", size=4) + #country labels
 #   theme(panel.background = element_rect(fill = "lightblue",
 #                                         colour = "lightblue",
 #                                         size = 0.5,
@@ -343,7 +349,7 @@ hex_area_win <- hex_area_win %>%
 
 #Assign hex area id to each site ----
 siteInfo$area_id <- as.integer(st_within(sites$geometry, hex_area_win$geometry))
-siteInfo$area_id[siteInfo$siteName=="Dembeni"] <- 65 #Impute area_ID for site=Dembeni on the far east of Comoros islands
+#siteInfo$area_id[siteInfo$siteName=="Dembeni"] <- 65 #Impute area_ID for site=Dembeni on the far east of Comoros islands
 
 
 #Assign hex area id to each date ----
@@ -353,32 +359,6 @@ dateInfo$area_id <- siteInfo$area_id[match(dateInfo$siteID, siteInfo$siteID)]
 area_freq  <- plyr::count(siteInfo, 'area_id') ##See how many sites fall in each hex area. Also make sure there are no 'NA' entries
 #In order to check that this lines up visually with how many sites are in each hex area see map_figure2
 
-#--------------------------------
-## Determining hex size ---
-#Under changing hex size, determine the proportion of areal hex units in the sampling window with sites
-# prop_units_df <- data.frame(d = numeric(), prop_with_sites = numeric())
-# 
-# for (d in seq(1, 15, 0.1)){
-#   hex_area_win <- hex_areas(sampling_win, cell_d = d)
-#   siteInfo$area_id <- as.integer(st_within(sites$geometry, hex_area_win$geometry))
-# 
-#   hex_with_sites <- length(unique(siteInfo$area_id))
-#   all_hex <- length(hex_area_win$area_ID)
-# 
-#   prop_with_sites <- hex_with_sites/all_hex
-# 
-#   prop_units_df <- rbind(prop_units_df, data.frame(d = d, prop_with_sites = prop_with_sites))
-# }
-# 
-# # Plot results
-# pdf(here('output','figures','figure_hexsize2.pdf'),height=5,width=5.5)
-# ggplot(prop_units_df, aes(x = d, y = prop_with_sites)) +
-#   geom_line() +
-#   geom_point() +
-#   scale_x_continuous(breaks=seq(0,15,by=1))+
-#   labs(x = "Hexagon Size (d)", y = "Proportion of Hexagons with Sites", title = "Effect of Hexagon Size on Site Coverage") +
-#   theme_minimal()
-# dev.off()
 # #-------------------------------------------------------------------------------
 ## Create list with constants and data ----
 
@@ -407,7 +387,7 @@ constants$C14err  <- cbind(intcal20$C14Age.sigma, shcal20$C14Age.sigma)
 
 #-------------------------------------------------------------------------------
 ## Save everything on a R image file ----
-save(sites, constants, eastEIA_dat, siteInfo, dateInfo, sampling_win, hex_area_win, file=here('data','eastc14.RData')) #c14.RData
+save(sites, constants, eastEIA_dat, siteInfo, dateInfo, sampling_win, hex_area_win, file=here('data','eastc14.RData'))
 
 #-------------------------------------------------------------------------------
 ## Save sampling window specific information separately ----
@@ -422,269 +402,82 @@ constants_sw$C14err  <- constants$C14err
 
 save(constants_sw, sampling_win, hex_area_win, file=here('data','sample_window.RData'))
 
-#-------------------------------------------------------------------------------
-## Elevation Data
+#===============================================================================
+#KZN and Mozambique border region 
 
-country_codes <- country_codes() %>% filter(NAME %in% eastEIA_countries) #obtain country codes 
+#Select area of interest
+interest_areas <- c(16,21,22,27,33,34,39,44)
+KM_hex_area_win <- hex_area_win %>%
+  filter(area_ID %in% interest_areas) %>%
+  mutate(area_ID = row_number())
 
-#Import elevation data
-SRTM90m <- elevation_30s(country_codes$ISO3[1], path=here('input'), mask=TRUE)
-for (i in 2:nrow(country_codes)){
-  SRTM90m <- merge(SRTM90m, elevation_30s(country_codes$ISO3[i], path=here('input'), mask=TRUE))
-}
-
-plot(SRTM90m)
-#plot(hex_area_win$geometry, add = T)
-
-#Add area IDs
-mean_hex_elv <- data.frame(area_ID = hex_area_win$area_ID,
-                           mean_elevation = terra::zonal(SRTM90m, terra::vect(hex_area_win), fun = "mean", na.rm = TRUE)) #calculate mean elevation in each hexagon
-
-#Impute missing values from nearest neighbors 
-mean_hex_elv[mean_hex_elv$area_ID==17, ] = c(17, mean_hex_elv[mean_hex_elv$area_ID==8, ]$BWA_elv_msk)
-mean_hex_elv[mean_hex_elv$area_ID==47, ] = c(47, mean_hex_elv[mean_hex_elv$area_ID==44, ]$BWA_elv_msk)
-mean_hex_elv[mean_hex_elv$area_ID==45, ] = c(45, mean_hex_elv[mean_hex_elv$area_ID==48, ]$BWA_elv_msk)
-mean_hex_elv[mean_hex_elv$area_ID==37, ] = c(37, mean_hex_elv[mean_hex_elv$area_ID==32, ]$BWA_elv_msk)
-
-#Normalise elevation to [0,1] scale
-mean_hex_elv <- mean_hex_elv %>% 
-  mutate(norm_mean_elv = BWA_elv_msk/max(BWA_elv_msk))
-
-#Save elevation output
-save(mean_hex_elv, SRTM90m, file=here('data','elevation.RData'))
-
-#-------------------------------------------------------------------------------
-## Crop suitability data
-
-#Read in crop data ----
-pearl_millet_sf <- read_stars("data/environment/Soil_suitability_Chemura/Cereals/Suit/pmillet_curr.tif") %>% 
-  st_as_sf() %>% 
-  rename("pmillet_suit" = "pmillet_curr.tif")
-
-sorghum_sf <- read_stars("data/environment/Soil_suitability_Chemura/Cereals/Suit/sorghum_curr.tif") %>% 
-  st_as_sf() %>% 
-  rename("sorghum_suit" = "sorghum_curr.tif")
-
-#--------------  
-#Aggregate suitability values for each hexagonal area ----
-
-#Assign hex area id
-pearl_millet_sf$area_id <- as.integer(st_within(pearl_millet_sf$geometry, hex_area_win$geometry))
-
-sorghum_sf$area_id <- as.integer(st_within(sorghum_sf$geometry, hex_area_win$geometry))
-
-
-#Filter for suitability values within the sample window
-pearl_millet_sf <- pearl_millet_sf %>% 
-  filter(!is.na(area_id))
-
-sorghum_sf <- sorghum_sf %>% 
-  filter(!is.na(area_id))
-
-#------
-#Aggregate
-pearl_millet_df <- pearl_millet_sf %>% 
-  group_by(area_id) %>% 
-  summarize(mean_pmillet_suit = mean(pmillet_suit)) %>% 
-  as.data.frame() %>% 
-  dplyr::select(area_id, mean_pmillet_suit) %>% 
-  na.omit()
-
-sorghum_df <- sorghum_sf %>% 
-  group_by(area_id) %>% 
-  summarize(mean_sorghum_suit = mean(sorghum_suit)) %>% 
-  as.data.frame() %>% 
-  dplyr::select(area_id, mean_sorghum_suit) %>% 
-  na.omit()
-
-#--------------  
-#Impute values from neighbors for hex areas that are too small to have suitability values ----
-#NB: This needs to be changed for different sample windows!
-pearl_millet_df[nrow(pearl_millet_df) + 1,] = c(16, pearl_millet_df[pearl_millet_df$area_id==27, ]$mean_pmillet_suit)
-pearl_millet_df[nrow(pearl_millet_df) + 1,] = c(17, pearl_millet_df[pearl_millet_df$area_id==12, ]$mean_pmillet_suit)
-pearl_millet_df[nrow(pearl_millet_df) + 1,] = c(38, pearl_millet_df[pearl_millet_df$area_id==29, ]$mean_pmillet_suit)
-pearl_millet_df[nrow(pearl_millet_df) + 1,] = c(45, pearl_millet_df[pearl_millet_df$area_id==41, ]$mean_pmillet_suit)
-pearl_millet_df[nrow(pearl_millet_df) + 1,] = c(46, pearl_millet_df[pearl_millet_df$area_id==39, ]$mean_pmillet_suit)
-pearl_millet_df[nrow(pearl_millet_df) + 1,] = c(47, pearl_millet_df[pearl_millet_df$area_id==44, ]$mean_pmillet_suit)
-
-sorghum_df[nrow(sorghum_df) + 1,] = c(16, sorghum_df[sorghum_df$area_id==27, ]$mean_sorghum_suit)
-sorghum_df[nrow(sorghum_df) + 1,] = c(17, sorghum_df[sorghum_df$area_id==12, ]$mean_sorghum_suit)
-sorghum_df[nrow(sorghum_df) + 1,] = c(38, sorghum_df[sorghum_df$area_id==29, ]$mean_sorghum_suit)
-sorghum_df[nrow(sorghum_df) + 1,] = c(45, sorghum_df[sorghum_df$area_id==41, ]$mean_sorghum_suit)
-sorghum_df[nrow(sorghum_df) + 1,] = c(46, sorghum_df[sorghum_df$area_id==39, ]$mean_sorghum_suit)
-sorghum_df[nrow(sorghum_df) + 1,] = c(47, sorghum_df[sorghum_df$area_id==44, ]$mean_sorghum_suit)
-
-
-pearl_millet_df <- pearl_millet_df %>% arrange(area_id) 
-sorghum_df <- sorghum_df %>% arrange(area_id) 
-
-#Plot
-#Pearl Millet
-ggplot(data = hex_area_win) +
-  geom_sf(data = st_buffer(st_as_sf(sampling_win, crs = 4326), 40000), color = "grey50") + #sampling window with coastal buffer
-  geom_sf(aes(fill = pearl_millet_df$mean_pmillet_suit)) +
-  scale_fill_gradientn(colours = rev(terrain.colors(7)), name = "Pearl Millet Suitability") +
-  theme(panel.background = element_rect(fill = "lightblue",
-                                        colour = "lightblue",
-                                        size = 0.5,
-                                        linetype = "solid"))
-# ggplot(data = pearl_millet_sf) +
-#   geom_sf(data = st_buffer(st_as_sf(sampling_win, crs = 4326), 40000), color = "grey50") + #sampling window with coastal buffer
-#   geom_sf(aes(fill = pmillet_suit)) +
-#   scale_fill_gradientn(colours = rev(terrain.colors(7)), name = "Pearl Millet Suitability") +
+#Plot sample region
+# africa <- ne_countries(scale = "medium", continent = "Africa", returnclass = "sf")
+# 
+# ggplot(data = KM_hex_area_win) +
+#   geom_sf(data = st_union(africa), fill = "#ECE6DD", color = "black") +
+#   geom_sf(data = st_buffer(st_as_sf(sampling_win, crs = 4326), 40000), aes(color = "grey50"),lwd=1.5) + #sampling window with coastal buffer
+#   geom_sf(aes(alpha=0.2)) + #hex grid
+#   geom_sf(data = as(sites, 'sf'), size=2, alpha=0.5) + #sites
+#   geom_sf_label(aes(label = area_ID),size=3) + #hex grid labels
+#   coord_sf(xlim = c(20, 40),
+#            ylim = c(-35, -15)) +
 #   theme(panel.background = element_rect(fill = "lightblue",
 #                                         colour = "lightblue",
 #                                         size = 0.5,
-#                                         linetype = "solid"))
-
-#Sorghum
-ggplot(data = hex_area_win) +
-  geom_sf(data = st_buffer(st_as_sf(sampling_win, crs = 4326), 40000), color = "grey50") + #sampling window with coastal buffer
-  geom_sf(aes(fill = sorghum_df$mean_sorghum_suit)) +
-  scale_fill_gradientn(colours = rev(terrain.colors(7)), name = "Sorghum Suitability") +
-  theme(panel.background = element_rect(fill = "lightblue",
-                                        colour = "lightblue",
-                                        size = 0.5,
-                                        linetype = "solid"))
-# ggplot(data = sorghum_sf) +
-#   geom_sf(data = st_buffer(st_as_sf(sampling_win, crs = 4326), 40000), color = "grey50") + #sampling window with coastal buffer
-#   geom_sf(aes(fill = sorghum_suit)) +
-#   scale_fill_gradientn(colours = rev(terrain.colors(7)), name = "Sorghum Suitability") +
-#   theme(panel.background = element_rect(fill = "lightblue",
-#                                         colour = "lightblue",
-#                                         size = 0.5,
-#                                         linetype = "solid"))
-
-#--------------
-#Join crop data ----
-agg_crop_suitability <- pearl_millet_df %>% 
-  left_join(sorghum_df, by=join_by(area_id)) %>% 
-  rowwise() %>% 
-  mutate(max_crop_suit = as.numeric(max(mean_pmillet_suit, mean_sorghum_suit))) %>% 
-  select(area_id, max_crop_suit)
-
-#--------------
-#Save crop suitability output ----
-save(agg_crop_suitability, file=here('data','crop_suitability.RData'))
+#                                         linetype = "solid"),
+#         legend.position = "none")
 
 
-#----------------- ALTERNATIVE AGRICULTURAL SUITABILITY ------------------------
+#Filter for sites in this region
+KM_siteInfo <- siteInfo %>% 
+  filter(area_id %in% interest_areas) %>% 
+  mutate(siteID = row_number())
 
-## Sedentary animal husbandry suitability data
-
-#Read in animal husbandry data ----
-agr_suit_sf <- read_stars("data/environment/Agriculture_suitability_Beck/agr_suit.asc") %>% 
-  st_as_sf() %>% 
-  rename("agr_suit" = "agr_suit.asc")
-
-st_crs(agr_suit_sf)  <- 4326 
-#--------------  
-#Aggregate suitability values for each hexagonal area ----
-
-#Assign hex area id
-agr_suit_sf$area_id <- as.integer(st_within(agr_suit_sf$geometry, hex_area_win$geometry))
-
-#Filter for suitability values within the sample window
-agr_suit_sf <- agr_suit_sf %>% 
-  filter(!is.na(area_id))
-
-#------
-#Aggregate
-agr_suit_df <- agr_suit_sf %>% 
-  group_by(area_id) %>% 
-  summarize(mean_agr_suit = mean(agr_suit)) %>% 
-  as.data.frame() %>% 
-  dplyr::select(area_id, mean_agr_suit) %>% 
-  na.omit()
-
-#--------------  
-#Impute values from neighbors for hex areas that are too small to have suitability values ----
-#NB: This needs to be changed for different sample windows!
-agr_suit_df[nrow(agr_suit_df) + 1,] = c(17, agr_suit_df[agr_suit_df$area_id==12, ]$mean_agr_suit)
-agr_suit_df[nrow(agr_suit_df) + 1,] = c(47, agr_suit_df[agr_suit_df$area_id==44, ]$mean_agr_suit)
-
-agr_suit_df <- agr_suit_df %>% arrange(area_id) 
-
-#Plot
-#Agricultural suitability
-ggplot(data = hex_area_win) +
-  geom_sf(data = st_buffer(st_as_sf(sampling_win, crs = 4326), 40000), color = "grey50") + #sampling window with coastal buffer
-  geom_sf(aes(fill = agr_suit_df$mean_agr_suit)) +
-  scale_fill_gradientn(colours = rev(terrain.colors(7)), name = "Agriculture Suitability") +
-  theme(panel.background = element_rect(fill = "lightblue",
-                                        colour = "lightblue",
-                                        size = 0.5,
-                                        linetype = "solid"))
-# ggplot(data = agr_suit_sf) +
-#   geom_sf(data = st_buffer(st_as_sf(sampling_win, crs = 4326), 40000), color = "grey50") + #sampling window with coastal buffer
-#   geom_sf(aes(fill = agr_suit)) +
-#   scale_fill_gradientn(colours = rev(terrain.colors(7)), name = "Agriculture Suitability") +
-#   theme(panel.background = element_rect(fill = "lightblue",
-#                                         colour = "lightblue",
-#                                         size = 0.5,
-#                                         linetype = "solid"))
-
-
-#Save alternative agriculutural suitability output ----
-save(agr_suit_df, file=here('data','crop_suitability2.RData'))
+KM_dateInfo <- dateInfo %>% 
+  filter(area_id %in% interest_areas) %>% 
+  mutate(ID = row_number()) %>%  #reassign ID for new dataset
+  mutate(siteID = as.numeric(factor(siteName))) #reassign site ID for new dataset
 
 #-------------------------------------------------------------------------------
-## Sedentary animal husbandry suitability data
+## Designating approximate origin ----
 
-#Read in animal husbandry data ----
-animal_hus_sf <- read_stars("data/environment/AnimalHusbandry_suitability_Beck/anim_suit.asc") %>% 
-  st_as_sf() %>% 
-  rename("animal_hus_suit" = "anim_suit.asc")
+# Possible start-point (oldest date) in easter_EIA dataset
+KM_possible_origin_dat <- KM_dateInfo %>% slice_max(cra, n=1)
 
-st_crs(animal_hus_sf)  <- 4326 
-#--------------  
-#Aggregate suitability values for each hexagonal area ----
+## Compute Great-Arc Distances in km ----
+KM_sites <- st_as_sf(KM_siteInfo, coords = c('long','lat'))
+st_crs(KM_sites)  <- 4326 
+KM_dist_mat  <- set_units(st_distance(KM_sites), 'km') #inter-site distance matrix in km: each site's distance from every other site (i.e. with n sites, this matrix is n^2)
+KM_origin_point  <- KM_sites %>% filter(siteName == possible_origin_dat$siteName)
+KM_dist_org  <-  as.vector(set_units(st_distance(x=KM_sites, y=origin_point), 'km')) #distance from origin site
 
-#Assign hex area id
-animal_hus_sf$area_id <- as.integer(st_within(animal_hus_sf$geometry, hex_area_win$geometry))
+#-------------------------------------------------------------------------------
+## Create list with constants and data ----
 
-#Filter for suitability values within the sample window
-animal_hus_sf <- animal_hus_sf %>% 
-  filter(!is.na(area_id))
+# Data
+KM_EIA_dat <- list(cra=KM_dateInfo$cra,
+                    cra_error=KM_dateInfo$cra_error)
 
-#------
-#Aggregate
-amimal_hus_df <- animal_hus_sf %>% 
-  group_by(area_id) %>% 
-  summarize(mean_animal_hus_suit = mean(animal_hus_suit)) %>% 
-  as.data.frame() %>% 
-  dplyr::select(area_id, mean_animal_hus_suit) %>% 
-  na.omit()
+## Constants
+data(shcal20)
+KM_constants <- list()
+KM_constants$eastEIAcountries <- eastEIA_countries
+KM_constants$n_sites <- nrow(KM_siteInfo)
+KM_constants$n_dates  <- nrow(KM_dateInfo)
+KM_constants$n_areas  <- nrow(KM_hex_area_win)
+KM_constants$id_sites <- KM_dateInfo$siteID
+KM_constants$id_areas  <- KM_siteInfo$area_id 
+KM_constants$dist_mat  <- KM_dist_mat
+KM_constants$dist_org  <- KM_dist_org
+KM_constants$origin_point <- st_coordinates(KM_origin_point)
+#Calibration curves
+KM_constants$calBP <- shcal20$CalBP
+KM_constants$C14BP  <- shcal20$C14Age #Southern hemisphere calibration curves
+KM_constants$C14err  <- shcal20$C14Age.sigma
 
-#--------------  
-#Impute values from neighbors for hex areas that are too small to have suitability values ----
-#NB: This needs to be changed for different sample windows!
-amimal_hus_df[nrow(amimal_hus_df) + 1,] = c(17, amimal_hus_df[amimal_hus_df$area_id==12, ]$mean_animal_hus_suit)
-amimal_hus_df[nrow(amimal_hus_df) + 1,] = c(47, amimal_hus_df[amimal_hus_df$area_id==44, ]$mean_animal_hus_suit)
-
-amimal_hus_df <- amimal_hus_df %>% arrange(area_id) 
-
-#Plot
-#Animal Husbandry
-ggplot(data = hex_area_win) +
-  geom_sf(data = st_buffer(st_as_sf(sampling_win, crs = 4326), 40000), color = "grey50") + #sampling window with coastal buffer
-  geom_sf(aes(fill = amimal_hus_df$mean_animal_hus_suit)) +
-  scale_fill_gradientn(colours = rev(terrain.colors(7)), name = "Animal Husbandry Suitability") +
-  theme(panel.background = element_rect(fill = "lightblue",
-                                        colour = "lightblue",
-                                        size = 0.5,
-                                        linetype = "solid"))
-# ggplot(data = animal_hus_sf) +
-#   geom_sf(data = st_buffer(st_as_sf(sampling_win, crs = 4326), 40000), color = "grey50") + #sampling window with coastal buffer
-#   geom_sf(aes(fill = animal_hus_suit)) +
-#   scale_fill_gradientn(colours = rev(terrain.colors(7)), name = "Animal Husbandry Suitability") +
-#   theme(panel.background = element_rect(fill = "lightblue",
-#                                         colour = "lightblue",
-#                                         size = 0.5,
-#                                         linetype = "solid"))
-
-
-#Save animal husbandry suitability output ----
-save(amimal_hus_df, file=here('data','animal_hus_suitability.RData'))
+#-------------------------------------------------------------------------------
+## Save everything on a R image file ----
+save(KM_sites, KM_constants, KM_EIA_dat, KM_siteInfo, KM_dateInfo, sampling_win, KM_hex_area_win, file=here('data','KM_eastc14.RData')) 
 
 

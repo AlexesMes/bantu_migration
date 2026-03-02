@@ -16,8 +16,6 @@ library(igraph)
 
 # Load and prepare data ----
 load(here('data','eastc14.RData')) #East and Southern Africa
-#load(here('data','c14.RData')) #sub-Saharan Africa
-
 #-------------------------------------------------------------------------------
 ## Data preparation ----
 
@@ -51,20 +49,8 @@ hex_dist_mat <- set_units(st_distance(hex_area_centers), 'km') #Inter-area dista
 center_coords <- st_coordinates(hex_area_centers) #TODO: Uncomment
 del <- deldir(center_coords, id=hex_area_win$area_ID)
 tiles <- tile.list(del)
-##Selecting 3 triangles of interest -- TEST CASE
-# center_coords <- st_coordinates(hex_area_centers[c(13, 18, 22), ])
-# del <- deldir(center_coords, id=c(1, 2, 3)) #Relabel ids for nimble (must be sequential from 1) 13 -> 1, 14 -> 2, 18 -> 3
-# tiles <- tile.list(del)
-
 
 ##Remove external edges that are outside sampling window ---
-
-#EITHER...
-# #Remove boundary transitions
-# average_trans <- mean(transitions$distance)
-# transitions <- transitions %>% filter(distance < average_trans)
-
-#OR....
 
 #Create edges as linestrings
 st_segment <- function(r){st_linestring(t(matrix(unlist(r), 2, 2)))}
@@ -125,38 +111,14 @@ constants_trig$edge_id1 <- edge_info$region1_id
 constants_trig$edge_id2 <- edge_info$region2_id 
 constants_trig$edge_dist <- edge_info$distance
 
-
-
 #-------------------------------------------------------------------------------
 ## Save everything on a R image file ----
 save(del, 
      tiles,
      edge_info,
      constants_trig,
-     file=here('data','trig_d38.RData')) #'trig.RData'
+     file=here('data','trig_d38.RData'))
 
  save(edge_info,
       constants_trig,
       file=here('data','boundary_edges.RData'))
-
-# #===============================================================================
-# ##Simple paths
-# 
-# relations <- transitions %>% 
-#   dplyr::select(from = region1_id, to = region2_id) 
-# 
-# 
-# vertices <- st_drop_geometry(hex_area_win) 
-# 
-# #vertices <- vertices[c(13, 18, 22),] %>% 
-# #  mutate(area_ID = case_when(area_ID == 13 ~ 1, area_ID == 18 ~ 2, area_ID == 22 ~ 3))  #test_case
-# 
-# hex_centers_graph <- graph_from_data_frame(relations, directed=FALSE, vertices = NULL)
-# plot(hex_centers_graph)
-# 
-# create_paths <- all_simple_paths(hex_centers_graph, from = 25, mode = "out") #area_ID = 25 contains 'Katuruka' our putative origin
-# 
-# 
-# #-------------------------------------------------------------------------------
-# ## Save everything on a R image file ----
-# save(create_paths, file=here('data','simplepaths.RData'))

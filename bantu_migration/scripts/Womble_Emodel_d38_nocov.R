@@ -11,19 +11,13 @@ rm(list = ls())
 `%!in%` <- Negate(`%in%`)
 
 #===============================================================================
-###ICAR MODEL WITH ENVIRONMENTAL COVARIATES -- npp and rugosity
+###ICAR MODEL WITHOUT ENVIRONMENTAL COVARIATES
 #===============================================================================
 #-------------------------------------------------------------------------------
 ## Data Setup ----
-#Chose model and spatial scale
-df_dat <- c('eastc14.RData','trig_d38.RData','Krapp_enviro_variables.RData') #ICAR_d38: ICAR mode with scale at d=3.8
-#df_dat <- c('eastc14_wanAB.RData','trig_d38.RData','Krapp_enviro_variables.RData') #ICAR_d38_wanAB: dataset with Wanyika grade C and D dates filtered out (~15% of the original data)
-#df_dat <- c('eastc14_d29.RData','trig_d29.RData','Krapp_enviro_variables_d29.RData') #ICAR_d29: model running with a sample window with a finer spatial scale (i.e. 83 hexagonal units, d=2.9)
+load(here('data', 'eastc14.RData')) #East and Southern Africa
 
-#Load data
-load(here('data', df_dat[1])) #East and Southern Africa data
-load(here('data', df_dat[2])) #nodes and edges between hex area centroids
-load(here('data', df_dat[3])) #Environmental data
+load(here('data','trig_d38.RData')) #nodes and edges between hex area centroids
 
 #Combine constants
 constants <- c(constants, constants_trig)
@@ -33,13 +27,8 @@ constants <- c(constants, constants_trig)
 dat <- list(cra = dateInfo$cra, #theta=sim_df$cra
             cra_error = dateInfo$cra_error,
             constraint_uniform = rep(1, constants$n_areas),
-            cra_constraint = rep(1, constants$n_dates), # Set-up constraint for ignoring inference outside calibration range
-            x1 = scaled_hex_clim_df[,"npp"],
-            x2 = scaled_hex_clim_df[,"rugosity"]) 
-
-# #Center covariates
-# dat$x1_centered <- dat$x1 - mean(dat$x1)
-
+            cra_constraint = rep(1, constants$n_dates)) # Set-up constraint for ignoring inference outside calibration range
+            
 #Calibration curve
 constants$cc <- as.numeric(as.factor(dateInfo$calCurve)) #intcal20==1 and shcal20==2
 
@@ -95,7 +84,6 @@ init_b  <- init_b[ ,2] - buffer
 
 # Initialise spatial residues
 init_phi <- init_a #(use init_a if no intercept (beta0) is included and zero_mean=0)
-init_phi_raw <- rep(0, constants$n_areas)
 
 #-------------------------------------------------------------------------------
 #Spatial data
@@ -120,7 +108,7 @@ constants <- constants[names(constants) %!in% c("dist_mat",
 #-------------------------------------------------------------------------------
 # Model Womble: Hierarchical ICAR with boundary identified ----
 
-modelW <- function(seed, d, theta_init, alpha_init, delta_init, init_a, init_b, init_phi_raw, constants, nburnin, thin, niter)
+modelW <- function(seed, d, theta_init, alpha_init, delta_init, init_a, init_b, init_phi, constants, nburnin, thin, niter)
 {
   #Load Library
   library(nimbleCarbon)
@@ -146,29 +134,21 @@ modelW <- function(seed, d, theta_init, alpha_init, delta_init, init_a, init_b, 
     
     #For Each Region
     for (k in 1:n_areas){
-      phi[k] <- phi_raw[k] - phi_mean; #manually implement the zero_mean=1 constraint
-      a[k] <- phi[k] + x1[k]*beta1 + x2[k]*beta2 + beta0;
+      a[k] <- phi[k];
       b[k] ~ T(dunif(50, 5000), 50, a[k]); #b[k] ~ dunif(50, 2300) #In each area, start date of occupation, a_k, must be greater than the end date of occupation, b_k (note: BP dates in the positive direction). Truncating in this way avoids dconstraint.
     }
-    
-    # ICAR Model prior to capture spatial random effects
-    phi_raw[1:n_areas] ~ dcar_normal(adj[1:L], weights[1:L], num[1:n_areas], tau1, zero_mean=0)
-    phi_mean <- mean(phi_raw[1:n_areas])
-    
+      
+      # ICAR Model prior to capture spatial random effects
+      phi[1:n_areas] ~ dcar_normal(adj[1:L], weights[1:L], num[1:n_areas], tau1, zero_mean=0)
     
     #For Each Edge Transition
     for (t in 1:n_trans){
       #nabla defines the difference in arrival time across a boundary
       nabla[t] <- abs(a[edge_id1[t]] - a[edge_id2[t]]) #edge t: select first area, m, and second area, n
-      #nabla_phi defines the difference in spatial residues across a boundary
-      nabla_phi[t] <- abs(phi[edge_id1[t]] - phi[edge_id2[t]])
     }
-    
+
     #Priors
-    beta0 ~ dnorm(2500, sd=100); #Intercept
-    beta1 ~ dnorm(0, sd=150); #determining strength of the covariate
-    beta2 ~ dnorm(0, sd=150);
-    tau1 ~dgamma(0.8, 0.1);  #weak prior for ICAR model -- spatial autocorrelation precision parameter #Also try: dgamma(1, 1)
+    tau1 ~ dgamma(0.8, 0.1);  #weak prior for ICAR model -- spatial autocorrelation precision parameter
     
     # Hyperprior for duration
     gamma1 ~ dunif(1,20) #Hyperprior for rate
@@ -179,13 +159,10 @@ modelW <- function(seed, d, theta_init, alpha_init, delta_init, init_a, init_b, 
   inits <- list(theta=theta_init,
                 a=init_a,
                 b=init_b,
-                phi_raw=init_phi_raw,
+                phi=init_phi,
                 alpha=alpha_init, 
                 delta=delta_init, 
                 tau1=rgamma(1, shape = 0.8, rate = 0.1),
-                beta0=rnorm(1, 2500, 100),
-                beta1=rnorm(1, 0, sd=150), #rnorm(1:constants$n_areas, 0, sd=200), #runif(1:constants$n_areas, min = -1, max = 1)
-                beta2=rnorm(1, 0, sd=150),
                 gamma1=10,
                 gamma2=200)
   
@@ -197,7 +174,7 @@ modelW <- function(seed, d, theta_init, alpha_init, delta_init, init_a, init_b, 
   conf <- configureMCMC(model, useConjugacy = TRUE, control = list(adaptInterval=5000, adaptFactorExponent=0.1))
   
   #Add monitors of importance
-  conf$addMonitors(c('a','b','theta','delta','alpha','phi','nabla', 'nabla_phi', 'beta1','beta2','beta0'))
+  conf$addMonitors(c('a','b','theta','delta','alpha','phi','nabla'))
   #Build, compile, and run MCMC
   MCMC <- buildMCMC(conf)
   cMCMC <- compileNimble(MCMC)
@@ -213,23 +190,23 @@ cl <- makeCluster(ncores)
 seeds <- c(12, 34, 56, 78)
 niter  <- 2000000
 nburnin  <- 1000000
-thin  <- 100
+thin  <-100
 
 #Hierarchical Womble Model 
 out_womble_model <-  parLapply(cl = cl, 
-                               X = seeds, 
-                               fun = modelW, 
-                               d = dat, 
-                               constants = constants, 
-                               theta_init = theta_init, 
-                               init_a = init_a, 
-                               init_b = init_b, 
-                               alpha_init = alpha_init, 
-                               delta_init = delta_init,
-                               init_phi = init_phi,
-                               niter = niter, 
-                               nburnin = nburnin,
-                               thin = thin)
+                              X = seeds, 
+                              fun = modelW, 
+                              d = dat, 
+                              constants = constants, 
+                              theta_init = theta_init, 
+                              init_a = init_a, 
+                              init_b = init_b, 
+                              alpha_init = alpha_init, 
+                              delta_init = delta_init,
+                              init_phi = init_phi,
+                              niter = niter, 
+                              nburnin = nburnin,
+                              thin = thin)
 out_womble_model <- mcmc.list(out_womble_model)
 
 ## Diagnostics ----
@@ -247,6 +224,4 @@ save(out_womble_model,
      rhat_womble_model, 
      ess_womble_model, 
      agg_womble_model, 
-     file=here('output','Womble_Emodel_d38.RData')) 
-#'Womble_Emodel_d38_reduce.RData' for model run on dataset with Wanyika grade C and D dates filtered out
-#'Womble_Emodel_d29.RData' for model running with a sample window with a finer spatial scale (i.e. 83 hexagonal units, d=2.9)
+     file=here('output','Womble_Emodel_d38_nocov.RData'))
