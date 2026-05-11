@@ -1,4 +1,5 @@
 # bantu_migration: The pace of sub-Saharan early farming expansions
+[![DOI](https://zenodo.org/badge/doi/10.5281/zenodo.20121736.svg)](https://doi.org/10.5281/zenodo.20121736)
 
 All data and scripts required to reproduce the analysis for the paper 'The pace of sub-Saharan early farming expansions' (A.Mes, E.R.Crema, S.Merlo, P.J.Lane; 2026) are located within this repository. The repository is organised into five main directories: _src_, _input_, _scripts_, _data_, _output_.
 
