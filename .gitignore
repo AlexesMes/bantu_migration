@@ -1,13 +1,13 @@
-.Rproj.user
+.Rproj.user/
 .Rhistory
+
 .RData
 .Ruserdata
 
 *.nc
 *.tif
-*.RData
 
-bantu_migration/data/environment/AnimalHusbandry_suitability_Beck/metadata.txt
-bantu_migration/data/environment/AnimalHusbandry_suitability_Beck/anim_suit.asc
-
-bantu_migration/.RDataTmp
+output/Womble_Emodel_d29.RData
+output/Womble_Emodel_d38.RData
+output/Womble_Emodel_d38_nocov.RData
+output/Womble_Emodel_d38_reduce.RData
