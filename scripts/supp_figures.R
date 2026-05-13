@@ -34,6 +34,7 @@ library(RColorBrewer)
 library(ggspatial)
 library(rnaturalearthdata)
 library(parallel)
+library(shadowtext)
 
 source(here('src', 'grad_funcs.R'))
 source(here('src', 'accuracy_precision.R'))
@@ -108,7 +109,7 @@ hex_area_plot <- ggplot(data = hex_area_win) +
         panel.border = element_rect(color = "grey50", fill = NA, size = 0.5),
         legend.position = "none")
 
-pdf(file=here('output','figures_supplementary','figure_map_hex_areas.pdf'), width=7, height=7)
+pdf(file=here('output','figures_supplementary','figure_map_hex_areas.pdf'), width=6, height=7)
 hex_area_plot
 dev.off()
 
@@ -246,6 +247,85 @@ Hex_without_sites <- which(rep(1:47) %!in% Hex_with_sites)
 
 #Calculate credible interval
 ci_95 = credible_interval(out_womble_model, 0.95)
+
+#-------------------------------------------------------------------------------
+## SUPPLEMENTARY FIGURE S1B -- Geographic features map 
+
+median_hex_dates_mod.i <- hex_area_win %>% 
+  filter(area_ID %in% 1:47) %>% 
+  mutate(median_date = med.model.womble,
+         contains_sites = as.factor(case_when(area_ID %in% Hex_with_sites ~ 1, area_ID %in% Hex_without_sites ~ 0))) 
+
+#Plot basemap
+geo_features_plot <- ggplot(data = median_hex_dates_mod.i) +
+  geom_sf(data = st_union(africa), fill = "#ECE6DD", color = "black", show.legend = FALSE) + 
+  geom_sf(data = st_buffer(st_as_sf(st_union(sampling_win), crs = 4326), 20000), fill = "#ECE6DD", color="black", show.legend = FALSE) +
+  geom_sf(data = st_as_sf(st_union(median_hex_dates_mod.i), crs = 4326), color="grey50", fill = "#ECE6DD", show.legend = FALSE) +#sampling window with coastal buffer
+  geom_sf() + #hex grid
+  geom_raster(data = dem_df, aes(x = lon, y = lat, fill = elevation)) +
+  scale_fill_gradient(low = "white", high = "black", name = "Elevation (m)",limits = c(0, 3000)) +
+  geom_sf(data = lakes, fill = "#4660dd", colour = "#4660dd", show.legend = FALSE) +
+  coord_sf(xlim = c(7, 45),
+           ylim = c(-35, 6.5)) +
+  xlab('Longitude') +
+  ylab('Latitude') +
+  theme(panel.background = element_rect(fill = "lightblue",
+                                        colour = NA,
+                                        size = 0.5,
+                                        linetype = "solid"),
+        panel.border = element_rect(color = "grey50", fill = NA, size = 0.5),
+        axis.text.x = element_text(size = 13),
+        axis.text.y = element_text(size = 13),
+        legend.position = "none")
+
+#Add labels + annotations
+geo_features_plot <- geo_features_plot +
+  #Lake Victoria
+  shadowtext::geom_shadowtext(
+    aes(x = 33.2, y = -1, label = "Lake Victoria"),
+    bg.colour = "white",
+    colour = "black",
+    size = 4) +
+  #Lake Kivu
+  shadowtext::geom_shadowtext(
+    aes(x = 27.2, y = -1.9, label = "Lake Kivu"),
+    bg.colour = "white",
+    colour = "black",
+    size = 4) +
+  #Lake Tanganyika
+  shadowtext::geom_shadowtext(
+    aes(x = 30.2, y = -6.5, label = "Lake Tanganyika"),
+    bg.colour = "white",
+    colour = "black",
+    size = 4) +
+  #Drakensberg Mountains
+  shadowtext::geom_shadowtext(
+    aes(x = 30.4, y = -31.6,
+        label = "Drakensberg\nMountains"),
+    bg.colour = "white",
+    colour = "black",
+    size = 4,
+    angle = 45) +
+  #East African Rift label
+  shadowtext::geom_shadowtext(
+    aes(x = 37.5, y = -0.5,
+        label = "East African Rift"),
+    bg.colour = "white",
+    colour = "black",
+    size = 4,
+    angle = 70) +
+  #KwaZulu-Natal / Mozambique border region label
+  shadowtext::geom_shadowtext(
+    aes(x = 31, y = -27.0,
+        label = "KwaZulu-Natal /\nMozambique border"),
+    bg.colour = "white",
+    colour = "black",
+    size = 4)
+
+#Output
+pdf(file=here('output','figures_supplementary','fig_geographic_features.pdf'), width=6, height=7)
+  geo_features_plot
+dev.off()
 
 #-------------------------------------------------------------------------------
 ## SUPPLEMENTARY FIGURE S4 -- Median posterior arrival times with credible interval displayed
@@ -499,6 +579,133 @@ orderPPlot(post.model.womble, name.vec=paste("Area",as.character(1:47)))
 dev.off()
 
 #===============================================================================
+#Changing the wombling threshold
+
+#SUPPLEMENTARY FIGURE S15 and S16 -- Wombling to display significant boundaries
+
+median_hex_dates_mod.i <- hex_area_win %>% 
+  filter(area_ID %in% 1:47) %>% 
+  mutate(median_date = med.model.womble,
+         contains_sites = as.factor(case_when(area_ID %in% Hex_with_sites ~ 1, area_ID %in% Hex_without_sites ~ 0))) 
+
+#With the data from hierarchical wombling model
+post.model.womble_nab  <- out.comb.womble.model[,paste0('nabla[',1:117,']')]  %>% round()
+
+#Extract differences in arrival times for wombling model
+med.model.womble_nab  <- apply(post.model.womble_nab, 2, median)
+
+#Extract proportion of MCMC sample differences which are significant over a specified time difference
+prop_model_womble_nab  <- data.frame(x = 1:117,
+                                     y = sapply(as.data.frame(post.model.womble_nab),
+                                                prop_gthan_threshold,
+                                                threshold = 700)) #change to 500 or 700 years for sensitivity analysis (supplementary figures)
+
+#Add info to edges dataframe
+edge_info.i <- edge_info %>%
+  mutate(mean_gradient = med.model.womble_nab, #50% quantile
+         prob_BLV = prop_model_womble_nab$y, #% of distribution > specified threshold
+         boundary = mapply(function(a, b) {intersection <- st_intersection(hex_area_win$geometry[[a]], hex_area_win$geometry[[b]])
+         if (st_is_empty(intersection) || st_is(intersection, "MULTILINESTRING")) return(st_linestring()) else return(intersection)},
+         edge_info$region1_id,
+         edge_info$region2_id)) #shared boundary between two subareas
+
+#If less than 15% chance of boundary -> 0 (to make boundary distinctions clearer)
+edge_info.i$prob_BLV[edge_info.i$prob_BLV < 0.15] <- 0 
+
+#Create nodes
+nodes <- st_coordinates(hex_area_win$area_center)
+
+#Create boundary segments
+boundaries <- st_sf(prob_BLV = edge_info.i$prob_BLV,
+                    geometry = st_sfc(edge_info.i$boundary)) 
+st_crs(boundaries) <- 4326  # Set CRS to EPSG:4326 (WGS 84)
+
+
+#Plot
+nabla_plot <- ggplot(data = median_hex_dates_mod.i) +
+  geom_sf(data = st_union(africa), fill = "#ECE6DD", color = "black", show.legend = FALSE) + 
+  geom_sf(data = st_buffer(st_as_sf(st_union(sampling_win), crs = 4326), 20000), fill = "#ECE6DD", color="black", show.legend = FALSE) +
+  geom_sf(data = st_as_sf(st_union(median_hex_dates_mod.i), crs = 4326), color="grey50", fill = "#ECE6DD", show.legend = FALSE) +#sampling window with coastal buffer
+  geom_sf() + #hex grid
+  geom_raster(data = dem_df, aes(x = lon, y = lat, fill = elevation)) +
+  scale_fill_gradient(low = "white", high = "black", name = "Elevation (m)",limits = c(0, 3000)) +
+  geom_sf(data = lakes, fill = "#4660dd", colour = "#4660dd", show.legend = FALSE) +
+  geom_sf(data = boundaries, lwd=2.5, aes(alpha=prob_BLV), color = "red") +
+  scale_alpha_continuous(range = c(0, 1), name="Probability of BLV", breaks=c(0, 0.25, 0.5, 0.75), labels=c("<0.15","0.25", "0.5", "0.75")) +
+  coord_sf(xlim = c(7, 45),
+           ylim = c(-35, 6.5)) +
+  xlab('Longitude') +
+  ylab('Latitude') +
+  theme(panel.background = element_rect(fill = "lightblue",
+                                        colour = NA,
+                                        size = 0.5,
+                                        linetype = "solid"),
+        panel.border = element_rect(color = "grey50", fill = NA, size = 0.5),
+        axis.text.x = element_text(size = 13),
+        axis.text.y = element_text(size = 13))
+#---
+##Repeat wombling but with spatial residues, phi[k]
+
+#With the tactical simulation data from hierarchical wombling model
+post.model.womble_nab_phi  <- out.comb.womble.model[,paste0('nabla_phi[',1:117,']')]  %>% round()
+
+#Extract differences in spatial residues times for tactical wombling model
+med.model.womble_nab_phi  <- apply(post.model.womble_nab_phi, 2, median)
+
+#Extract proportion of MCMC sample differences which are significant over a specified time difference
+prop_model_womble_nab_phi  <- data.frame(x = 1:117,
+                                         y = sapply(as.data.frame(post.model.womble_nab_phi), 
+                                                    prop_gthan_threshold, 
+                                                    threshold = 500)) #change to 500 or 700 years for sensitivity analysis (supplementary figures)
+
+#Add info to edges dataframe
+edge_info_phi.i <- edge_info %>%
+  mutate(mean_gradient = med.model.womble_nab_phi, #50% quantile
+         prob_BLV = prop_model_womble_nab_phi$y, #% of distribution > specified threshold
+         boundary = mapply(function(a, b) {intersection <- st_intersection(hex_area_win$geometry[[a]], hex_area_win$geometry[[b]])
+         if (st_is_empty(intersection) || st_is(intersection, "MULTILINESTRING")) return(st_linestring()) else return(intersection)}, 
+         edge_info$region1_id, 
+         edge_info$region2_id)) #shared boundary between two subareas 
+
+#If less than 15% chance of boundary -> 0 (to make boundary distinctions clearer)
+edge_info_phi.i$prob_BLV[edge_info_phi.i$prob_BLV < 0.15] <- 0 
+
+#Create boundary segments
+boundaries_phi <- st_sf(prob_BLV = edge_info_phi.i$prob_BLV,
+                        geometry = st_sfc(edge_info_phi.i$boundary))
+st_crs(boundaries_phi) <- 4326  # Set CRS to EPSG:4326 (WGS 84)
+
+
+#Plot
+nabla_phiplot <- ggplot(data = median_hex_dates_mod.i) +
+  geom_sf(data = st_union(africa), fill = "#ECE6DD", color = "black", show.legend = FALSE) + 
+  geom_sf(data = st_buffer(st_as_sf(st_union(sampling_win), crs = 4326), 20000), fill = "#ECE6DD", color="black", show.legend = FALSE) +
+  geom_sf(data = st_as_sf(st_union(median_hex_dates_mod.i), crs = 4326), color="grey50", fill = "#ECE6DD", show.legend = FALSE) +#sampling window with coastal buffer
+  geom_sf() + #hex grid 
+  geom_raster(data = dem_df, aes(x = lon, y = lat, fill = elevation)) +
+  scale_fill_gradient(low = "white", high = "black", name = "Elevation (m)",limits = c(0, 3000)) +
+  geom_sf(data = lakes, fill = "#4660dd", colour = "#4660dd", show.legend = FALSE) +
+  geom_sf(data = boundaries_phi, lwd=2.5, aes(alpha=prob_BLV), color = "red",show.legend = FALSE) +
+  scale_alpha_continuous(range = c(0, 1), name="Probability of BLV", breaks=c(0, 0.25, 0.5, 0.75), labels=c("<0.15","0.25", "0.5", "0.75")) +
+  coord_sf(xlim = c(7, 45),
+           ylim = c(-35, 6.5)) +
+  xlab('Longitude') +
+  ylab('Latitude') +
+  theme(panel.background = element_rect(fill = "lightblue",
+                                        colour = NA,
+                                        size = 0.5,
+                                        linetype = "solid"),
+        panel.border = element_rect(color = "grey50", fill = NA, size = 0.5),
+        axis.text.x = element_text(size = 13),
+        axis.text.y = element_text(size = 13))
+
+# Save as PNG
+combined_plot <- wrap_plots(nabla_plot, nabla_phiplot, ncol = 2, nrow = 1, guides = "collect") &
+  theme(legend.position = "bottom",legend.box = "horizontal") &
+  guides(fill=guide_colorbar(direction="horizontal"), alpha=guide_legend(direction="horizontal"))
+ggsave(filename = here("output", "figures_supplementary", "fig_wombling_boundaries_500y.png"),plot = combined_plot,width = 13,height = 8,dpi = 300)
+
+#===============================================================================
 ##Examining possible leapfrog transmission around area 23
 
 #Select Area 23 and neighbours specifically (to examine likelihood of leapfrog transmission)
@@ -683,135 +890,6 @@ segments(x0=1400, x1=1350, y0=8.5, col="dodgerblue", lwd=4)
 text(x=860, y=8, "ICAR Model with covs, Wanyika filtered", col="black", cex=1.85)
 segments(x0=1400, x1=1350, y0=8, col="orchid", lwd=4)
 dev.off()
-
-
-#===============================================================================
-#Changing the wombling threshold
-
-#SUPPLEMENTARY FIGURE S15 and S16 -- Wombling to display significant boundaries
-
-median_hex_dates_mod.i <- hex_area_win %>% 
-  filter(area_ID %in% 1:47) %>% 
-  mutate(median_date = med.model.womble,
-         contains_sites = as.factor(case_when(area_ID %in% Hex_with_sites ~ 1, area_ID %in% Hex_without_sites ~ 0))) 
-
-#With the data from hierarchical wombling model
-post.model.womble_nab  <- out.comb.womble.model[,paste0('nabla[',1:117,']')]  %>% round()
-
-#Extract differences in arrival times for wombling model
-med.model.womble_nab  <- apply(post.model.womble_nab, 2, median)
-
-#Extract proportion of MCMC sample differences which are significant over a specified time difference
-prop_model_womble_nab  <- data.frame(x = 1:117,
-                                     y = sapply(as.data.frame(post.model.womble_nab),
-                                                prop_gthan_threshold,
-                                                threshold = 700)) #change to 500 or 700 years for sensitivity analysis (supplementary figures)
-
-#Add info to edges dataframe
-edge_info.i <- edge_info %>%
-  mutate(mean_gradient = med.model.womble_nab, #50% quantile
-         prob_BLV = prop_model_womble_nab$y, #% of distribution > specified threshold
-         boundary = mapply(function(a, b) {intersection <- st_intersection(hex_area_win$geometry[[a]], hex_area_win$geometry[[b]])
-         if (st_is_empty(intersection) || st_is(intersection, "MULTILINESTRING")) return(st_linestring()) else return(intersection)},
-         edge_info$region1_id,
-         edge_info$region2_id)) #shared boundary between two subareas
-
-#If less than 15% chance of boundary -> 0 (to make boundary distinctions clearer)
-edge_info.i$prob_BLV[edge_info.i$prob_BLV < 0.15] <- 0 
-
-#Create nodes
-nodes <- st_coordinates(hex_area_win$area_center)
-
-#Create boundary segments
-boundaries <- st_sf(prob_BLV = edge_info.i$prob_BLV,
-                    geometry = st_sfc(edge_info.i$boundary)) 
-st_crs(boundaries) <- 4326  # Set CRS to EPSG:4326 (WGS 84)
-
-
-#Plot
-nabla_plot <- ggplot(data = median_hex_dates_mod.i) +
-  geom_sf(data = st_union(africa), fill = "#ECE6DD", color = "black", show.legend = FALSE) + 
-  geom_sf(data = st_buffer(st_as_sf(st_union(sampling_win), crs = 4326), 20000), fill = "#ECE6DD", color="black", show.legend = FALSE) +
-  geom_sf(data = st_as_sf(st_union(median_hex_dates_mod.i), crs = 4326), color="grey50", fill = "#ECE6DD", show.legend = FALSE) +#sampling window with coastal buffer
-  geom_sf() + #hex grid
-  geom_raster(data = dem_df, aes(x = lon, y = lat, fill = elevation)) +
-  scale_fill_gradient(low = "white", high = "black", name = "Elevation (m)",limits = c(0, 3000)) +
-  geom_sf(data = lakes, fill = "#4660dd", colour = "#4660dd", show.legend = FALSE) +
-  geom_sf(data = boundaries, lwd=2.5, aes(alpha=prob_BLV), color = "red") +
-  scale_alpha_continuous(range = c(0, 1), name="Probability of BLV", breaks=c(0, 0.25, 0.5, 0.75), labels=c("<0.15","0.25", "0.5", "0.75")) +
-  coord_sf(xlim = c(7, 45),
-           ylim = c(-35, 6.5)) +
-  xlab('Longitude') +
-  ylab('Latitude') +
-  theme(panel.background = element_rect(fill = "lightblue",
-                                        colour = NA,
-                                        size = 0.5,
-                                        linetype = "solid"),
-        panel.border = element_rect(color = "grey50", fill = NA, size = 0.5),
-        axis.text.x = element_text(size = 13),
-        axis.text.y = element_text(size = 13))
-#---
-##Repeat wombling but with spatial residues, phi[k]
-
-#With the tactical simulation data from hierarchical wombling model
-post.model.womble_nab_phi  <- out.comb.womble.model[,paste0('nabla_phi[',1:117,']')]  %>% round()
-
-#Extract differences in spatial residues times for tactical wombling model
-med.model.womble_nab_phi  <- apply(post.model.womble_nab_phi, 2, median)
-
-#Extract proportion of MCMC sample differences which are significant over a specified time difference
-prop_model_womble_nab_phi  <- data.frame(x = 1:117,
-                                         y = sapply(as.data.frame(post.model.womble_nab_phi), 
-                                                    prop_gthan_threshold, 
-                                                    threshold = 500)) #change to 500 or 700 years for sensitivity analysis (supplementary figures)
-
-#Add info to edges dataframe
-edge_info_phi.i <- edge_info %>%
-  mutate(mean_gradient = med.model.womble_nab_phi, #50% quantile
-         prob_BLV = prop_model_womble_nab_phi$y, #% of distribution > specified threshold
-         boundary = mapply(function(a, b) {intersection <- st_intersection(hex_area_win$geometry[[a]], hex_area_win$geometry[[b]])
-         if (st_is_empty(intersection) || st_is(intersection, "MULTILINESTRING")) return(st_linestring()) else return(intersection)}, 
-         edge_info$region1_id, 
-         edge_info$region2_id)) #shared boundary between two subareas 
-
-#If less than 15% chance of boundary -> 0 (to make boundary distinctions clearer)
-edge_info_phi.i$prob_BLV[edge_info_phi.i$prob_BLV < 0.15] <- 0 
-
-#Create boundary segments
-boundaries_phi <- st_sf(prob_BLV = edge_info_phi.i$prob_BLV,
-                        geometry = st_sfc(edge_info_phi.i$boundary))
-st_crs(boundaries_phi) <- 4326  # Set CRS to EPSG:4326 (WGS 84)
-
-
-#Plot
-nabla_phiplot <- ggplot(data = median_hex_dates_mod.i) +
-  geom_sf(data = st_union(africa), fill = "#ECE6DD", color = "black", show.legend = FALSE) + 
-  geom_sf(data = st_buffer(st_as_sf(st_union(sampling_win), crs = 4326), 20000), fill = "#ECE6DD", color="black", show.legend = FALSE) +
-  geom_sf(data = st_as_sf(st_union(median_hex_dates_mod.i), crs = 4326), color="grey50", fill = "#ECE6DD", show.legend = FALSE) +#sampling window with coastal buffer
-  geom_sf() + #hex grid 
-  geom_raster(data = dem_df, aes(x = lon, y = lat, fill = elevation)) +
-  scale_fill_gradient(low = "white", high = "black", name = "Elevation (m)",limits = c(0, 3000)) +
-  geom_sf(data = lakes, fill = "#4660dd", colour = "#4660dd", show.legend = FALSE) +
-  geom_sf(data = boundaries_phi, lwd=2.5, aes(alpha=prob_BLV), color = "red",show.legend = FALSE) +
-  scale_alpha_continuous(range = c(0, 1), name="Probability of BLV", breaks=c(0, 0.25, 0.5, 0.75), labels=c("<0.15","0.25", "0.5", "0.75")) +
-  coord_sf(xlim = c(7, 45),
-           ylim = c(-35, 6.5)) +
-  xlab('Longitude') +
-  ylab('Latitude') +
-  theme(panel.background = element_rect(fill = "lightblue",
-                                        colour = NA,
-                                        size = 0.5,
-                                        linetype = "solid"),
-        panel.border = element_rect(color = "grey50", fill = NA, size = 0.5),
-        axis.text.x = element_text(size = 13),
-        axis.text.y = element_text(size = 13))
-
-# Save as PNG
-combined_plot <- wrap_plots(nabla_plot, nabla_phiplot, ncol = 2, nrow = 1, guides = "collect") &
-  theme(legend.position = "bottom",legend.box = "horizontal") &
-  guides(fill=guide_colorbar(direction="horizontal"), alpha=guide_legend(direction="horizontal"))
-ggsave(filename = here("output", "figures_supplementary", "fig_wombling_boundaries_500y.png"),plot = combined_plot,width = 13,height = 8,dpi = 300)
-
 
 #===============================================================================
 #Examining a finer resolution spatial scale
@@ -1048,5 +1126,3 @@ diagnostic_df <- data.frame(median_posterior = paste(med.model.i.d29, "BP"),
                             ESS = round(ess_womble_model[1:83]))
 
 write.csv(diagnostic_df,file=here("output","tables",'diagnostics_d29.csv'), row.names = TRUE)
-
-

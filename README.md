@@ -42,9 +42,9 @@ Note: Results are found in the _output_ folder
 
 # Figures
 `figures.R` in the _scripts_ folder is used to generate all the figures found in the manuscript (stored in the _figures_ subfolder of _output_). Specifically:
-* Figure 1 (fig_sites_map.pdf): lines 85 -- 212
-* Figure 2 (fig_arrival_by_time.pdf): lines 213 -- 300
-* Figure 3 (fig_wombling_boundaries.png): lines 301 -- 425
+* Figure 1 (fig_sites_map.pdf): lines 86 -- 255
+* Figure 2 (fig_arrival_by_time.pdf): lines 256 -- 344
+* Figure 3 (fig_wombling_boundaries.png): lines 345 -- 468
 
 Also in the _scripts_ folder is `supp_figures.R` used to generate all the supplementary figures (saved in _figures supplementary_ subfolder) and tables (saved in _tables_ subfolder) found in the supplementary material.
 

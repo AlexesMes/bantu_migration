@@ -34,6 +34,7 @@ library(RColorBrewer)
 library(ggspatial)
 library(rnaturalearthdata)
 library(parallel)
+library(shadowtext)
 
 source(here('src', 'grad_funcs.R'))
 source(here('src', 'accuracy_precision.R'))
@@ -149,6 +150,26 @@ legend_df <- EA_cntry_sampling_win %>%
   select(country_id, name) %>%
   arrange(country_id)
 
+#Labels to move
+side_labels <- countries_labels %>%
+  filter(country_id %in% c(3,4,11,13))
+
+#Remaining labels
+main_labels <- countries_labels %>%
+  filter(!country_id %in% c(3,4,11,13))
+
+#Extract coordinates
+coords <- st_coordinates(side_labels)
+
+side_labels <- side_labels %>%
+  mutate(
+    x = coords[,1],
+    y = coords[,2],
+    
+    # manually nudged label positions
+    x_lab = x + c(-2.5, -2.5, 3.5, 5.5),
+    y_lab = y + c(0, -1, -1, 0)
+  )
 
 #Plotting sites with basemap ----
 plt.main <- basemap() +
@@ -164,10 +185,32 @@ plt.main <- basemap() +
       "SARD"      = "SARD",
       "Wanyika"   = "Wanyika")) +
   geom_sf(data = st_buffer(st_as_sf(st_union(EA_cntry_sampling_win), crs = 4326), 60000), color = "grey30" , alpha=0, lwd=1.5) + #demarcate study area
-  geom_sf_text(data = countries_labels,
-               aes(label = country_id),
-               size = 6,
-               color = "#6E2727") +
+  geom_shadowtext(
+    data = main_labels |> cbind(st_coordinates(main_labels)),
+    aes(X, Y, label = country_id),
+    size = 5,
+    fontface = "bold",
+    colour = "black",
+    bg.colour = "white"
+  ) +
+  # connector lines
+  geom_segment(
+    data = side_labels,
+    aes(x = x, y = y,
+        xend = x_lab, yend = y_lab),
+    colour = "black",
+    linewidth = 0.4
+  ) +
+  # offset labels
+  geom_shadowtext(
+    data = side_labels,
+    aes(x = x_lab, y = y_lab,
+        label = country_id),
+    size = 5,
+    fontface = "bold",
+    colour = "black",
+    bg.colour = "white"
+  ) +
   annotation_scale(
     location = "br",
     width_hint = 0.3,
