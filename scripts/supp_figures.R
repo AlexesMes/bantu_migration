@@ -248,6 +248,11 @@ Hex_without_sites <- which(rep(1:47) %!in% Hex_with_sites)
 #Calculate credible interval
 ci_95 = credible_interval(out_womble_model, 0.95)
 
+#Posterior summaries HDPI
+low.model.womble  <- apply(post.model.womble, 2, quantile, probs = 0.025)
+high.model.womble <- apply(post.model.womble, 2, quantile, probs = 0.975)
+med.model.womble  <- apply(post.model.womble, 2, median)
+
 #-------------------------------------------------------------------------------
 ## SUPPLEMENTARY FIGURE S1B -- Geographic features map 
 
@@ -329,11 +334,6 @@ dev.off()
 
 #-------------------------------------------------------------------------------
 ## SUPPLEMENTARY FIGURE S4 -- Median posterior arrival times with credible interval displayed
-
-#Posterior summaries HDPI
-low.model.womble  <- apply(post.model.womble, 2, quantile, probs = 0.025)
-high.model.womble <- apply(post.model.womble, 2, quantile, probs = 0.975)
-med.model.womble  <- apply(post.model.womble, 2, median)
 
 arrival_df <- hex_area_win %>% 
   filter(area_ID %in% 1:47) %>% 
@@ -570,8 +570,6 @@ text(x=900, y=42.5, "ICAR Model without covariates", col="black", cex=2)
 segments(x0=1400, x1=1350, y0=42.5, col="orchid", lwd=4)
 dev.off()
 
-
-
 #-------------------------------------------------------------------------------
 ##SUPPLEMENTARY FIGURE S9 -- Probability Matrix of arrival times
 pdf(file=here('output','figures_supplementary','fig_order_areas.pdf'),width=7,height=7.5)
@@ -598,7 +596,7 @@ med.model.womble_nab  <- apply(post.model.womble_nab, 2, median)
 prop_model_womble_nab  <- data.frame(x = 1:117,
                                      y = sapply(as.data.frame(post.model.womble_nab),
                                                 prop_gthan_threshold,
-                                                threshold = 700)) #change to 500 or 700 years for sensitivity analysis (supplementary figures)
+                                                threshold = 500)) #change to 500 or 700 years for sensitivity analysis (supplementary figures)
 
 #Add info to edges dataframe
 edge_info.i <- edge_info %>%
@@ -844,7 +842,6 @@ wrap_plots(plot_list, ncol = 3, nrow = 1, guides = "collect") +
   plot_annotation(theme = theme(legend.position = "bottom",
                                 legend.box = "vertical"))
 dev.off()
-
 
 #--------------------
 ##SUPPLEMENTARY FIGURE S14 -- Comparing posterior distributions between models with reduced data
